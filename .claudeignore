@@ -1,0 +1,23 @@
+node_modules/
+.next/
+.git/
+*.lock
+*.log
+dist/
+build/
+coverage/
+*.pdf
+.env*
+*.txt              # los propios outputs de Repomix
+context-*.txt      # convención para nombrar los paquetes de Repomix
+*.test.ts
+*.test.tsx
+*.spec.ts
+__tests__/
+/public/           # assets estáticos, imágenes
+*.svg
+*.png
+*.ico
+postcss.config.js
+tailwind.config.ts # Claude no necesita esto para escribir código
+next.config.ts     # idem, salvo que la tarea lo requiera específicamente
