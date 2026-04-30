@@ -1,26 +1,350 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Fondos */
+    --bg: #FAF7F1;
+    --surface: #FFFFFF;
+    --surface-2: #F2EDE2;
+    --surface-3: #ECE9E1;
+
+    /* Bordes */
+    --line: #E8E4DA;
+    --line-strong: #D9D3C5;
+
+    /* Texto */
+    --ink: #1B1A17;
+    --ink-2: #4A463E;
+    --ink-3: #8C8676;
+    --ink-4: #B8B2A2;
+
+    /* Acento */
+    --accent: #E85D2A;
+    --accent-ink: #B7431A;
+    --accent-soft: #FBE4D6;
+    --accent-softer: #FFF1E7;
+
+    /* Status */
+    --ok: #2F8F4E;        --ok-soft: #DCEFD8;
+    --warn: #C98A12;      --warn-soft: #FBEFCE;
+    --err: #B83232;       --err-soft: #F5D9D4;
+    --info: #2E6FB7;      --info-soft: #D8E4F2;
+
+    /* Radios */
+    --radius-sm: 6px;
+    --radius: 10px;
+    --radius-lg: 14px;
+
+    /* Sombras */
+    --shadow-card: 0 1px 0 rgba(27,26,23,.04), 0 1px 2px rgba(27,26,23,.04);
+    --shadow-pop:  0 8px 28px rgba(27,26,23,.10), 0 2px 6px rgba(27,26,23,.06);
+
+    /* Tipografía */
+    --font-display: var(--font-archivo-black), "Arial Black", sans-serif;
+    --font-ui:      var(--font-manrope), system-ui, -apple-system, sans-serif;
+    --font-accent:  var(--font-josefin-sans), "Manrope", sans-serif;
+    --font-mono:    var(--font-jetbrains-mono), ui-monospace, "Menlo", monospace;
+  }
+
+  html {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* Layout */
+  .app {
+    display: grid;
+    grid-template-columns: 248px 1fr;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .main {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .content {
+    flex: 1;
+    overflow: auto;
+    padding: 24px 28px 48px;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--surface-2);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 12px;
+    gap: 4px;
+  }
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .brand-name {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--ink);
+  }
+  .brand-name em {
+    color: var(--accent);
+    font-style: normal;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    color: var(--ink-2);
+    font-size: 13.5px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.1s, color 0.1s;
+    cursor: pointer;
+  }
+  .nav-item:hover {
+    background: var(--surface-3);
+    color: var(--ink);
+  }
+  .nav-item.is-active {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  .nav-item.is-active .nav-item__icon {
+    color: var(--accent);
+  }
+
+  /* Topbar */
+  .topbar {
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow-card);
+  }
+  .card--ink {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+  .card--hero {
+    background: linear-gradient(180deg, var(--surface) 65%, var(--accent-softer) 100%);
+  }
+
+  /* Métricas */
+  .metric__label {
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+  }
+  .metric__value {
+    font-family: var(--font-display);
+    font-size: 32px;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+  .metric__value sup {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+  .metric__hint {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-top: 6px;
+  }
+
+  /* Botones */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 0.1s;
+    font-family: var(--font-ui);
+  }
+  .btn:hover {
+    background: var(--surface-3);
+  }
+  .btn--primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .btn--primary:hover {
+    background: var(--accent-ink);
+    border-color: var(--accent-ink);
+  }
+  .btn--ghost {
+    border-color: transparent;
+    background: transparent;
+  }
+  .btn--ghost:hover {
+    background: var(--surface-3);
+  }
+
+  /* Status badges */
+  .status {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .status::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+  .status.ENTREGADO        { background: var(--ok-soft);   color: var(--ok); }
+  .status.EN_CURSO         { background: var(--info-soft); color: var(--info); }
+  .status.CANCELADO        { background: var(--err-soft);  color: var(--err); }
+  .status.BUSCANDO_FLETERO { background: var(--warn-soft); color: var(--warn); }
+
+  /* Zone tags */
+  .zone-tag {
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    display: inline-block;
+  }
+  .zone-tag.CABA      { background: var(--info-soft); color: var(--info); }
+  .zone-tag.PROVINCIA { background: #EEEAE0;           color: var(--ink-2); }
+  .zone-tag.MIXTO     { background: var(--warn-soft);  color: var(--warn); }
+
+  /* Grid */
+  .grid-12 { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+  .span-3  { grid-column: span 3; }
+  .span-4  { grid-column: span 4; }
+  .span-5  { grid-column: span 5; }
+  .span-6  { grid-column: span 6; }
+  .span-7  { grid-column: span 7; }
+  .span-8  { grid-column: span 8; }
+  .span-12 { grid-column: span 12; }
+
+  /* Section headers */
+  .section-header h2 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: -0.01em;
+  }
+  .section-header p {
+    color: var(--ink-3);
+    font-size: 13px;
+  }
+
+  /* Auth layout */
+  .auth-layout {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    padding: 24px;
+  }
+  .auth-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: var(--shadow-pop);
+  }
+
+  /* Form elements */
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  .field input {
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    font-size: 14px;
+    font-family: var(--font-ui);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.1s;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .field input:focus {
+    border-color: var(--accent);
+  }
+  .field input::placeholder {
+    color: var(--ink-4);
+  }
+  .field--error input {
+    border-color: var(--err);
+  }
+  .field__error {
+    font-size: 11.5px;
+    color: var(--err);
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--ink-4);
+    font-size: 12px;
+  }
+  .divider::before,
+  .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
 }
