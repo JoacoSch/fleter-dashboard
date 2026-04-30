@@ -1,192 +1,373 @@
-# api-contracts/context.md — Contratos de API (Dashboard)
+API.md
+# Fleter — Contrato de API
 
-> Fuente de verdad: el backend (Persona 1). Si hay discrepancias, el backend manda.
-> Todos los endpoints protegidos requieren header `Authorization: Bearer {accessToken}`.
-> Filtros de período: query params `?desde=ISO8601&hasta=ISO8601`
+
+Documento de referencia para el equipo mobile y web.
+Base URL: `https://<dominio>/api`
+
 
 ---
 
-## Auth
 
-### POST /api/auth/login
-```json
-// Request
-{ "email": "string", "password": "string" }
-// Response 200
-{ "accessToken": "string", "usuario": { "id", "nombre", "tipo": "CLIENTE|GERENTE" } }
+## Autenticación
+
+
+La mayoría de endpoints requieren un JWT de Firebase en el header:
 ```
+Authorization: Bearer <firebase-id-token>
+```
+El token se obtiene del cliente Firebase (iOS/Android/Web) después de que el usuario inicia sesión. Este backend **nunca autentica contraseñas directamente** — solo verifica el token.
+
+
+---
+
+
+## /auth — Autenticación y usuarios
+
 
 ### POST /api/auth/registro-cliente
+
+
+Crea una cuenta de cliente. Firebase genera las credenciales, luego se persiste en la DB.
+
+
+**Autenticación:** No requerida
+
+
+**Body:**
 ```json
-// Request
-{ "nombre", "apellido", "dni", "email", "password", "celular", "direccion", "cuit?", "nombre_empresa?" }
-// Response 201
-{ "accessToken": "string", "usuario": { "id", "nombre", "tipo": "CLIENTE" } }
+{
+  "nombre": "string (requerido)",
+  "apellido": "string (requerido)",
+  "dni": "string 7-9 dígitos (requerido)",
+  "email": "string email válido (requerido)",
+  "contrasena": "string mínimo 6 caracteres (requerido)",
+  "telefono": "string (opcional)",
+  "cuit": "string (opcional)",
+  "nombre_empresa": "string (opcional)",
+  "direccion_principal": "string (opcional)"
+}
 ```
 
-### POST /api/auth/recuperar-password
+
+**Respuesta exitosa — 201:**
 ```json
-{ "email": "string" }
-// Response 200 — Firebase envía el email
+{
+  "mensaje": "Registrado correctamente",
+  "id_usuario": 1
+}
 ```
+
+
+**Errores posibles:**
+| Status | Body | Causa |
+|--------|------|-------|
+| 400 | `{ "error": "mensaje de validación" }` | Campo faltante o inválido |
+| 409 | `{ "error": "El email ya esta registrado" }` | Email duplicado en Firebase |
+| 409 | `{ "error": "El DNI ya esta registrado" }` | DNI duplicado en DB |
+| 500 | `{ "error": "Internal Server Error" }` | Error inesperado |
+
 
 ---
 
-## Perfil
 
-### GET /api/perfil
+### POST /api/auth/registro-conductor
+
+
+Crea una cuenta de conductor.
+
+
+**Autenticación:** No requerida
+
+
+**Body:**
 ```json
-// CLIENTE response
-{ "id", "nombre", "apellido", "email", "cuit?", "nombre_empresa?", "direccion" }
-// GERENTE response
-{ "id", "nombre", "apellido", "email", "empresas": [{ "id", "nombre" }] }
+{
+  "nombre": "string (requerido)",
+  "apellido": "string (requerido)",
+  "dni": "string 7-9 dígitos (requerido)",
+  "email": "string email válido (requerido)",
+  "contrasena": "string mínimo 6 caracteres (requerido)",
+  "telefono": "string (opcional)",
+  "nro_licencia": "string (requerido)",
+  "licencia_vencimiento": "string ISO 8601 datetime (requerido) — ej: '2027-12-31T00:00:00.000Z'"
+}
 ```
 
-### PUT /api/perfil
+
+**Respuesta exitosa — 201:**
 ```json
-{ "nombre?", "apellido?", "direccion?" }
+{
+  "mensaje": "Registrado correctamente",
+  "id_usuario": 5
+}
 ```
+
+
+**Errores posibles:**
+| Status | Body | Causa |
+|--------|------|-------|
+| 400 | `{ "error": "mensaje de validación" }` | Campo faltante o inválido |
+| 409 | `{ "error": "El email ya esta registrado" }` | Email duplicado en Firebase |
+| 409 | `{ "error": "El DNI ya esta registrado" }` | DNI duplicado en DB |
+
 
 ---
 
-## Analytics — Cliente (F1)
 
-### GET /api/analytics/cliente/resumen?desde=&hasta=
+### POST /api/auth/registro-gerente
+
+
+Crea una cuenta de gerente y la empresa asociada en una sola operación.
+
+
+**Autenticación:** No requerida
+
+
+**Body:**
 ```json
-// Response 200
 {
-  "total_gastado": number,
-  "cantidad_viajes": number,
-  "costo_promedio": number,
-  "viaje_mas_caro": { "id": "string", "monto": number },
-  "viaje_mas_barato": { "id": "string", "monto": number },
-  "por_zona": { "CABA": number, "PROVINCIA": number, "MIXTO": number },
-  "alertas_recibidas": number,
-  "destinos_frecuentes": [{ "direccion": "string", "cantidad": number }]
+  "nombre": "string (requerido)",
+  "apellido": "string (requerido)",
+  "dni": "string 7-9 dígitos (requerido)",
+  "email": "string email válido (requerido)",
+  "contrasena": "string mínimo 6 caracteres (requerido)",
+  "telefono": "string (opcional)",
+  "cuit_empresa": "string 11-13 caracteres (requerido)",
+  "nombre_empresa": "string (requerido)"
 }
 ```
 
-### GET /api/viajes?desde=&hasta=&page=&limit=
+
+**Respuesta exitosa — 201:**
 ```json
-// Response 200 — listado paginado de viajes del cliente autenticado
 {
-  "viajes": [
-    {
-      "id", "fecha_programada", "estado",
-      "origen": { "direccion" },
-      "destino": { "direccion" },
-      "tipo_zona",
-      "precio_estimado", "precio_final?",
-      "duracion_real_minutos?", "km_reales?",
-      "alertas_count": number
-    }
-  ],
-  "total": number,
-  "page": number,
-  "limit": number
+  "mensaje": "Registrado correctamente",
+  "id_usuario": 12
 }
 ```
 
-### GET /api/viajes/:id
-```json
-// Response 200 — detalle completo de un viaje
-{
-  "id", "fecha_programada", "estado", "tipo_zona",
-  "precio_estimado", "precio_final?", "duracion_real_minutos?", "km_reales?",
-  "conductor": { "nombre", "calificacion_promedio" },
-  "paradas": [{ "orden", "direccion", "estado", "fecha_entrega?" }],
-  "transacciones": [{ "tipo", "monto_total", "fee_fleter", "created_at" }],
-  "alertas": [{ "tipo", "descripcion", "timestamp" }]
-}
-```
+
+**Errores posibles:**
+| Status | Body | Causa |
+|--------|------|-------|
+| 400 | `{ "error": "mensaje de validación" }` | Campo faltante o inválido |
+| 409 | `{ "error": "El email ya esta registrado" }` | Email duplicado en Firebase |
+| 409 | `{ "error": "El DNI ya esta registrado" }` | DNI duplicado en DB |
+
 
 ---
 
-## Viajes — Gerente (F3)
 
-### GET /api/viajes/disponibles
+### POST /api/auth/login
+
+
+Verifica que el usuario autenticado por Firebase existe en la DB. **No autentica credenciales** — eso lo hace Firebase en el cliente.
+
+
+**Autenticación:** Requerida (`Authorization: Bearer <token>`)
+
+
+**Body:** Ninguno
+
+
+**Respuesta exitosa — 200:**
 ```json
-// Response 200 — viajes que la empresa puede tomar
 {
-  "viajes": [
-    {
-      "id", "fecha_programada", "tipo_zona",
-      "precio_estimado",
-      "origen": { "direccion" },
-      "destino": { "direccion" },
-      "requisitos": ["FRAGIL", "REFRIGERADO", ...]
-    }
-  ]
+  "id_usuario": 1,
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "email": "juan@example.com",
+  "rol": "CLIENTE"
 }
 ```
+`rol` puede ser: `CLIENTE`, `CONDUCTOR`, `GERENTE`, `ADMIN`
 
-### POST /api/viajes/:id/asignar
-```json
-// Request
-{ "conductor_id": "string", "vehiculo_id": "string" }
-// Response 200
-{ "viaje": { "id", "estado": "FLETERO_ASIGNADO", "conductor": { "nombre" }, "vehiculo": { "patente" } } }
-```
 
-### GET /api/empresas/:id/conductores
-```json
-// Response 200
-{ "conductores": [{ "id", "nombre", "apellido", "calificacion_promedio", "vehiculos": [{ "id", "patente", "condiciones" }] }] }
-```
+**Errores posibles:**
+| Status | Body | Causa |
+|--------|------|-------|
+| 401 | `{ "error": "Token no proporcionado" }` | Header Authorization ausente |
+| 401 | `{ "error": "Token invalido o expirado" }` | JWT inválido o vencido |
+| 404 | `{ "error": "Usuario no registrado" }` | Token válido pero no hay registro en DB |
+
 
 ---
 
-## Analytics — Gerente (F4)
 
-### GET /api/analytics/gerente/resumen?empresa_id=&desde=&hasta=
+### GET /api/auth/me
+
+
+Retorna el perfil completo del usuario autenticado.
+
+
+**Autenticación:** Requerida (`Authorization: Bearer <token>`)
+
+
+**Respuesta exitosa — 200:**
 ```json
 {
-  "total_facturado": number,
-  "cantidad_viajes": number,
-  "ingreso_promedio": number,
-  "viajes_cancelados": number,
-  "penalidades": number,
-  "ranking_conductores": [{ "conductor_id", "nombre", "viajes_completados", "ingresos_generados" }],
-  "vehiculo_mas_usado": { "id", "patente", "viajes_completados" }
+  "id_usuario": 1,
+  "firebase_uid": "abc123xyz",
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "dni": "12345678",
+  "email": "juan@example.com",
+  "telefono": "+5491112345678",
+  "rol": "CLIENTE",
+  "fecha_registro": "2026-04-28T00:00:00.000Z"
 }
 ```
 
-### GET /api/analytics/gerente/viajes?empresa_id=&desde=&hasta=&page=&limit=
-```json
-{
-  "viajes": [
-    {
-      "id", "fecha_programada",
-      "conductor": { "nombre" },
-      "vehiculo": { "patente" },
-      "origen": { "direccion" },
-      "destino": { "direccion" },
-      "duracion_real_minutos?",
-      "monto_cobrado": number
-    }
-  ],
-  "total": number
-}
-```
+
+**Errores posibles:**
+| Status | Body | Causa |
+|--------|------|-------|
+| 401 | `{ "error": "Token no proporcionado" }` | Header Authorization ausente |
+| 401 | `{ "error": "Token invalido o expirado" }` | JWT inválido o vencido |
+| 404 | `{ "error": "Usuario no registrado" }` | Token válido pero no hay registro en DB |
+
 
 ---
 
-## Eventos Socket.io — solo F2 y F3
 
-### F2 — Cliente con viaje activo (escucha)
-| Evento | Datos |
-|---|---|
-| `mapa:actualizar` | `{ lat, lng, timestamp }` |
-| `viaje:estado_actualizado` | `{ estado }` |
-| `alerta:desvio` | `{ descripcion }` |
-| `viaje:finalizado` | `{ precio_final, ajuste }` |
+### PUT /api/auth/perfil
 
-### F3 — Gerente (escucha)
-| Evento | Datos |
-|---|---|
-| `viaje:disponible` | `{ viaje }` — nuevo viaje que puede tomar la empresa |
 
-### F3 — Gerente (emite)
-| Evento | Cuándo |
-|---|---|
-| `join:empresa` | Al hacer login como gerente |
+Actualiza el perfil del usuario autenticado. Solo se actualizan los campos presentes en el body.
+
+
+**Autenticación:** Requerida (`Authorization: Bearer <token>`)
+
+
+**Body (todos opcionales, al menos uno requerido):**
+```json
+{
+  "nombre": "string",
+  "apellido": "string",
+  "telefono": "string"
+}
+```
+
+
+**Respuesta exitosa — 200:**
+```json
+{
+  "id_usuario": 1,
+  "firebase_uid": "abc123xyz",
+  "nombre": "Juan Actualizado",
+  "apellido": "Pérez",
+  "dni": "12345678",
+  "email": "juan@example.com",
+  "telefono": "+5491199999999",
+  "rol": "CLIENTE",
+  "fecha_registro": "2026-04-28T00:00:00.000Z"
+}
+```
+
+
+**Errores posibles:**
+| Status | Body | Causa |
+|--------|------|-------|
+| 400 | `{ "error": "mensaje de validación" }` | Valor de campo inválido |
+| 401 | `{ "error": "Token no proporcionado" }` | Header Authorization ausente |
+| 401 | `{ "error": "Token invalido o expirado" }` | JWT inválido o vencido |
+
+
+---
+
+
+## GET /health
+
+
+Endpoint de verificación de estado del servidor. No requiere autenticación.
+
+
+**Respuesta exitosa — 200:**
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-04-28T03:00:00.000Z"
+}
+```
+
+
+---
+
+
+## Eventos de Socket.io
+
+
+### ⚠️ PENDIENTE — conductor:aceptado
+
+
+Emitido por el servidor cuando un conductor acepta un viaje.
+
+
+**Room:** `viaje:{id_viaje}` — el cliente debe unirse a esta room al crear el viaje.
+
+
+**Evento:** `conductor:aceptado`
+
+
+**Payload:**
+```json
+{
+  "id_viaje": 42,
+  "id_conductor": 7,
+  "nombre_conductor": "Carlos López",
+  "calificacion_promedio": 4.8,
+  "vehiculo": {
+    "patente": "ABC123",
+    "marca": "Ford",
+    "modelo": "Transit",
+    "color": "Blanco"
+  },
+  "eta_minutos": 12
+}
+```
+
+
+**Estado:** No implementado. Se emitirá desde `src/sockets/matching.socket.js` cuando se complete el flujo de matching.
+
+
+---
+
+
+## Convenciones generales
+
+
+- Todos los errores devuelven `{ "error": "mensaje legible" }`
+- Fechas en formato ISO 8601 UTC
+- El campo `contrasena` nunca se almacena en la DB — solo va a Firebase
+- Los campos `firebase_uid` se incluyen en `GET /me` pero el cliente no debe usarlos directamente
+## Autenticacion
+
+
+Los endpoints protegidos requieren un header:
+  Authorization: Bearer <token>
+
+
+El token se obtiene de Firebase en el cliente, NO de esta API.
+
+
+En React Native:
+  import auth from '@react-native-firebase/auth';
+  const token = await auth().currentUser.getIdToken();
+
+
+En Next.js:
+  import { getAuth } from 'firebase/auth';
+  const token = await getAuth().currentUser.getIdToken();
+
+
+El token dura 1 hora. Firebase lo renueva automaticamente.
+Pasarlo en cada request a endpoints que digan "requiere token".
+
+
+Firebase config (misma para mobile y web):
+  apiKey: "..."
+  authDomain: "..."
+  projectId: "..."
+
+
