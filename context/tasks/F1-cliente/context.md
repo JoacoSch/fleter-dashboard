@@ -6,8 +6,8 @@ El cliente (PyME) ve un resumen claro de sus gastos en fletes para el período s
 ## Subtareas
 
 ### F1-0: Scaffold y auth (prerequisito)
-- [ ] `npx create-next-app@latest fleter-dashboard --typescript --tailwind --app`
-- [ ] Estructura de carpetas según `/stack/context.md`
+- [x] `npx create-next-app@latest fleter-dashboard --typescript --tailwind --app`
+- [x] Estructura de carpetas según `/stack/context.md`
 - [ ] Firebase Auth en `/lib/firebase.ts` + hook `useAuth`
 - [ ] Middleware de rutas protegidas en `/middleware.ts` (redirige a `/login` sin sesión)
 - [ ] Pantalla de login: email/password + Google OAuth

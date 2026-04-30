@@ -34,6 +34,9 @@ El frontend **nunca calcula nada**. Solo pide datos al backend y los muestra.
 - `/model/context.md` → modelo de datos
 - `/api-contracts/context.md` → endpoints REST y eventos Socket.io
 
+## Diseño visual
+   Ver /tasks/design-system.md — tokens, componentes y convenciones CSS.
+   
 ## Flujo de trabajo por sesión en Claude Code
 1. Leer este `CLAUDE.md`
 2. Leer `/tasks/F{N}/context.md` de la fase en curso
