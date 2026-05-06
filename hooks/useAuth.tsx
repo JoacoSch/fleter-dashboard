@@ -18,7 +18,7 @@ import {
   onAuthStateChanged,
   type User,
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { getFirebaseAuth } from "@/lib/firebase";
 import { api } from "@/lib/api";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK === "true";
@@ -36,6 +36,7 @@ interface UserProfile {
 interface RegisterData {
   nombre: string;
   apellido: string;
+  dni: string;
   email: string;
   empresa: string;
   cuit: string;
@@ -105,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const unsub = onAuthStateChanged(auth, async (user) => {
+    const unsub = onAuthStateChanged(getFirebaseAuth(), async (user) => {
       if (!user) {
         setState({ user: null, profile: null, role: null, loading: false });
         return;
@@ -127,7 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setState({ user: null, profile: MOCK_PROFILE, role: "CLIENTE", loading: false });
       return;
     }
-    const cred = await signInWithEmailAndPassword(auth, email, password);
+    const cred = await signInWithEmailAndPassword(getFirebaseAuth(), email, password);
     const token = await cred.user.getIdToken();
     await api.post("/api/auth/login", { idToken: token });
     await setCookieToken(token);
@@ -142,7 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     const provider = new GoogleAuthProvider();
-    const cred = await signInWithPopup(auth, provider);
+    const cred = await signInWithPopup(getFirebaseAuth(), provider);
     const token = await cred.user.getIdToken();
     await api.post("/api/auth/login", { idToken: token });
     await setCookieToken(token);
@@ -154,13 +155,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (MOCK) {
       return;
     }
-    const cred = await createUserWithEmailAndPassword(auth, data.email, data.password);
-    const token = await cred.user.getIdToken();
     await api.post("/api/auth/registro-cliente", {
-      idToken: token,
       nombre: data.nombre,
       apellido: data.apellido,
-      empresa: data.empresa,
+      dni: data.dni,
+      email: data.email,
+      contrasena: data.password,
+      nombre_empresa: data.empresa,
       cuit: data.cuit,
     });
   }, []);
@@ -171,14 +172,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setState({ user: null, profile: null, role: null, loading: false });
       return;
     }
-    await signOut(auth);
+    await signOut(getFirebaseAuth());
     await clearCookieToken();
     setState({ user: null, profile: null, role: null, loading: false });
   }, []);
 
   const sendRecovery = useCallback(async (email: string) => {
     if (MOCK) return;
-    await sendPasswordResetEmail(auth, email);
+    await sendPasswordResetEmail(getFirebaseAuth(), email);
   }, []);
 
   return (

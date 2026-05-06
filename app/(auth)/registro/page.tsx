@@ -11,6 +11,7 @@ export default function RegistroPage() {
   const [form, setForm] = useState({
     nombre: "",
     apellido: "",
+    dni: "",
     email: "",
     empresa: "",
     cuit: "",
@@ -62,6 +63,11 @@ export default function RegistroPage() {
             <label htmlFor="apellido">Apellido</label>
             <input id="apellido" type="text" placeholder="García" value={form.apellido} onChange={set("apellido")} required />
           </div>
+        </div>
+
+        <div className="field">
+          <label htmlFor="dni">DNI</label>
+          <input id="dni" type="text" placeholder="12345678" value={form.dni} onChange={set("dni")} required minLength={7} maxLength={9} pattern="\d{7,9}" />
         </div>
 
         <div className="field">
