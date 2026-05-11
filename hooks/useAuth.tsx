@@ -30,7 +30,7 @@ interface UserProfile {
   email: string;
   empresa?: string;
   cuit?: string;
-  rol: "CLIENTE" | "GERENTE";
+  rol: "CLIENTE" | "CONDUCTOR" | "GERENTE" | "ADMIN";
 }
 
 interface RegisterData {
@@ -43,22 +43,36 @@ interface RegisterData {
   password: string;
 }
 
+interface RegisterConductorData {
+  nombre: string;
+  apellido: string;
+  dni: string;
+  email: string;
+  password: string;
+  telefono?: string;
+  nro_licencia: string;
+  licencia_vencimiento: string;
+}
+
 interface AuthState {
   user: User | null;
   profile: UserProfile | null;
-  role: "CLIENTE" | "GERENTE" | null;
+  role: "CLIENTE" | "CONDUCTOR" | "GERENTE" | "ADMIN" | null;
   loading: boolean;
 }
 
 interface AuthContextValue extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+  login: (email: string, password: string) => Promise<string>;
+  loginWithGoogle: () => Promise<string>;
   register: (data: RegisterData) => Promise<void>;
+  registerConductor: (data: RegisterConductorData) => Promise<void>;
   logout: () => Promise<void>;
   sendRecovery: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+const MOCK_ROLE = (process.env.NEXT_PUBLIC_MOCK_ROLE ?? "CLIENTE") as UserProfile["rol"];
 
 const MOCK_PROFILE: UserProfile = {
   id: "mock-1",
@@ -67,7 +81,7 @@ const MOCK_PROFILE: UserProfile = {
   email: "joaco@fleter.com",
   empresa: "PyME Demo S.A.",
   cuit: "20-12345678-9",
-  rol: "CLIENTE",
+  rol: MOCK_ROLE,
 };
 
 async function setCookieToken(token: string) {
@@ -100,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setState({
         user: null,
         profile: hasCookie ? MOCK_PROFILE : null,
-        role: hasCookie ? "CLIENTE" : null,
+        role: hasCookie ? MOCK_ROLE : null,
         loading: false,
       });
       return;
@@ -122,11 +136,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsub;
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string): Promise<string> => {
     if (MOCK) {
       document.cookie = "token=mock; path=/; max-age=3600";
-      setState({ user: null, profile: MOCK_PROFILE, role: "CLIENTE", loading: false });
-      return;
+      setState({ user: null, profile: MOCK_PROFILE, role: MOCK_ROLE, loading: false });
+      return MOCK_ROLE;
     }
     const cred = await signInWithEmailAndPassword(getFirebaseAuth(), email, password);
     const token = await cred.user.getIdToken();
@@ -134,13 +148,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await setCookieToken(token);
     const profile = await fetchProfile();
     setState({ user: cred.user, profile, role: profile.rol, loading: false });
+    return profile.rol;
   }, []);
 
-  const loginWithGoogle = useCallback(async () => {
+  const loginWithGoogle = useCallback(async (): Promise<string> => {
     if (MOCK) {
       document.cookie = "token=mock; path=/; max-age=3600";
-      setState({ user: null, profile: MOCK_PROFILE, role: "CLIENTE", loading: false });
-      return;
+      setState({ user: null, profile: MOCK_PROFILE, role: MOCK_ROLE, loading: false });
+      return MOCK_ROLE;
     }
     const provider = new GoogleAuthProvider();
     const cred = await signInWithPopup(getFirebaseAuth(), provider);
@@ -149,6 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await setCookieToken(token);
     const profile = await fetchProfile();
     setState({ user: cred.user, profile, role: profile.rol, loading: false });
+    return profile.rol;
   }, []);
 
   const register = useCallback(async (data: RegisterData) => {
@@ -163,6 +179,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       contrasena: data.password,
       nombre_empresa: data.empresa,
       cuit: data.cuit,
+    });
+  }, []);
+
+  const registerConductor = useCallback(async (data: RegisterConductorData) => {
+    if (MOCK) return;
+    await api.post("/api/auth/registro-conductor", {
+      nombre: data.nombre,
+      apellido: data.apellido,
+      dni: data.dni,
+      email: data.email,
+      contrasena: data.password,
+      telefono: data.telefono,
+      nro_licencia: data.nro_licencia,
+      licencia_vencimiento: data.licencia_vencimiento,
     });
   }, []);
 
@@ -183,7 +213,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, loginWithGoogle, register, logout, sendRecovery }}>
+    <AuthContext.Provider value={{ ...state, login, loginWithGoogle, register, registerConductor, logout, sendRecovery }}>
       {children}
     </AuthContext.Provider>
   );

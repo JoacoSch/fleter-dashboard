@@ -12,7 +12,9 @@ export function proxy(req: NextRequest) {
   const isProtectedRoute =
     pathname === "/" ||
     pathname.startsWith("/viajes") ||
-    pathname.startsWith("/perfil");
+    pathname.startsWith("/perfil") ||
+    pathname.startsWith("/conductor") ||
+    pathname.startsWith("/gerente");
 
   if (isProtectedRoute && !token) {
     return NextResponse.redirect(new URL("/login", req.url));

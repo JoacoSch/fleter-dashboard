@@ -5,6 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 
+function homeForRole(role: string) {
+  if (role === "CONDUCTOR") return "/conductor";
+  if (role === "GERENTE") return "/gerente";
+  return "/";
+}
+
 export default function LoginPage() {
   const { login, loginWithGoogle } = useAuth();
   const router = useRouter();
@@ -18,8 +24,8 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await login(email, password);
-      router.push("/");
+      const role = await login(email, password);
+      router.push(homeForRole(role));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al iniciar sesión");
     } finally {
@@ -31,8 +37,8 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await loginWithGoogle();
-      router.push("/");
+      const role = await loginWithGoogle();
+      router.push(homeForRole(role));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error con Google");
     } finally {
