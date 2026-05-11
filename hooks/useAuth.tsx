@@ -20,8 +20,7 @@ import {
 } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase";
 import { api } from "@/lib/api";
-
-const MOCK = process.env.NEXT_PUBLIC_MOCK === "true";
+import { MOCK } from "@/lib/config";
 
 interface UserProfile {
   id: string;

@@ -1,9 +1,7 @@
 "use client";
 
 import { getAuthToken } from "./firebase";
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-const MOCK = process.env.NEXT_PUBLIC_MOCK === "true";
+import { BASE_URL, MOCK } from "./config";
 
 const MOCK_FIXTURES: Record<string, unknown> = {
   "/api/viajes/disponibles": [
@@ -53,7 +51,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
     email: "joaco@fleter.com",
     empresa: "PyME Demo S.A.",
     cuit: "20-12345678-9",
-    rol: "CLIENTE",
+    rol: (process.env.NEXT_PUBLIC_MOCK_ROLE ?? "CLIENTE") as "CLIENTE" | "CONDUCTOR" | "GERENTE" | "ADMIN",
   },
 };
 

@@ -98,7 +98,7 @@ export default function RegistroConductorPage() {
 
         <div className="field">
           <label htmlFor="password">Contraseña</label>
-          <input id="password" type="password" placeholder="Mínimo 6 caracteres" value={form.password} onChange={set("password")} required minLength={6} autoComplete="new-password" />
+          <input id="password" type="password" placeholder="Mínimo 6 caracteres" value={form.password} onChange={set("password")} required minLength={8} autoComplete="new-password" />
         </div>
 
         {error && (

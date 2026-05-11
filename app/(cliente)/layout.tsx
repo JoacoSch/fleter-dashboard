@@ -2,9 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
-import { AuthProvider } from "@/hooks/useAuth";
+import { useAuth, AuthProvider } from "@/hooks/useAuth";
 import type { ReactNode } from "react";
+
+const navItems = [
+  { href: "/", label: "Dashboard", icon: "◈" },
+  { href: "/viajes", label: "Mis viajes", icon: "⊡" },
+  { href: "/perfil", label: "Perfil", icon: "◉" },
+];
 
 function ClienteLayoutInner({ children }: { children: ReactNode }) {
   const { profile, logout } = useAuth();
@@ -15,12 +20,6 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
     await logout();
     router.push("/login");
   }
-
-  const navItems = [
-    { href: "/", label: "Dashboard", icon: "◈" },
-    { href: "/viajes", label: "Mis viajes", icon: "⊡" },
-    { href: "/perfil", label: "Perfil", icon: "◉" },
-  ];
 
   return (
     <div className="app">

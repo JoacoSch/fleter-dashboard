@@ -3,13 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { getAuthToken } from "@/lib/firebase";
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-const MOCK = process.env.NEXT_PUBLIC_MOCK === "true";
+import { BASE_URL, MOCK } from "@/lib/config";
 
 export function useSocket() {
   const socketRef = useRef<Socket | null>(null);
   const [connected, setConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (MOCK) return;
@@ -17,16 +16,20 @@ export function useSocket() {
     let socket: Socket;
 
     async function connect() {
-      const token = await getAuthToken();
-      socket = io(BASE_URL, {
-        auth: { token: token ? `Bearer ${token}` : "" },
-        transports: ["websocket"],
-      });
+      try {
+        const token = await getAuthToken();
+        socket = io(BASE_URL, {
+          auth: { token: token ? `Bearer ${token}` : "" },
+          transports: ["websocket"],
+        });
 
-      socket.on("connect", () => setConnected(true));
-      socket.on("disconnect", () => setConnected(false));
+        socket.on("connect", () => setConnected(true));
+        socket.on("disconnect", () => setConnected(false));
 
-      socketRef.current = socket;
+        socketRef.current = socket;
+      } catch {
+        setError("No se pudo conectar al servidor.");
+      }
     }
 
     connect();
@@ -37,5 +40,5 @@ export function useSocket() {
     };
   }, []);
 
-  return { socket: socketRef.current, connected };
+  return { socket: socketRef.current, connected, error };
 }

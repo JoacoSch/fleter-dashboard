@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 
@@ -33,10 +33,9 @@ function getMinFecha() {
   return d.toISOString().slice(0, 16);
 }
 
-let nextId = 3;
-
 export default function PedirViajePage() {
   const router = useRouter();
+  const nextIdRef = useRef(3);
 
   const [zona, setZona] = useState<Zona>("CABA");
   const [fecha, setFecha] = useState("");
@@ -52,7 +51,7 @@ export default function PedirViajePage() {
   function agregarParada() {
     const destino = paradas[paradas.length - 1];
     const intermedias = paradas.slice(0, -1);
-    setParadas([...intermedias, { id: nextId++, direccion: "" }, destino]);
+    setParadas([...intermedias, { id: nextIdRef.current++, direccion: "" }, destino]);
   }
 
   function borrarParada(id: number) {
