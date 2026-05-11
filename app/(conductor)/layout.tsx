@@ -1,11 +1,17 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth, AuthProvider } from "@/hooks/useAuth";
 import type { ReactNode } from "react";
 
+const navItems = [
+  { href: "/conductor", label: "Viajes disponibles", icon: "⊡" },
+];
+
 function ConductorLayoutInner({ children }: { children: ReactNode }) {
   const { profile, logout } = useAuth();
+  const pathname = usePathname();
   const router = useRouter();
 
   async function handleLogout() {
@@ -21,7 +27,20 @@ function ConductorLayoutInner({ children }: { children: ReactNode }) {
           <span className="brand-name">fle<em>ter</em></span>
         </div>
 
-        <div style={{ flex: 1 }} />
+        <nav style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
+          {navItems.map(({ href, label, icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`nav-item ${pathname === href ? "is-active" : ""}`}
+            >
+              <span className="nav-item__icon" style={{ fontSize: 16, width: 20, textAlign: "center" }}>
+                {icon}
+              </span>
+              {label}
+            </Link>
+          ))}
+        </nav>
 
         <div style={{ borderTop: "1px solid var(--line)", paddingTop: 12, marginTop: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px" }}>

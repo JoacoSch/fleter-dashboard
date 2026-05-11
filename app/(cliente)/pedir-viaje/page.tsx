@@ -1,0 +1,376 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
+
+type Zona = "CABA" | "PROVINCIA" | "MIXTO";
+type Condicion = "FRAGIL" | "REFRIGERADO" | "CARGA_PESADA" | "PELIGROSO" | "VOLUMINOSO";
+
+interface Parada {
+  id: number;
+  direccion: string;
+}
+
+interface ViajeCreado {
+  id_viaje: number;
+  estado: string;
+  precio_estimado: number;
+}
+
+const CONDICIONES: { value: Condicion; label: string }[] = [
+  { value: "FRAGIL", label: "Frágil" },
+  { value: "REFRIGERADO", label: "Refrigerado" },
+  { value: "CARGA_PESADA", label: "Carga pesada" },
+  { value: "PELIGROSO", label: "Peligroso" },
+  { value: "VOLUMINOSO", label: "Voluminoso" },
+];
+
+function getMinFecha() {
+  const d = new Date();
+  d.setHours(d.getHours() + 1);
+  // datetime-local needs "YYYY-MM-DDTHH:MM"
+  return d.toISOString().slice(0, 16);
+}
+
+let nextId = 3;
+
+export default function PedirViajePage() {
+  const router = useRouter();
+
+  const [zona, setZona] = useState<Zona>("CABA");
+  const [fecha, setFecha] = useState("");
+  const [paradas, setParadas] = useState<Parada[]>([
+    { id: 1, direccion: "" },
+    { id: 2, direccion: "" },
+  ]);
+  const [condiciones, setCondiciones] = useState<Set<Condicion>>(new Set());
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<ViajeCreado | null>(null);
+
+  function agregarParada() {
+    const destino = paradas[paradas.length - 1];
+    const intermedias = paradas.slice(0, -1);
+    setParadas([...intermedias, { id: nextId++, direccion: "" }, destino]);
+  }
+
+  function borrarParada(id: number) {
+    setParadas((prev) => prev.filter((p) => p.id !== id));
+  }
+
+  function actualizarDireccion(id: number, value: string) {
+    setParadas((prev) => prev.map((p) => (p.id === id ? { ...p, direccion: value } : p)));
+  }
+
+  function toggleCondicion(c: Condicion) {
+    setCondiciones((prev) => {
+      const next = new Set(prev);
+      next.has(c) ? next.delete(c) : next.add(c);
+      return next;
+    });
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    if (paradas.some((p) => !p.direccion.trim())) {
+      setError("Completá todas las direcciones.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const payload = {
+        zona,
+        fecha_programada: new Date(fecha).toISOString(),
+        paradas: paradas.map((p) => ({ lat: 0, lng: 0, direccion: p.direccion.trim() })),
+        condiciones_requeridas: Array.from(condiciones),
+        // El backend aún valida estos campos (>0); se envían en 1 hasta que los elimine de la validación
+        ...(zona !== "PROVINCIA" && { tarifa_hora: 1 }),
+        ...(zona !== "CABA" && { tarifa_km: 1 }),
+      };
+      const result = await api.post<ViajeCreado>("/api/viajes", payload);
+      setSuccess(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al crear el viaje.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (success) {
+    return (
+      <div>
+        <div className="section-header" style={{ marginBottom: 24 }}>
+          <h2>Viaje solicitado</h2>
+          <p>Tu pedido fue enviado. Estamos buscando un conductor.</p>
+        </div>
+        <div className="card" style={{ maxWidth: 520 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "flex-start" }}>
+            <div>
+              <p className="metric__label">N° de viaje</p>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: 18, color: "var(--ink)", marginTop: 4 }}>
+                VJ-{success.id_viaje}
+              </p>
+            </div>
+            <div>
+              <p className="metric__label">Estado</p>
+              <span className="status BUSCANDO_FLETERO" style={{ marginTop: 4, display: "inline-flex" }}>
+                Buscando conductor
+              </span>
+            </div>
+            {success.precio_estimado > 0 && (
+              <div>
+                <p className="metric__label">Precio estimado</p>
+                <p style={{ fontFamily: "var(--font-display)", fontSize: 24, color: "var(--ink)", marginTop: 4 }}>
+                  ${success.precio_estimado.toLocaleString("es-AR")}
+                </p>
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <button
+                className="btn btn--primary"
+                onClick={() => router.push("/viajes")}
+              >
+                Ver mis viajes
+              </button>
+              <button
+                className="btn btn--ghost"
+                onClick={() => setSuccess(null)}
+              >
+                Pedir otro viaje
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="section-header" style={{ marginBottom: 24 }}>
+        <h2>Pedir un viaje</h2>
+        <p>Completá los datos del flete y te conectamos con un conductor.</p>
+      </div>
+
+      <form onSubmit={handleSubmit} style={{ maxWidth: 560 }}>
+        <div className="card" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+          {/* Zona */}
+          <div>
+            <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 8 }}>
+              Zona
+            </label>
+            <div style={{ display: "flex", gap: 8 }}>
+              {(["CABA", "PROVINCIA", "MIXTO"] as Zona[]).map((z) => (
+                <button
+                  key={z}
+                  type="button"
+                  onClick={() => setZona(z)}
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: "var(--radius-sm)",
+                    border: "1px solid",
+                    borderColor: zona === z ? "var(--accent)" : "var(--line-strong)",
+                    background: zona === z ? "var(--accent-soft)" : "var(--surface)",
+                    color: zona === z ? "var(--accent-ink)" : "var(--ink-2)",
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  {z}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Fecha programada */}
+          <div>
+            <label
+              htmlFor="fecha"
+              style={{ display: "block", fontSize: 11.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 8 }}
+            >
+              Fecha y hora
+            </label>
+            <input
+              id="fecha"
+              type="datetime-local"
+              min={getMinFecha()}
+              value={fecha}
+              onChange={(e) => setFecha(e.target.value)}
+              required
+              style={{
+                width: "100%",
+                padding: "8px 10px",
+                borderRadius: "var(--radius-sm)",
+                border: "1px solid var(--line-strong)",
+                background: "var(--surface)",
+                color: "var(--ink)",
+                fontSize: 13,
+                fontFamily: "var(--font-ui)",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+
+          {/* Paradas estilo Uber */}
+          <div>
+            <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 8 }}>
+              Recorrido
+            </label>
+            <div style={{ position: "relative" }}>
+              {/* Línea vertical */}
+              <div style={{
+                position: "absolute",
+                left: 10,
+                top: 18,
+                bottom: 18,
+                width: 1.5,
+                background: "var(--line-strong)",
+                zIndex: 0,
+              }} />
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {paradas.map((parada, idx) => {
+                  const isOrigen = idx === 0;
+                  const isDestino = idx === paradas.length - 1;
+                  const isIntermedia = !isOrigen && !isDestino;
+
+                  const dotColor = isOrigen
+                    ? "var(--accent)"
+                    : isDestino
+                    ? "var(--ink)"
+                    : "var(--ink-3)";
+
+                  return (
+                    <div key={parada.id} style={{ display: "flex", alignItems: "center", gap: 10, position: "relative", zIndex: 1 }}>
+                      {/* Dot */}
+                      <div style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: isDestino ? "3px" : "50%",
+                        background: dotColor,
+                        border: "2.5px solid var(--surface)",
+                        boxShadow: `0 0 0 1.5px ${dotColor}`,
+                        flexShrink: 0,
+                      }} />
+
+                      {/* Input */}
+                      <input
+                        type="text"
+                        placeholder={isOrigen ? "Origen" : isDestino ? "Destino" : `Parada ${idx}`}
+                        value={parada.direccion}
+                        onChange={(e) => actualizarDireccion(parada.id, e.target.value)}
+                        required
+                        style={{
+                          flex: 1,
+                          padding: "8px 10px",
+                          borderRadius: "var(--radius-sm)",
+                          border: "1px solid var(--line-strong)",
+                          background: "var(--surface)",
+                          color: "var(--ink)",
+                          fontSize: 13,
+                          fontFamily: "var(--font-ui)",
+                        }}
+                      />
+
+                      {/* Botón borrar (solo intermedias) */}
+                      {isIntermedia && (
+                        <button
+                          type="button"
+                          onClick={() => borrarParada(parada.id)}
+                          style={{
+                            width: 24,
+                            height: 24,
+                            border: "none",
+                            background: "none",
+                            color: "var(--ink-3)",
+                            cursor: "pointer",
+                            fontSize: 16,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: 0,
+                            flexShrink: 0,
+                          }}
+                          title="Eliminar parada"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={agregarParada}
+              className="btn btn--ghost"
+              style={{ marginTop: 10, fontSize: 12.5, color: "var(--ink-3)", paddingLeft: 4 }}
+            >
+              + Agregar parada intermedia
+            </button>
+          </div>
+
+          {/* Condiciones requeridas */}
+          <div>
+            <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 8 }}>
+              Condiciones especiales <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(opcional)</span>
+            </label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {CONDICIONES.map(({ value, label }) => {
+                const active = condiciones.has(value);
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => toggleCondicion(value)}
+                    style={{
+                      padding: "5px 12px",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid",
+                      borderColor: active ? "var(--info)" : "var(--line-strong)",
+                      background: active ? "var(--info-soft)" : "var(--surface)",
+                      color: active ? "var(--info)" : "var(--ink-2)",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <p style={{ fontSize: 12.5, color: "var(--err)", background: "var(--err-soft)", padding: "8px 12px", borderRadius: "var(--radius-sm)" }}>
+              {error}
+            </p>
+          )}
+
+          {/* Submit */}
+          <div style={{ borderTop: "1px solid var(--line)", paddingTop: 16 }}>
+            <button
+              type="submit"
+              className="btn btn--primary"
+              disabled={loading}
+              style={{ width: "100%", justifyContent: "center", opacity: loading ? 0.7 : 1 }}
+            >
+              {loading ? "Enviando..." : "Confirmar viaje"}
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+  );
+}

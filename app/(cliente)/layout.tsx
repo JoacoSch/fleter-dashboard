@@ -30,6 +30,14 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
           <span className="brand-name">fle<em>ter</em></span>
         </div>
 
+        <Link
+          href="/pedir-viaje"
+          className="sidebar__new btn"
+          style={{ width: "100%", justifyContent: "center", marginBottom: 12, textDecoration: "none" }}
+        >
+          + Pedir viaje
+        </Link>
+
         <nav style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
           {navItems.map(({ href, label, icon }) => (
             <Link

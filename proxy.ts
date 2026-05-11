@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function proxy(req: NextRequest) {
+export default function proxy(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
   const { pathname } = req.nextUrl;
 
@@ -14,7 +14,8 @@ export function proxy(req: NextRequest) {
     pathname.startsWith("/viajes") ||
     pathname.startsWith("/perfil") ||
     pathname.startsWith("/conductor") ||
-    pathname.startsWith("/gerente");
+    pathname.startsWith("/gerente") ||
+    pathname.startsWith("/pedir-viaje");
 
   if (isProtectedRoute && !token) {
     return NextResponse.redirect(new URL("/login", req.url));
@@ -27,6 +28,6 @@ export function proxy(req: NextRequest) {
   return NextResponse.next();
 }
 
-export const proxyConfig = {
+export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
