@@ -8,13 +8,13 @@ El cliente (PyME) ve un resumen claro de sus gastos en fletes para el período s
 ### F1-0: Scaffold y auth (prerequisito)
 - [x] `npx create-next-app@latest fleter-dashboard --typescript --tailwind --app`
 - [x] Estructura de carpetas según `/stack/context.md`
-- [ ] Firebase Auth en `/lib/firebase.ts` + hook `useAuth`
-- [ ] Middleware de rutas protegidas en `/middleware.ts` (redirige a `/login` sin sesión)
-- [ ] Pantalla de login: email/password + Google OAuth
-- [ ] Pantalla de registro de cliente
+- [x] Firebase Auth en `/lib/firebase.ts` + hook `useAuth`
+- [x] Middleware de rutas protegidas en `/middleware.ts` (redirige a `/login` sin sesión)
+- [x] Pantalla de login: email/password + Google OAuth
+- [x] Pantalla de registro de cliente
 - [ ] Pantalla de recupero de contraseña
-- [ ] Layout con sidebar (items: Dashboard, Mis viajes, Perfil)
-- [ ] JWT en cookie httpOnly al hacer login
+- [x] Layout con sidebar (items: Dashboard, Mis viajes, Perfil)
+- [x] JWT en cookie httpOnly al hacer login
 
 **Endpoints:** `POST /api/auth/login`, `POST /api/auth/registro-cliente`, `POST /api/auth/recuperar-password`
 
@@ -22,7 +22,7 @@ El cliente (PyME) ve un resumen claro de sus gastos en fletes para el período s
 
 ### F1-1: Selector de período (componente compartido)
 - [ ] Componente `<SelectorPeriodo>` reutilizable en todo el dashboard
-- [ ] Tres modos: Mensual | Semanal | Personalizado (date picker de rango)
+- [ ] Cuatro modos modos: Mensual | Semanal | Todo |Personalizado (date picker de rango)
 - [ ] Guarda el período seleccionado en un hook `usePeriodo` (estado global o context)
 - [ ] Al cambiar el período, todos los componentes que dependen de él se actualizan
 - [ ] Default: mes actual

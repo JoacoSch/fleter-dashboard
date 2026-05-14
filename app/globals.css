@@ -347,4 +347,244 @@
     height: 1px;
     background: var(--line);
   }
+
+  /* ── Period Selector ─────────────────────────────── */
+  .selector-periodo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .selector-periodo__dates {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 8px;
+  }
+  .selector-periodo__dates input {
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    font-size: 13px;
+    font-family: var(--font-ui);
+    color: var(--ink);
+    outline: none;
+  }
+  .selector-periodo__dates input:focus {
+    border-color: var(--accent);
+  }
+  .selector-periodo__sep {
+    font-size: 12px;
+    color: var(--ink-4);
+  }
+
+  /* ── Trips Table ─────────────────────────────────── */
+  .trips-table {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  /* Shared grid definition — applied explicitly to every row variant */
+  .trip-row,
+  .trip-row--header,
+  .skeleton-row {
+    display: grid;
+    grid-template-columns: 92px 2fr 80px 80px 96px 96px 88px 130px 36px 90px;
+    gap: 12px;
+    padding: 12px 16px;
+    align-items: center;
+  }
+  .trip-row {
+    border-top: 1px solid var(--line);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .trip-row:hover {
+    background: var(--surface-2);
+  }
+  .trip-row--header {
+    cursor: default;
+    background: var(--surface-2);
+    border-top: none;
+    padding: 9px 16px;
+  }
+  .trip-row--header:hover {
+    background: var(--surface-2);
+  }
+  .trip-row__id {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+  .trip-row__header-cell {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .trip-row__header-cell--sortable {
+    cursor: pointer;
+  }
+  .trip-row__header-cell--sortable:hover {
+    color: var(--ink);
+  }
+  .trip-row__sort-icon {
+    font-size: 9px;
+    color: var(--ink-4);
+  }
+  .trip-row__sort-icon--active {
+    color: var(--accent);
+  }
+  .trip-row__route {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .trip-row__route-origin {
+    font-size: 13px;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .trip-row__route-dest {
+    font-size: 12px;
+    color: var(--ink-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .trip-row__route-id {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-4);
+    letter-spacing: 0.03em;
+  }
+  /* keep old route-sep in case it's referenced elsewhere */
+  .trip-row__route-sep {
+    color: var(--ink-4);
+    margin: 0 3px;
+  }
+  .trip-row__meta {
+    font-size: 12.5px;
+    color: var(--ink-2);
+  }
+  .trip-row__price {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .trip-row__price--null {
+    color: var(--ink-4);
+  }
+  .trip-row__ajuste {
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+  }
+  .trip-row__ajuste--lower {
+    color: var(--ok);
+    background: var(--ok-soft);
+  }
+  .trip-row__ajuste--higher {
+    color: var(--err);
+    background: var(--err-soft);
+  }
+  .trip-row__ajuste--equal {
+    color: var(--ink-3);
+    background: var(--surface-3);
+  }
+  .trip-row__ajuste--null {
+    color: var(--ink-4);
+  }
+  .trip-row__alert-icon {
+    color: var(--warn);
+    font-size: 14px;
+    text-align: center;
+  }
+
+  /* ── Pagination ──────────────────────────────────── */
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: center;
+    padding-top: 16px;
+  }
+  .pagination__page {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    background: transparent;
+    font-size: 13px;
+    font-family: var(--font-ui);
+    font-weight: 500;
+    color: var(--ink-2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.1s;
+  }
+  .pagination__page:hover:not(:disabled) {
+    background: var(--surface-3);
+  }
+  .pagination__page.is-active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+  .pagination__page:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .pagination__ellipsis {
+    font-size: 13px;
+    color: var(--ink-4);
+    padding: 0 4px;
+  }
+
+  /* ── Empty / Error / Loading states ─────────────── */
+  .trips-empty {
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--ink-3);
+    font-size: 14px;
+  }
+  .skeleton-row {
+    border-top: 1px solid var(--line);
+  }
+  .skeleton-cell {
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(
+      90deg,
+      var(--surface-2) 25%,
+      var(--surface-3) 50%,
+      var(--surface-2) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-sweep 1.4s infinite;
+  }
+  @keyframes skeleton-sweep {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
 }

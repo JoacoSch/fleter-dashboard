@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth, AuthProvider } from "@/hooks/useAuth";
+import { PeriodoProvider } from "@/hooks/usePeriodo";
 import type { ReactNode } from "react";
 
 const navItems = [
@@ -105,7 +106,9 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
 export default function ClienteLayout({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
-      <ClienteLayoutInner>{children}</ClienteLayoutInner>
+      <PeriodoProvider>
+        <ClienteLayoutInner>{children}</ClienteLayoutInner>
+      </PeriodoProvider>
     </AuthProvider>
   );
 }
