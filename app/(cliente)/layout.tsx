@@ -13,7 +13,7 @@ const navItems = [
 ];
 
 function ClienteLayoutInner({ children }: { children: ReactNode }) {
-  const { profile, logout } = useAuth();
+  const { profile, loading, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -92,7 +92,7 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
       <div className="main">
         <header className="topbar">
           <p style={{ fontFamily: "var(--font-display)", fontSize: 15, color: "var(--ink)" }}>
-            {profile?.empresa ?? "Cargando..."}
+            {loading ? "Cargando..." : (profile?.empresa ?? "")}
           </p>
         </header>
         <main className="content">
