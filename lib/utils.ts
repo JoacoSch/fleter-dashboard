@@ -15,3 +15,12 @@ export function fmtDate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString("es-AR", { day: "numeric", month: "short" });
 }
+
+export function fmtTime(iso: string): string {
+  const d = new Date(iso);
+  let h = d.getHours();
+  const m = d.getMinutes().toString().padStart(2, "0");
+  const ampm = h >= 12 ? "p.m." : "a.m.";
+  h = h % 12 || 12;
+  return `${h}:${m} ${ampm}`;
+}
