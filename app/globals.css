@@ -1,7 +1,9 @@
-@import "tailwindcss";
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+img, video { display: block; max-width: 100%; }
+input, button, textarea, select { font: inherit; }
 
-@layer base {
-  :root {
+:root {
     /* Fondos */
     --bg: #FAF7F1;
     --surface: #FFFFFF;
@@ -44,16 +46,14 @@
     --font-ui:      var(--font-manrope), system-ui, -apple-system, sans-serif;
     --font-accent:  var(--font-josefin-sans), "Manrope", sans-serif;
     --font-mono:    var(--font-jetbrains-mono), ui-monospace, "Menlo", monospace;
-  }
-
-  html {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: var(--font-ui);
-  }
 }
 
-@layer components {
+html {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+}
+
   /* Layout */
   .app {
     display: grid;
@@ -218,7 +218,7 @@
     gap: 8px;
     padding: 10px 8px 4px;
     border-top: 1px solid var(--line);
-    margin-top: 4px;
+    margin-top: auto;
     flex-shrink: 0;
   }
   .sidebar__user-avatar {
@@ -754,8 +754,7 @@
     background-size: 200% 100%;
     animation: skeleton-sweep 1.4s infinite;
   }
-  @keyframes skeleton-sweep {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
+@keyframes skeleton-sweep {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

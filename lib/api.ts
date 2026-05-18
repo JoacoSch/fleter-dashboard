@@ -237,9 +237,20 @@ async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  if (MOCK && MOCK_FIXTURES[path] !== undefined) {
-    await new Promise((r) => setTimeout(r, 300));
-    return MOCK_FIXTURES[path] as T;
+  if (MOCK) {
+    const dynamicViaje = path.match(/^\/api\/viajes\/(\d+)$/);
+    if (dynamicViaje) {
+      const id = parseInt(dynamicViaje[1], 10);
+      const list = MOCK_FIXTURES["/api/viajes/mis-viajes"] as { id_viaje: number }[];
+      const found = list?.find((v) => v.id_viaje === id);
+      await new Promise((r) => setTimeout(r, 300));
+      if (found) return found as T;
+      throw new Error("Viaje no encontrado");
+    }
+    if (MOCK_FIXTURES[path] !== undefined) {
+      await new Promise((r) => setTimeout(r, 300));
+      return MOCK_FIXTURES[path] as T;
+    }
   }
 
   const token = await getAuthToken();
