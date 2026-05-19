@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { useSocket } from "@/hooks/useSocket";
+import { useAuth } from "@/hooks/useAuth";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK === "true";
 
@@ -52,16 +53,18 @@ export default function ConductorPage() {
   const [asignado, setAsignado] = useState<ViajeAsignado | null>(null);
   const [yaAsignado, setYaAsignado] = useState<number | null>(null);
 
+  const { loading: authLoading } = useAuth();
   const { socket } = useSocket();
   const socketRef = useRef(socket);
   useEffect(() => { socketRef.current = socket; }, [socket]);
 
   useEffect(() => {
+    if (authLoading) return;
     api.get<ViajeDisponible[]>("/api/viajes/disponibles")
       .then(setViajes)
       .catch(() => setViajes([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [authLoading]);
 
   useEffect(() => {
     if (MOCK || !socket) return;
