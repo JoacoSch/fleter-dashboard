@@ -36,6 +36,7 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
   const [totalViajes, setTotalViajes] = useState(0);
 
   useEffect(() => {
+    if (!profile) return;
     api.get<RecentViaje[]>("/api/viajes/mis-viajes")
       .then((data) => {
         setTotalViajes(data.length);
@@ -47,7 +48,7 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
         setRecentViajes(sorted.slice(0, 5));
       })
       .catch(() => {});
-  }, []);
+  }, [profile]);
 
   async function handleLogout() {
     await logout();

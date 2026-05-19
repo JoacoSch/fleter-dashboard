@@ -20,7 +20,9 @@ export function getFirebaseAuth(): Auth {
 
 export async function getAuthToken(): Promise<string | null> {
   if (typeof window === "undefined") return null;
-  const user = getFirebaseAuth().currentUser;
+  const auth = getFirebaseAuth();
+  await auth.authStateReady();
+  const user = auth.currentUser;
   if (!user) return null;
   return user.getIdToken();
 }
