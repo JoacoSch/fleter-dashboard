@@ -20,7 +20,7 @@ export function useSocket() {
         const token = await getAuthToken();
         socket = io(BASE_URL, {
           auth: { token: token ? `Bearer ${token}` : "" },
-          transports: ["websocket"],
+          transports: ["websocket", "polling"],
         });
 
         socket.on("connect", () => setConnected(true));
