@@ -229,7 +229,7 @@ export default function ViajeDetallePage() {
               <div>
                 <p className="metric__label">Conductor</p>
                 <p style={{ fontSize: 13, color: "var(--ink)", marginTop: 4 }}>
-                  {viaje.conductor.usuario.nombre} {viaje.conductor.usuario.apellido}
+                  {viaje.conductor?.usuario?.nombre} {viaje.conductor?.usuario?.apellido}
                 </p>
               </div>
             )}

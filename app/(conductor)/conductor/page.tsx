@@ -262,7 +262,7 @@ export default function ConductorPage() {
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid var(--line)", paddingTop: 12 }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                       <p style={{ fontSize: 12, color: "var(--ink-3)" }}>
-                        {viaje.cliente.usuario.nombre} {viaje.cliente.usuario.apellido}
+                        {viaje.cliente?.usuario?.nombre} {viaje.cliente?.usuario?.apellido}
                       </p>
                       <p style={{ fontSize: 12, color: "var(--ink-3)" }}>
                         {fmtFecha(viaje.fecha_programada)}
