@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { usePeriodo } from "@/hooks/usePeriodo";
+import { useSocket } from "@/hooks/useSocket";
+import { MOCK } from "@/lib/config";
 import SelectorPeriodo from "@/components/SelectorPeriodo";
 import { formatARS, fmtDate, fmtTime } from "@/lib/utils";
 
@@ -67,6 +69,10 @@ export default function ViajesPage() {
   const [sortKey, setSortKey] = useState<SortKey>("fecha");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
+  const { socket } = useSocket();
+  const socketRef = useRef(socket);
+  useEffect(() => { socketRef.current = socket; }, [socket]);
+
   async function fetchViajes() {
     setLoading(true);
     setError(null);
@@ -84,6 +90,32 @@ export default function ViajesPage() {
     fetchViajes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (MOCK || !socket) return;
+
+    function patchEstado(id_viaje: number, patch: Partial<MisViajesItem>) {
+      setRawViajes((prev) =>
+        prev.map((v) => (v.id_viaje === id_viaje ? { ...v, ...patch } : v))
+      );
+    }
+
+    socket.on("viaje:conductor_asignado", (data: { id_viaje: number; conductor: { nombre: string; apellido: string } }) => {
+      patchEstado(data.id_viaje, {
+        estado: "CONDUCTOR_ASIGNADO",
+        conductor: { usuario: { nombre: data.conductor.nombre, apellido: data.conductor.apellido } },
+      });
+    });
+
+    socket.on("viaje:estado_actualizado", (data: { id_viaje: number; estado: string }) => {
+      patchEstado(data.id_viaje, { estado: data.estado });
+    });
+
+    return () => {
+      socket.off("viaje:conductor_asignado");
+      socket.off("viaje:estado_actualizado");
+    };
+  }, [socket]);
 
 const filtered = useMemo(() => {
     if (periodo.mode === "todo") return rawViajes;
