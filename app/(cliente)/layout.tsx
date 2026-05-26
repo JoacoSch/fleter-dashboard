@@ -36,6 +36,10 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
   const [totalViajes, setTotalViajes] = useState(0);
 
   useEffect(() => {
+    if (!loading && !profile) router.push("/login");
+  }, [loading, profile, router]);
+
+  useEffect(() => {
     if (!profile) return;
     api.get<RecentViaje[]>("/api/viajes/mis-viajes")
       .then((data) => {
@@ -54,6 +58,8 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
     await logout();
     router.push("/login");
   }
+
+  if (loading || !profile) return null;
 
   return (
     <div className="app">

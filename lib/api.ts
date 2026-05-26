@@ -222,6 +222,44 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       conductor: { usuario: { nombre: "Sebastián", apellido: "Ortiz" } },
     },
   ],
+  "/api/conductor/mis-viajes": [
+    {
+      id_viaje: 201,
+      estado: "ENTREGADO",
+      paradas: [
+        { orden: 1, direccion: "Av. Corrientes 1234, CABA" },
+        { orden: 2, direccion: "Palermo Soho, CABA" },
+      ],
+      cliente: { usuario: { nombre: "Juan", apellido: "Pérez" } },
+    },
+    {
+      id_viaje: 202,
+      estado: "ENTREGADO",
+      paradas: [
+        { orden: 1, direccion: "Microcentro, CABA" },
+        { orden: 2, direccion: "La Plata, Buenos Aires" },
+      ],
+      cliente: { usuario: { nombre: "María", apellido: "García" } },
+    },
+    {
+      id_viaje: 203,
+      estado: "EN_CURSO",
+      paradas: [
+        { orden: 1, direccion: "Retiro, CABA" },
+        { orden: 2, direccion: "Tigre, Buenos Aires" },
+      ],
+      cliente: { usuario: { nombre: "Roberto", apellido: "Sanz" } },
+    },
+    {
+      id_viaje: 204,
+      estado: "ENTREGADO",
+      paradas: [
+        { orden: 1, direccion: "Once, CABA" },
+        { orden: 2, direccion: "Morón, Buenos Aires" },
+      ],
+      cliente: { usuario: { nombre: "Laura", apellido: "Méndez" } },
+    },
+  ],
   "/api/auth/me": {
     id: "mock-1",
     nombre: "Joaquín",
