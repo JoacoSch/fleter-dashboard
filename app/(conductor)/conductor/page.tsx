@@ -57,8 +57,16 @@ export default function ConductorPage() {
   const { socket } = useSocket();
   const socketRef = useRef(socket);
   const aceptandoRef = useRef<number | null>(null);
+  const yaAsignadoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const aceptandoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => { socketRef.current = socket; }, [socket]);
   useEffect(() => { aceptandoRef.current = aceptando; }, [aceptando]);
+
+  useEffect(() => {
+    return () => {
+      if (aceptandoTimerRef.current) clearTimeout(aceptandoTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -87,10 +95,11 @@ export default function ConductorPage() {
     });
 
     socket.on("viaje:ya_asignado", (data: { id_viaje: number }) => {
+      if (yaAsignadoTimerRef.current) clearTimeout(yaAsignadoTimerRef.current);
       setAceptando(null);
       setYaAsignado(data.id_viaje);
       setViajes((prev) => prev.filter((v) => v.id_viaje !== data.id_viaje));
-      setTimeout(() => setYaAsignado(null), 4000);
+      yaAsignadoTimerRef.current = setTimeout(() => setYaAsignado(null), 4000);
     });
 
     socket.on("viaje:no_disponible", (data: { id_viaje: number }) => {
@@ -102,6 +111,7 @@ export default function ConductorPage() {
       socket.off("viaje:conductor_asignado");
       socket.off("viaje:ya_asignado");
       socket.off("viaje:no_disponible");
+      if (yaAsignadoTimerRef.current) clearTimeout(yaAsignadoTimerRef.current);
     };
   }, [socket]);
 
@@ -120,7 +130,8 @@ export default function ConductorPage() {
     setAceptando(id_viaje);
     socketRef.current.emit("viaje:aceptar", { id_viaje });
 
-    setTimeout(() => {
+    if (aceptandoTimerRef.current) clearTimeout(aceptandoTimerRef.current);
+    aceptandoTimerRef.current = setTimeout(() => {
       setAceptando((prev) => (prev === id_viaje ? null : prev));
     }, 10_000);
   }

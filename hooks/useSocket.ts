@@ -13,11 +13,13 @@ export function useSocket() {
   useEffect(() => {
     if (MOCK) return;
 
+    let cancelled = false;
     let socket: Socket;
 
     async function connect() {
       try {
         const token = await getAuthToken();
+        if (cancelled) return;
         socket = io(BASE_URL, {
           auth: { token: token ? `Bearer ${token}` : "" },
           transports: ["websocket", "polling"],
@@ -28,13 +30,14 @@ export function useSocket() {
 
         socketRef.current = socket;
       } catch {
-        setError("No se pudo conectar al servidor.");
+        if (!cancelled) setError("No se pudo conectar al servidor.");
       }
     }
 
     connect();
 
     return () => {
+      cancelled = true;
       socket?.disconnect();
       socketRef.current = null;
     };
