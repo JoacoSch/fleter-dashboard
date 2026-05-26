@@ -1,5 +1,5 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
-import { getAuth, type Auth } from "firebase/auth";
+import { initializeAuth, browserSessionPersistence, type Auth } from "firebase/auth";
 
 let _auth: Auth | null = null;
 
@@ -13,7 +13,7 @@ export function getFirebaseAuth(): Auth {
             projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
           })
         : getApps()[0];
-    _auth = getAuth(app);
+    _auth = initializeAuth(app, { persistence: browserSessionPersistence });
   }
   return _auth;
 }
