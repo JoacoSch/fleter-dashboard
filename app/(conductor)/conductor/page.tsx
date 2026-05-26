@@ -56,7 +56,9 @@ export default function ConductorPage() {
   const { loading: authLoading } = useAuth();
   const { socket } = useSocket();
   const socketRef = useRef(socket);
+  const aceptandoRef = useRef<number | null>(null);
   useEffect(() => { socketRef.current = socket; }, [socket]);
+  useEffect(() => { aceptandoRef.current = aceptando; }, [aceptando]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -77,9 +79,11 @@ export default function ConductorPage() {
     });
 
     socket.on("viaje:conductor_asignado", (data: ViajeAsignado) => {
-      setAceptando(null);
-      setAsignado(data);
       setViajes((prev) => prev.filter((v) => v.id_viaje !== data.id_viaje));
+      if (aceptandoRef.current === data.id_viaje) {
+        setAceptando(null);
+        setAsignado(data);
+      }
     });
 
     socket.on("viaje:ya_asignado", (data: { id_viaje: number }) => {
@@ -89,10 +93,15 @@ export default function ConductorPage() {
       setTimeout(() => setYaAsignado(null), 4000);
     });
 
+    socket.on("viaje:no_disponible", (data: { id_viaje: number }) => {
+      setViajes((prev) => prev.filter((v) => v.id_viaje !== data.id_viaje));
+    });
+
     return () => {
       socket.off("viaje:disponible");
       socket.off("viaje:conductor_asignado");
       socket.off("viaje:ya_asignado");
+      socket.off("viaje:no_disponible");
     };
   }, [socket]);
 
@@ -110,6 +119,10 @@ export default function ConductorPage() {
     if (!socketRef.current) return;
     setAceptando(id_viaje);
     socketRef.current.emit("viaje:aceptar", { id_viaje });
+
+    setTimeout(() => {
+      setAceptando((prev) => (prev === id_viaje ? null : prev));
+    }, 10_000);
   }
 
   if (asignado) {
@@ -164,14 +177,24 @@ export default function ConductorPage() {
       {yaAsignado && (
         <div style={{
           marginBottom: 16,
-          padding: "10px 14px",
+          padding: "12px 16px",
           borderRadius: "var(--radius-sm)",
           background: "var(--warn-soft)",
-          color: "var(--warn)",
-          fontSize: 13,
-          fontWeight: 600,
+          borderLeft: "3px solid var(--warn)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
         }}>
-          Otro conductor llegó primero al viaje VJ-{yaAsignado}.
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--warn)" }}>
+            ⚡ Otro conductor llegó primero al viaje VJ-{yaAsignado}.
+          </p>
+          <button
+            onClick={() => setYaAsignado(null)}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "var(--warn)", fontSize: 18, lineHeight: 1, padding: 0 }}
+          >
+            ×
+          </button>
         </div>
       )}
 
