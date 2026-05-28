@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const { token } = await req.json();
+  const body = await req.json().catch(() => ({}));
+  const { token } = body;
+  if (typeof token !== "string" || !token) {
+    return NextResponse.json({ error: "token requerido" }, { status: 400 });
+  }
   const res = NextResponse.json({ ok: true });
   res.cookies.set("token", token, {
     httpOnly: true,

@@ -2,17 +2,25 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useAuth, AuthProvider } from "@/hooks/useAuth";
 import type { ReactNode } from "react";
 
 const navItems = [
   { href: "/conductor", label: "Viajes disponibles", icon: "⊡" },
+  { href: "/conductor/mis-viajes", label: "Mis viajes", icon: "☰" },
 ];
 
 function ConductorLayoutInner({ children }: { children: ReactNode }) {
-  const { profile, logout } = useAuth();
+  const { profile, loading, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !profile) router.push("/login");
+  }, [loading, profile, router]);
+
+  if (loading || !profile) return null;
 
   async function handleLogout() {
     await logout();
@@ -77,11 +85,7 @@ function ConductorLayoutInner({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="main">
-        <header className="topbar">
-          <p style={{ fontFamily: "var(--font-display)", fontSize: 15, color: "var(--ink)" }}>
-            Panel del conductor
-          </p>
-        </header>
+        <header className="topbar" />
         <main className="content">
           {children}
         </main>

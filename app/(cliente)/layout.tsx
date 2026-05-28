@@ -20,11 +20,11 @@ interface RecentViaje {
 }
 
 const navItems = [
-  { href: "/",             label: "Analytics",    Icon: BarChart2,    suffix: undefined },
-  { href: "/viajes",       label: "Record",       Icon: ClipboardList, suffix: undefined },
-  { href: "/viaje-activo", label: "Viaje activo", Icon: Truck,         suffix: "Próx." },
-  { href: "/facturacion",  label: "Facturación",  Icon: FileText,      suffix: undefined },
-  { href: "/perfil",       label: "Perfil",       Icon: User,          suffix: undefined },
+  { href: "/",             label: "Analytics",    Icon: BarChart2,    suffix: undefined, disabled: false },
+  { href: "/viajes",       label: "Record",       Icon: ClipboardList, suffix: undefined, disabled: false },
+  { href: "/viaje-activo", label: "Viaje activo", Icon: Truck,         suffix: "Próx.",   disabled: true },
+  { href: "/facturacion",  label: "Facturación",  Icon: FileText,      suffix: "Próx.",   disabled: true },
+  { href: "/perfil",       label: "Perfil",       Icon: User,          suffix: undefined, disabled: false },
 ];
 
 function ClienteLayoutInner({ children }: { children: ReactNode }) {
@@ -34,6 +34,10 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
 
   const [recentViajes, setRecentViajes] = useState<RecentViaje[]>([]);
   const [totalViajes, setTotalViajes] = useState(0);
+
+  useEffect(() => {
+    if (!loading && !profile) router.push("/login");
+  }, [loading, profile, router]);
 
   useEffect(() => {
     if (!profile) return;
@@ -55,6 +59,8 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
     router.push("/login");
   }
 
+  if (loading || !profile) return null;
+
   return (
     <div className="app">
       <aside className="sidebar">
@@ -72,9 +78,22 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
 
         {/* Nav */}
         <nav style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {navItems.map(({ href, label, Icon, suffix }) => {
+          {navItems.map(({ href, label, Icon, suffix, disabled }) => {
             const isActive = pathname === href;
             const showBadge = href === "/viajes" && totalViajes > 0;
+            if (disabled) {
+              return (
+                <span
+                  key={href}
+                  className="nav-item"
+                  style={{ opacity: 0.38, cursor: "not-allowed", pointerEvents: "none" }}
+                >
+                  <Icon size={16} className="nav-item__icon" />
+                  <span style={{ flex: 1 }}>{label}</span>
+                  <span className="nav-item__suffix">{suffix}</span>
+                </span>
+              );
+            }
             return (
               <Link
                 key={href}

@@ -41,5 +41,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Tomi's shi
+# Tomi's and Samu's shi
 /fleter-mobile-master
+backend-requests.txt

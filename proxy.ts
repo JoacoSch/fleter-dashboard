@@ -1,30 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export default function proxy(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
-  const { pathname } = req.nextUrl;
-
-  const isAuthRoute =
-    pathname === "/login" ||
-    pathname === "/registro" ||
-    pathname === "/recuperar";
-
-  const isProtectedRoute =
-    pathname === "/" ||
-    pathname.startsWith("/viajes") ||
-    pathname.startsWith("/perfil") ||
-    pathname.startsWith("/conductor") ||
-    pathname.startsWith("/gerente") ||
-    pathname.startsWith("/pedir-viaje");
-
-  if (isProtectedRoute && !token) {
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
-
-  if (isAuthRoute && token) {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
-
+export default function proxy(_req: NextRequest) {
   return NextResponse.next();
 }
 
