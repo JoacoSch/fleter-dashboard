@@ -261,12 +261,13 @@ const MOCK_FIXTURES: Record<string, unknown> = {
     },
   ],
   "/api/auth/me": {
-    id: "mock-1",
+    id_usuario: 1,
     nombre: "Joaquín",
     apellido: "Test",
     email: "joaco@fleter.com",
-    empresa: "PyME Demo S.A.",
-    cuit: "20-12345678-9",
+    dni: "30123456",
+    telefono: "+5491112345678",
+    fecha_registro: "2026-01-15T00:00:00.000Z",
     rol: (process.env.NEXT_PUBLIC_MOCK_ROLE ?? "CLIENTE") as "CLIENTE" | "CONDUCTOR" | "GERENTE" | "ADMIN",
   },
 };

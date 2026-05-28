@@ -12,7 +12,7 @@ El cliente (PyME) ve un resumen claro de sus gastos en fletes para el período s
 - [x] Middleware de rutas protegidas en `/middleware.ts` (redirige a `/login` sin sesión)
 - [x] Pantalla de login: email/password + Google OAuth
 - [x] Pantalla de registro de cliente
-- [ ] Pantalla de recupero de contraseña
+- [x] Pantalla de recupero de contraseña
 - [x] Layout con sidebar (items: Dashboard, Mis viajes, Perfil)
 - [x] JWT en cookie httpOnly al hacer login
 
@@ -21,11 +21,11 @@ El cliente (PyME) ve un resumen claro de sus gastos en fletes para el período s
 ---
 
 ### F1-1: Selector de período (componente compartido)
-- [ ] Componente `<SelectorPeriodo>` reutilizable en todo el dashboard
-- [ ] Cuatro modos modos: Mensual | Semanal | Todo |Personalizado (date picker de rango)
-- [ ] Guarda el período seleccionado en un hook `usePeriodo` (estado global o context)
-- [ ] Al cambiar el período, todos los componentes que dependen de él se actualizan
-- [ ] Default: mes actual
+- [x] Componente `<SelectorPeriodo>` reutilizable en todo el dashboard
+- [x] Cuatro modos modos: Mensual | Semanal | Todo |Personalizado (date picker de rango)
+- [x] Guarda el período seleccionado en un hook `usePeriodo` (estado global o context)
+- [x] Al cambiar el período, todos los componentes que dependen de él se actualizan
+- [x] Default: mes actual
 
 ---
 
@@ -52,22 +52,22 @@ Todas las cards muestran un skeleton loader mientras cargan.
 Página `/app/(cliente)/viajes/page.tsx`
 
 **Columnas de la tabla:**
-- [ ] Fecha
-- [ ] Origen → Destino
-- [ ] Zona (CABA / PROVINCIA / MIXTO)
+- [x] Fecha
+- [x] Origen → Destino
+- [x] Zona (CABA / PROVINCIA / MIXTO)
 - [ ] Duración real (en minutos, formateado como "1h 20min")
 - [ ] Costo estimado
-- [ ] Costo final
+- [x] Costo final
 - [ ] Ajuste (diferencia entre estimado y final, con color: verde si bajó, rojo si subió)
-- [ ] Estado (badge de color)
-- [ ] Alertas (ícono si el viaje tuvo alguna)
-- [ ] Acción: "Ver detalle"
+- [x] Estado (badge de color)
+- [x] Alertas (ícono si el viaje tuvo alguna)
+- [x] Acción: "Ver detalle"
 
 **Funcionalidades:**
-- [ ] Filtro de período (el mismo `<SelectorPeriodo>`)
+- [x] Filtro de período (el mismo `<SelectorPeriodo>`)
 - [ ] Paginación (no scroll infinito — botones de página)
-- [ ] Ordenamiento por columna: fecha, costo final, duración (click en header)
-- [ ] Filas clickeables que llevan al detalle del viaje
+- [x] Ordenamiento por columna: fecha, costo final, duración (click en header)
+- [x] Filas clickeables que llevan al detalle del viaje
 
 **Endpoint:** `GET /api/viajes?desde=&hasta=&page=&limit=&orderBy=&order=`
 
@@ -77,12 +77,12 @@ Página `/app/(cliente)/viajes/page.tsx`
 Página `/app/(cliente)/viajes/[id]/page.tsx`
 
 **Información a mostrar:**
-- [ ] Fecha y hora del viaje
-- [ ] Tipo de zona
-- [ ] Lista de paradas en orden (con estado PENDIENTE / ENTREGADO y hora de entrega)
-- [ ] Conductor asignado (nombre y calificación)
-- [ ] Costo estimado vs costo final con desglose (precio base + fee de Fleter + ajuste)
-- [ ] Duración real y km reales
+- [x] Fecha y hora del viaje
+- [x] Tipo de zona
+- [ ] Lista de paradas en orden (con estado PENDIENTE / ENTREGADO y hora de entrega) — paradas mostradas en orden pero sin estado ni hora_entrega
+- [ ] Conductor asignado (nombre y calificación) — nombre mostrado, calificación no
+- [x] Costo estimado vs costo final con desglose (precio base + fee de Fleter + ajuste)
+- [ ] Duración real y km reales — duración mostrada si viene, km no
 - [ ] Historial de alertas del viaje (si las hubo): tipo, descripción, hora
 - [ ] Botón "Descargar remito PDF" (si el viaje está ENTREGADO)
 
