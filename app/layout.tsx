@@ -6,6 +6,7 @@ import {
   JetBrains_Mono,
 } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/hooks/useAuth";
 
 const archivoblack = Archivo_Black({
   variable: "--font-archivo-black",
@@ -44,7 +45,9 @@ export default function RootLayout({
       lang="es"
       className={`${archivoblack.variable} ${manrope.variable} ${josefinSans.variable} ${jetbrainsMono.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

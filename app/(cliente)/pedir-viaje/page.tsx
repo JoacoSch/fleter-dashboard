@@ -4,7 +4,6 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 
-type Zona = "CABA" | "PROVINCIA" | "MIXTO";
 type Condicion = "FRAGIL" | "REFRIGERADO" | "CARGA_PESADA" | "PELIGROSO" | "VOLUMINOSO";
 
 interface Parada {
@@ -37,7 +36,6 @@ export default function PedirViajePage() {
   const router = useRouter();
   const nextIdRef = useRef(3);
 
-  const [zona, setZona] = useState<Zona>("CABA");
   const [fecha, setFecha] = useState("");
   const [paradas, setParadas] = useState<Parada[]>([
     { id: 1, direccion: "" },
@@ -82,13 +80,11 @@ export default function PedirViajePage() {
     setLoading(true);
     try {
       const payload = {
-        zona,
+        zona: "CABA",
         fecha_programada: new Date(fecha).toISOString(),
         paradas: paradas.map((p) => ({ lat: 0, lng: 0, direccion: p.direccion.trim() })),
         condiciones_requeridas: Array.from(condiciones),
-        // El backend aún valida estos campos (>0); se envían en 1 hasta que los elimine de la validación
-        ...(zona !== "PROVINCIA" && { tarifa_hora: 1 }),
-        ...(zona !== "CABA" && { tarifa_km: 1 }),
+        tarifa_hora: 1,
       };
       const result = await api.post<ViajeCreado>("/api/viajes", payload);
       setSuccess(result);
@@ -157,35 +153,6 @@ export default function PedirViajePage() {
 
       <form onSubmit={handleSubmit} style={{ maxWidth: 560 }}>
         <div className="card" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-
-          {/* Zona */}
-          <div>
-            <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 8 }}>
-              Zona
-            </label>
-            <div style={{ display: "flex", gap: 8 }}>
-              {(["CABA", "PROVINCIA", "MIXTO"] as Zona[]).map((z) => (
-                <button
-                  key={z}
-                  type="button"
-                  onClick={() => setZona(z)}
-                  style={{
-                    padding: "6px 14px",
-                    borderRadius: "var(--radius-sm)",
-                    border: "1px solid",
-                    borderColor: zona === z ? "var(--accent)" : "var(--line-strong)",
-                    background: zona === z ? "var(--accent-soft)" : "var(--surface)",
-                    color: zona === z ? "var(--accent-ink)" : "var(--ink-2)",
-                    fontSize: 12.5,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
-                >
-                  {z}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Fecha programada */}
           <div>

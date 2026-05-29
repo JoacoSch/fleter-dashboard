@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useAuth, AuthProvider } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { PeriodoProvider } from "@/hooks/usePeriodo";
 import { api } from "@/lib/api";
 import { formatARS, fmtDate } from "@/lib/utils";
@@ -168,10 +168,8 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
 
 export default function ClienteLayout({ children }: { children: ReactNode }) {
   return (
-    <AuthProvider>
-      <PeriodoProvider>
-        <ClienteLayoutInner>{children}</ClienteLayoutInner>
-      </PeriodoProvider>
-    </AuthProvider>
+    <PeriodoProvider>
+      <ClienteLayoutInner>{children}</ClienteLayoutInner>
+    </PeriodoProvider>
   );
 }

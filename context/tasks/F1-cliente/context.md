@@ -3,16 +3,19 @@
 ## Objetivo
 El cliente (PyME) ve un resumen claro de sus gastos en fletes para el período seleccionado, y puede explorar el listado completo de viajes con detalle de cada uno.
 
+## Notas de estado del producto
+- **Google Maps API no integrada aún:** `precio_real`, `duracion_real`, `km_reales`, horas de entrega de paradas son `null` en datos reales. El front muestra "—" en esos campos.
+- **Zona:** la evalúa el backend con Google Maps. El front siempre envía `zona: "CABA"` como placeholder. El selector de zona no existe en la UI.
+
+---
+
 ## Subtareas
 
 ### F1-0: Scaffold y auth (prerequisito)
-- [x] `npx create-next-app@latest fleter-dashboard --typescript --tailwind --app`
-- [x] Estructura de carpetas según `/stack/context.md`
-- [x] Firebase Auth en `/lib/firebase.ts` + hook `useAuth`
-- [x] Middleware de rutas protegidas en `/middleware.ts` (redirige a `/login` sin sesión)
+- [x] Estructura de carpetas + Firebase Auth en `/lib/firebase.ts` + hook `useAuth`
 - [x] Pantalla de login: email/password + Google OAuth
 - [x] Pantalla de registro de cliente
-- [ ] Pantalla de recupero de contraseña
+- [x] Pantalla de recupero de contraseña
 - [x] Layout con sidebar (items: Dashboard, Mis viajes, Perfil)
 - [x] JWT en cookie httpOnly al hacer login
 
@@ -21,30 +24,43 @@ El cliente (PyME) ve un resumen claro de sus gastos en fletes para el período s
 ---
 
 ### F1-1: Selector de período (componente compartido)
-- [ ] Componente `<SelectorPeriodo>` reutilizable en todo el dashboard
-- [ ] Cuatro modos modos: Mensual | Semanal | Todo |Personalizado (date picker de rango)
-- [ ] Guarda el período seleccionado en un hook `usePeriodo` (estado global o context)
-- [ ] Al cambiar el período, todos los componentes que dependen de él se actualizan
-- [ ] Default: mes actual
+- [x] Componente `<SelectorPeriodo>` reutilizable en todo el dashboard
+- [x] Cuatro modos: Mensual | Semanal | Todo | Personalizado (date picker de rango)
+- [x] Hook `usePeriodo` con estado global; expone `queryParams` para armar URLs
+- [x] Al cambiar el período, todos los componentes que dependen de él se actualizan
+- [x] Default: mes actual
 
 ---
 
 ### F1-2: Cards de métricas (vista principal del dashboard)
-Página `/app/(cliente)/page.tsx` — la primera pantalla que ve el cliente al entrar.
+Página `/app/(cliente)/page.tsx`
 
-**Cards a mostrar:**
-- [ ] **Total gastado** en el período (suma de `precio_final` de viajes ENTREGADO)
-- [ ] **Cantidad de fletes** solicitados en el período
-- [ ] **Costo promedio** por flete
-- [ ] **Flete más caro** del período (monto + link al detalle)
-- [ ] **Flete más barato** del período (monto + link al detalle)
-- [ ] **Desglose por zona:** gasto en CABA / PROVINCIA / MIXTO
-- [ ] **Alertas recibidas:** cantidad de desvíos y paradas sospechosas detectadas
-- [ ] **Top 5 destinos frecuentes:** listado con dirección y cantidad de viajes
+#### BFF Route Handler
+El dashboard no llama al backend directamente. Usa un Route Handler en `/app/api/analytics/cliente/resumen/route.ts` que:
+- Recibe `?desde=&hasta=` (omitir = todo)
+- Lee el cookie `token` con `cookies()` de `next/headers`
+- Llama `GET ${API_URL}/api/viajes/mis-viajes` con el token del usuario
+- Procesa en servidor: totales, promedios, por zona, top destinos
+- Devuelve JSON procesado (el front no ve datos crudos)
+- En `NEXT_PUBLIC_MOCK=true`: devuelve fixture hardcodeado
 
-Todas las cards muestran un skeleton loader mientras cargan.
+**Variables de entorno:** ninguna nueva — usa `NEXT_PUBLIC_API_URL` y el cookie `token`.
 
-**Endpoint:** `GET /api/analytics/cliente/resumen?desde=&hasta=`
+**Prewarming:** después de login exitoso, `hooks/useAuth.tsx` hace `fetch('/api/analytics/cliente/resumen').catch(() => {})` fire-and-forget para despertar la función serverless antes de que el usuario llegue al dashboard.
+
+#### Cards a mostrar
+- [x] **Total gastado** en el período (suma `precio_real` de ENTREGADO; "Sin viajes completados" si 0)
+- [x] **Cantidad de fletes** solicitados en el período
+- [x] **Costo promedio** por flete (null → "—")
+- [x] **Flete más caro** del período (monto + link al detalle; null → "—")
+- [x] **Flete más barato** del período (monto + link al detalle; null → "—")
+- [x] **Desglose por zona:** conteo CABA / PROVINCIA / MIXTO (no montos, precio_real puede ser null)
+- [x] **Alertas recibidas:** conteo total
+- [x] **Top 5 destinos frecuentes:** listado con dirección y count
+- [x] Skeleton loaders por card mientras carga
+- [x] Re-fetch automático al cambiar período
+
+**Endpoint BFF:** `GET /api/analytics/cliente/resumen?desde=&hasta=`
 
 ---
 
@@ -52,24 +68,24 @@ Todas las cards muestran un skeleton loader mientras cargan.
 Página `/app/(cliente)/viajes/page.tsx`
 
 **Columnas de la tabla:**
-- [ ] Fecha
-- [ ] Origen → Destino
-- [ ] Zona (CABA / PROVINCIA / MIXTO)
-- [ ] Duración real (en minutos, formateado como "1h 20min")
-- [ ] Costo estimado
-- [ ] Costo final
-- [ ] Ajuste (diferencia entre estimado y final, con color: verde si bajó, rojo si subió)
-- [ ] Estado (badge de color)
-- [ ] Alertas (ícono si el viaje tuvo alguna)
-- [ ] Acción: "Ver detalle"
+- [x] Fecha
+- [x] Origen → Destino
+- [x] Zona (CABA / PROVINCIA / MIXTO)
+- [x] Estado (badge de color)
+- [x] Duración real (formateado "1h 20min"; "—" si null)
+- [x] Costo estimado
+- [x] Costo final ("—" si null)
+- [x] Ajuste (diferencia estimado vs final; verde si bajó, rojo si subió; "—" si sin precio_real)
+- [x] Alertas (badge con count si > 0)
+- [x] Acción: flecha →
 
 **Funcionalidades:**
-- [ ] Filtro de período (el mismo `<SelectorPeriodo>`)
-- [ ] Paginación (no scroll infinito — botones de página)
-- [ ] Ordenamiento por columna: fecha, costo final, duración (click en header)
-- [ ] Filas clickeables que llevan al detalle del viaje
+- [x] Filtro de período (`<SelectorPeriodo>`)
+- [x] Paginación cliente-side (7 por página, botones Anterior / Siguiente)
+- [x] Ordenamiento por columna: fecha, costo final, duración (click en header)
+- [x] Filas clickeables que llevan al detalle del viaje
 
-**Endpoint:** `GET /api/viajes?desde=&hasta=&page=&limit=&orderBy=&order=`
+**Endpoint:** `GET /api/viajes/mis-viajes`
 
 ---
 
@@ -77,14 +93,14 @@ Página `/app/(cliente)/viajes/page.tsx`
 Página `/app/(cliente)/viajes/[id]/page.tsx`
 
 **Información a mostrar:**
-- [ ] Fecha y hora del viaje
-- [ ] Tipo de zona
-- [ ] Lista de paradas en orden (con estado PENDIENTE / ENTREGADO y hora de entrega)
-- [ ] Conductor asignado (nombre y calificación)
-- [ ] Costo estimado vs costo final con desglose (precio base + fee de Fleter + ajuste)
-- [ ] Duración real y km reales
-- [ ] Historial de alertas del viaje (si las hubo): tipo, descripción, hora
-- [ ] Botón "Descargar remito PDF" (si el viaje está ENTREGADO)
+- [x] Fecha y hora del viaje
+- [x] Tipo de zona
+- [x] Lista de paradas en orden con estado (PENDIENTE / ENTREGADO) y hora_entrega si disponible
+- [x] Conductor asignado (nombre + calificación ★ si existe)
+- [x] Costo estimado vs costo final con ajuste
+- [x] Duración real y km reales ("—" mientras Google Maps no está integrada)
+- [x] Historial de alertas del viaje (tarjeta aparece solo si `alertas[]` no vacío)
+- [x] Botón "Descargar remito PDF" si estado === ENTREGADO (`GET /api/viajes/:id/remito`)
 
 **Endpoint:** `GET /api/viajes/:id`
 
@@ -93,22 +109,25 @@ Página `/app/(cliente)/viajes/[id]/page.tsx`
 ### F1-5: Perfil del cliente
 Página `/app/(cliente)/perfil/page.tsx`
 
-- [ ] Mostrar datos actuales: nombre, apellido, email, empresa, CUIT, dirección
-- [ ] Formulario de edición inline (click en editar → campos habilitados)
-- [ ] Guardar cambios
+- [x] Mostrar datos: nombre, apellido, DNI, teléfono, email, empresa, CUIT, dirección
+- [x] Botón "Editar" → campos habilitados (DNI y email son readonly)
+- [x] Guardar cambios con feedback de loading/error
+- [x] Cancelar → restaura valores sin llamada al backend
 
-**Endpoints:** `GET /api/perfil`, `PUT /api/perfil`
+**Endpoints:** `GET /api/auth/me`, `PUT /api/auth/perfil`
 
 ---
 
 ## Criterio de completitud de F1
-- El cliente puede loguearse y ver el dashboard con sus métricas
-- Puede cambiar el período y todos los números se actualizan
-- Puede ver la tabla de viajes, ordenarla y paginarla
-- Puede entrar al detalle de cualquier viaje
-- Las cards muestran skeleton mientras cargan (no pantalla en blanco)
+- [x] El cliente puede loguearse y ver el dashboard con sus métricas
+- [x] Puede cambiar el período y todos los números se actualizan
+- [x] Puede ver la tabla de viajes, ordenarla y paginarla
+- [x] Puede entrar al detalle de cualquier viaje
+- [x] Las cards muestran skeleton mientras cargan (no pantalla en blanco)
+- [x] Puede editar sus datos de perfil
 
 ## Archivos relevantes para esta fase
-- `/stack/context.md`
-- `/api-contracts/context.md` → secciones Auth, Perfil, Analytics Cliente
-- `/model/context.md` → entidades Viaje, Parada, Transacción
+- `/context/context.md`
+- `/context/analitics/context.md` → patrón BFF (ya colapsado en F1-2 arriba)
+- `/context/api-contracts/context.md` → secciones Auth, Perfil, Viajes
+- `/context/model/context.md` → entidades Viaje, Parada, Transacción
