@@ -525,7 +525,7 @@ html {
   .trip-row--header,
   .skeleton-row {
     display: grid;
-    grid-template-columns: 92px 2fr 80px 76px 130px 96px 36px 24px;
+    grid-template-columns: 92px 2fr 76px 116px 72px 84px 84px 76px 32px 24px;
     gap: 12px;
     padding: 12px 16px;
     align-items: center;

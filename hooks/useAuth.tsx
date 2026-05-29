@@ -139,6 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (MOCK) {
       document.cookie = "token=mock; path=/; max-age=3600";
       setState({ user: null, profile: MOCK_PROFILE, role: MOCK_ROLE, loading: false });
+      fetch("/api/analytics/cliente/resumen").catch(() => {});
       return MOCK_ROLE;
     }
     const cred = await signInWithEmailAndPassword(getFirebaseAuth(), email, password);
@@ -147,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await setCookieToken(token);
     const profile = await fetchProfile();
     setState({ user: cred.user, profile, role: profile.rol, loading: false });
+    fetch("/api/analytics/cliente/resumen").catch(() => {});
     return profile.rol;
   }, []);
 
@@ -154,6 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (MOCK) {
       document.cookie = "token=mock; path=/; max-age=3600";
       setState({ user: null, profile: MOCK_PROFILE, role: MOCK_ROLE, loading: false });
+      fetch("/api/analytics/cliente/resumen").catch(() => {});
       return MOCK_ROLE;
     }
     const provider = new GoogleAuthProvider();
@@ -163,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await setCookieToken(token);
     const profile = await fetchProfile();
     setState({ user: cred.user, profile, role: profile.rol, loading: false });
+    fetch("/api/analytics/cliente/resumen").catch(() => {});
     return profile.rol;
   }, []);
 
