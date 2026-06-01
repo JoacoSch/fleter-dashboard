@@ -7,7 +7,7 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
-import { APIProvider } from "@vis.gl/react-google-maps";
+import GoogleMapsProvider from "@/components/GoogleMapsProvider";
 
 const archivoblack = Archivo_Black({
   variable: "--font-archivo-black",
@@ -47,9 +47,9 @@ export default function RootLayout({
       className={`${archivoblack.variable} ${manrope.variable} ${josefinSans.variable} ${jetbrainsMono.variable}`}
     >
       <body>
-        <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY!}>
+        <GoogleMapsProvider>
           <AuthProvider>{children}</AuthProvider>
-        </APIProvider>
+        </GoogleMapsProvider>
       </body>
     </html>
   );
