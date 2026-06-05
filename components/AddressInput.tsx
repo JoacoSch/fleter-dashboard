@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import usePlacesAutocomplete, { getGeocode, getLatLng } from "use-places-autocomplete";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useMapsLibrary } from "@vis.gl/react-google-maps";
 
 interface AddressInputProps {
   placeholder: string;
@@ -25,45 +25,65 @@ const inputStyle: React.CSSProperties = {
 };
 
 export default function AddressInput({ placeholder, value, onChange, onSelect, onClear }: AddressInputProps) {
+  const placesLib = useMapsLibrary("places");
+  const ready = placesLib !== null;
+
+  const [inputValue, setInputValue] = useState(value);
+  const [suggestions, setSuggestions] = useState<google.maps.places.PlacePrediction[]>([]);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const {
-    ready,
-    value: inputValue,
-    suggestions: { status, data },
-    setValue,
-    clearSuggestions,
-  } = usePlacesAutocomplete({
-    requestOptions: {
-      componentRestrictions: { country: "ar" },
-      language: "es",
-    },
-    debounce: 300,
-    defaultValue: value,
-  });
-
-  // Sync external value changes (e.g. reset after adding stop)
+  // Sync external value resets (e.g. after adding a stop)
   useEffect(() => {
-    if (value !== inputValue) setValue(value, false);
+    if (value !== inputValue) setInputValue(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
+  const fetchSuggestions = useCallback(
+    async (text: string) => {
+      if (!ready || !text.trim()) {
+        setSuggestions([]);
+        return;
+      }
+      try {
+        const { suggestions: results } =
+          await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+            input: text,
+            includedRegionCodes: ["ar"],
+          });
+        setSuggestions(results.map((s) => s.placePrediction!));
+      } catch {
+        setSuggestions([]);
+      }
+    },
+    [ready]
+  );
+
   function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
     const text = e.target.value;
-    setValue(text);
+    setInputValue(text);
     onChange(text);
-    if (!text) onClear();
+    if (!text) {
+      setSuggestions([]);
+      onClear();
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => fetchSuggestions(text), 300);
   }
 
-  async function handleSelect(description: string) {
-    setValue(description, false);
-    clearSuggestions();
+  async function handleSelect(prediction: google.maps.places.PlacePrediction) {
+    const text = prediction.text.toString();
+    setInputValue(text);
+    setSuggestions([]);
     try {
-      const results = await getGeocode({ address: description });
-      const { lat, lng } = await getLatLng(results[0]);
-      onSelect({ address: description, lat, lng });
+      const place = prediction.toPlace();
+      await place.fetchFields({ fields: ["location", "displayName"] });
+      const lat = place.location!.lat();
+      const lng = place.location!.lng();
+      onSelect({ address: text, lat, lng });
     } catch {
-      // geocode failed — keep text but don't update coords
+      // fetchFields failed — keep text but don't update coords
     }
   }
 
@@ -71,12 +91,12 @@ export default function AddressInput({ placeholder, value, onChange, onSelect, o
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        clearSuggestions();
+        setSuggestions([]);
       }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, [clearSuggestions]);
+  }, []);
 
   return (
     <div ref={containerRef} style={{ position: "relative", flex: 1 }}>
@@ -89,7 +109,7 @@ export default function AddressInput({ placeholder, value, onChange, onSelect, o
         style={inputStyle}
         autoComplete="off"
       />
-      {status === "OK" && data.length > 0 && (
+      {suggestions.length > 0 && (
         <ul
           style={{
             position: "absolute",
@@ -107,27 +127,31 @@ export default function AddressInput({ placeholder, value, onChange, onSelect, o
             overflow: "hidden",
           }}
         >
-          {data.map(({ place_id, description }: { place_id: string; description: string }) => (
-            <li
-              key={place_id}
-              onMouseDown={() => handleSelect(description)}
-              style={{
-                padding: "8px 12px",
-                fontSize: 13,
-                fontFamily: "var(--font-ui)",
-                color: "var(--ink)",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "var(--surface-2, #f5f5f5)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "";
-              }}
-            >
-              {description}
-            </li>
-          ))}
+          {suggestions.map((prediction) => {
+            const key = prediction.placeId;
+            const label = prediction.text.toString();
+            return (
+              <li
+                key={key}
+                onMouseDown={() => handleSelect(prediction)}
+                style={{
+                  padding: "8px 12px",
+                  fontSize: 13,
+                  fontFamily: "var(--font-ui)",
+                  color: "var(--ink)",
+                  cursor: "pointer",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "var(--surface-2, #f5f5f5)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "";
+                }}
+              >
+                {label}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

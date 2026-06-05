@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 export default function GoogleMapsProvider({ children }: { children: ReactNode }) {
   return (
-    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY!}>
+    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY!} version="beta">
       {children}
     </APIProvider>
   );
