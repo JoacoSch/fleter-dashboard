@@ -3,12 +3,15 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import AddressInput from "@/components/AddressInput";
 
 type Condicion = "FRAGIL" | "REFRIGERADO" | "CARGA_PESADA" | "PELIGROSO" | "VOLUMINOSO";
 
 interface Parada {
   id: number;
   direccion: string;
+  lat: number | null;
+  lng: number | null;
 }
 
 interface ViajeCreado {
@@ -38,8 +41,8 @@ export default function PedirViajePage() {
 
   const [fecha, setFecha] = useState("");
   const [paradas, setParadas] = useState<Parada[]>([
-    { id: 1, direccion: "" },
-    { id: 2, direccion: "" },
+    { id: 1, direccion: "", lat: null, lng: null },
+    { id: 2, direccion: "", lat: null, lng: null },
   ]);
   const [condiciones, setCondiciones] = useState<Set<Condicion>>(new Set());
   const [loading, setLoading] = useState(false);
@@ -49,15 +52,23 @@ export default function PedirViajePage() {
   function agregarParada() {
     const destino = paradas[paradas.length - 1];
     const intermedias = paradas.slice(0, -1);
-    setParadas([...intermedias, { id: nextIdRef.current++, direccion: "" }, destino]);
+    setParadas([...intermedias, { id: nextIdRef.current++, direccion: "", lat: null, lng: null }, destino]);
   }
 
   function borrarParada(id: number) {
     setParadas((prev) => prev.filter((p) => p.id !== id));
   }
 
-  function actualizarDireccion(id: number, value: string) {
-    setParadas((prev) => prev.map((p) => (p.id === id ? { ...p, direccion: value } : p)));
+  function actualizarTexto(id: number, text: string) {
+    setParadas((prev) => prev.map((p) => (p.id === id ? { ...p, direccion: text, lat: null, lng: null } : p)));
+  }
+
+  function actualizarCoords(id: number, address: string, lat: number, lng: number) {
+    setParadas((prev) => prev.map((p) => (p.id === id ? { ...p, direccion: address, lat, lng } : p)));
+  }
+
+  function limpiarCoords(id: number) {
+    setParadas((prev) => prev.map((p) => (p.id === id ? { ...p, lat: null, lng: null } : p)));
   }
 
   function toggleCondicion(c: Condicion) {
@@ -82,7 +93,7 @@ export default function PedirViajePage() {
       const payload = {
         zona: "CABA",
         fecha_programada: new Date(fecha).toISOString(),
-        paradas: paradas.map((p) => ({ lat: 0, lng: 0, direccion: p.direccion.trim() })),
+        paradas: paradas.map((p) => ({ lat: p.lat!, lng: p.lng!, direccion: p.direccion.trim() })),
         condiciones_requeridas: Array.from(condiciones),
         tarifa_hora: 1,
       };
@@ -143,6 +154,8 @@ export default function PedirViajePage() {
       </div>
     );
   }
+
+  const coordsCompletas = paradas.every((p) => p.lat !== null && p.lng !== null);
 
   return (
     <div>
@@ -225,23 +238,13 @@ export default function PedirViajePage() {
                         flexShrink: 0,
                       }} />
 
-                      {/* Input */}
-                      <input
-                        type="text"
+                      {/* AddressInput con autocomplete */}
+                      <AddressInput
                         placeholder={isOrigen ? "Origen" : isDestino ? "Destino" : `Parada ${idx}`}
                         value={parada.direccion}
-                        onChange={(e) => actualizarDireccion(parada.id, e.target.value)}
-                        required
-                        style={{
-                          flex: 1,
-                          padding: "8px 10px",
-                          borderRadius: "var(--radius-sm)",
-                          border: "1px solid var(--line-strong)",
-                          background: "var(--surface)",
-                          color: "var(--ink)",
-                          fontSize: 13,
-                          fontFamily: "var(--font-ui)",
-                        }}
+                        onChange={(text) => actualizarTexto(parada.id, text)}
+                        onSelect={({ address, lat, lng }) => actualizarCoords(parada.id, address, lat, lng)}
+                        onClear={() => limpiarCoords(parada.id)}
                       />
 
                       {/* Botón borrar (solo intermedias) */}
@@ -328,8 +331,8 @@ export default function PedirViajePage() {
             <button
               type="submit"
               className="btn btn--primary"
-              disabled={loading}
-              style={{ width: "100%", justifyContent: "center", opacity: loading ? 0.7 : 1 }}
+              disabled={loading || !coordsCompletas}
+              style={{ width: "100%", justifyContent: "center", opacity: loading || !coordsCompletas ? 0.5 : 1 }}
             >
               {loading ? "Enviando..." : "Confirmar viaje"}
             </button>

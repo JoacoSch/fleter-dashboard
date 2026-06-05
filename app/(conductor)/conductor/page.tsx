@@ -49,12 +49,13 @@ function fmtARS(n: number) {
 export default function ConductorPage() {
   const [viajes, setViajes] = useState<ViajeDisponible[]>([]);
   const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [aceptando, setAceptando] = useState<number | null>(null);
   const [asignado, setAsignado] = useState<ViajeAsignado | null>(null);
   const [yaAsignado, setYaAsignado] = useState<number | null>(null);
 
   const { loading: authLoading } = useAuth();
-  const { socket } = useSocket();
+  const { socket, connected } = useSocket();
   const socketRef = useRef(socket);
   const aceptandoRef = useRef<number | null>(null);
   const yaAsignadoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -72,7 +73,10 @@ export default function ConductorPage() {
     if (authLoading) return;
     api.get<ViajeDisponible[]>("/api/viajes/disponibles")
       .then(setViajes)
-      .catch(() => setViajes([]))
+      .catch((err: Error) => {
+        setApiError(err.message);
+        setViajes([]);
+      })
       .finally(() => setLoading(false));
   }, [authLoading]);
 
@@ -183,7 +187,18 @@ export default function ConductorPage() {
             ? "No hay viajes disponibles en este momento."
             : `${viajes.length} viaje${viajes.length !== 1 ? "s" : ""} esperando conductor`}
         </p>
+        {!MOCK && (
+          <p style={{ fontSize: 11.5, marginTop: 4, color: connected ? "var(--ok, #16a34a)" : "var(--ink-3)" }}>
+            {connected ? "● Conectado en tiempo real" : "○ Conectando..."}
+          </p>
+        )}
       </div>
+
+      {apiError && (
+        <div style={{ padding: "12px 16px", borderRadius: "var(--radius-sm)", background: "var(--err-soft)", borderLeft: "3px solid var(--err)", marginBottom: 16 }}>
+          <p style={{ fontSize: 13, color: "var(--err)" }}>Error al cargar viajes: {apiError}</p>
+        </div>
+      )}
 
       {yaAsignado && (
         <div style={{
