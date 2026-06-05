@@ -50,6 +50,7 @@ export default function AddressInput({ placeholder, value, onChange, onSelect, o
           await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
             input: text,
             includedRegionCodes: ["ar"],
+            locationBias: { south: -34.706, north: -34.527, west: -58.532, east: -58.335 },
           });
         setSuggestions(results.map((s) => s.placePrediction!));
       } catch {
