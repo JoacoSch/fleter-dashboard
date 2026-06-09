@@ -16,15 +16,25 @@ interface RecentViaje {
   precio_estimado: number;
   fecha_programada: string;
   creado_en: string;
+  estado: string;
   paradas: { orden: number; direccion: string }[];
 }
 
-const navItems = [
-  { href: "/",             label: "Analytics",    Icon: BarChart2,     suffix: undefined, disabled: false },
-  { href: "/viajes",       label: "Record",       Icon: ClipboardList, suffix: undefined, disabled: false },
-  { href: "/viaje-activo", label: "Viaje activo", Icon: Truck,         suffix: "Próx.",   disabled: true },
-  { href: "/facturacion",  label: "Facturación",  Icon: FileText,      suffix: "Próx.",   disabled: true },
-];
+const ACTIVE_ESTADOS = new Set([
+  "CONDUCTOR_ASIGNADO",
+  "EN_CAMINO_A_ORIGEN",
+  "EN_RUTA",
+  "CARGANDO",
+  "DESCARGANDO",
+]);
+
+const ACTIVE_ESTADO_LABELS: Record<string, string> = {
+  CONDUCTOR_ASIGNADO: "Conductor asignado",
+  EN_CAMINO_A_ORIGEN: "En camino al origen",
+  EN_RUTA: "En ruta",
+  CARGANDO: "Cargando mercadería",
+  DESCARGANDO: "Descargando",
+};
 
 function ClienteLayoutInner({ children }: { children: ReactNode }) {
   const { profile, loading, logout } = useAuth();
@@ -33,6 +43,7 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
 
   const [recentViajes, setRecentViajes] = useState<RecentViaje[]>([]);
   const [totalViajes, setTotalViajes] = useState(0);
+  const [activeViajes, setActiveViajes] = useState<RecentViaje[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -56,6 +67,8 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
     api.get<RecentViaje[]>("/api/viajes/mis-viajes")
       .then((data) => {
         setTotalViajes(data.length);
+        const active = data.filter((v) => ACTIVE_ESTADOS.has(v.estado));
+        setActiveViajes(active);
         const sorted = [...data].sort((a, b) => {
           const da = new Date(a.fecha_programada ?? a.creado_en).getTime();
           const db = new Date(b.fecha_programada ?? b.creado_en).getTime();
@@ -90,12 +103,25 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
 
         {/* Nav */}
         <nav className="sidebar__nav">
-          {navItems.map(({ href, label, Icon, suffix, disabled }) => {
-            const isActive = pathname === href;
+          {[
+            { href: "/",            label: "Analytics",    Icon: BarChart2,     suffix: undefined as string | undefined, disabled: false },
+            { href: "/viajes",      label: "Record",       Icon: ClipboardList, suffix: undefined as string | undefined, disabled: false },
+            {
+              href: activeViajes.length === 1
+                ? `/viaje-activo?id=${activeViajes[0].id_viaje}`
+                : "/viaje-activo",
+              label: "Viaje activo",
+              Icon: Truck,
+              suffix: activeViajes.length === 0 ? "Próx." as string | undefined : undefined,
+              disabled: activeViajes.length === 0,
+            },
+            { href: "/facturacion", label: "Facturación",  Icon: FileText,      suffix: "Próx." as string | undefined,   disabled: true },
+          ].map(({ href, label, Icon, suffix, disabled }) => {
+            const isActive = pathname === href || (label === "Viaje activo" && pathname === "/viaje-activo");
             const showBadge = href === "/viajes" && totalViajes > 0;
             if (disabled) {
               return (
-                <span key={href} className="nav-item nav-item--disabled">
+                <span key={label} className="nav-item nav-item--disabled">
                   <Icon size={16} className="nav-item__icon" />
                   <span className="nav-item__label">{label}</span>
                   <span className="nav-item__suffix">{suffix}</span>
@@ -103,10 +129,13 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
               );
             }
             return (
-              <Link key={href} href={href} className={`nav-item${isActive ? " is-active" : ""}`}>
+              <Link key={label} href={href} className={`nav-item${isActive ? " is-active" : ""}`}>
                 <Icon size={16} className="nav-item__icon" />
                 <span className="nav-item__label">{label}</span>
                 {showBadge && <span className="nav-item__badge">{totalViajes}</span>}
+                {label === "Viaje activo" && activeViajes.length > 0 && (
+                  <span className="nav-item__live-dot" />
+                )}
                 {suffix && !showBadge && <span className="nav-item__suffix">{suffix}</span>}
               </Link>
             );
@@ -181,6 +210,33 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
             {loading ? "Cargando..." : (profile.empresa ?? "")}
           </p>
         </header>
+        {activeViajes.length > 0 && (
+          <Link
+            href={
+              activeViajes.length === 1
+                ? `/viaje-activo?id=${activeViajes[0].id_viaje}`
+                : "/viaje-activo"
+            }
+            className="active-trip-banner"
+          >
+            <span className="active-trip-banner__dot" />
+            <span className="active-trip-banner__text">
+              {activeViajes.length === 1 ? (
+                <>
+                  <strong>Viaje en curso</strong>
+                  {" · "}
+                  {ACTIVE_ESTADO_LABELS[activeViajes[0].estado] ?? activeViajes[0].estado.replace(/_/g, " ")}
+                  {activeViajes[0].paradas.length > 0 && (
+                    <> · Destino: {activeViajes[0].paradas.reduce((m, p) => p.orden > m.orden ? p : m, activeViajes[0].paradas[0]).direccion}</>
+                  )}
+                </>
+              ) : (
+                <><strong>{activeViajes.length} viajes en curso</strong> · Hacé click para verlos</>
+              )}
+            </span>
+            <span className="active-trip-banner__cta">Ver seguimiento →</span>
+          </Link>
+        )}
         <main className="content">
           {children}
         </main>
