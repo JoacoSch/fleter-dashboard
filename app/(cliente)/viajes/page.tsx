@@ -24,11 +24,9 @@ const ESTADO_CSS: Record<string, string> = {
 };
 
 type SortKey = "fecha" | "precio_real" | "duracion_real";
+type FilterKey = "TODOS" | "ENTREGADO" | "CANCELADO" | "CON_ALERTAS";
 
-interface Parada {
-  orden: number;
-  direccion: string;
-}
+interface Parada { orden: number; direccion: string; }
 
 interface MisViajesItem {
   id_viaje: number;
@@ -45,6 +43,25 @@ interface MisViajesItem {
 }
 
 const PAGE_SIZE = 7;
+
+const FILTER_CHIPS: { key: FilterKey; label: string }[] = [
+  { key: "TODOS",       label: "Todos" },
+  { key: "ENTREGADO",   label: "Entregados" },
+  { key: "CANCELADO",   label: "Cancelados" },
+  { key: "CON_ALERTAS", label: "Con alertas" },
+];
+
+const COLS: { label: string; sortable?: SortKey }[] = [
+  { label: "Fecha",    sortable: "fecha" },
+  { label: "Ruta" },
+  { label: "ID" },
+  { label: "Zona" },
+  { label: "Estado" },
+  { label: "Duración", sortable: "duracion_real" },
+  { label: "Precio",   sortable: "precio_real" },
+  { label: "!" },
+  { label: "" },
+];
 
 function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; sortDir: "asc" | "desc" }) {
   const active = col === sortKey;
@@ -65,6 +82,8 @@ export default function ViajesPage() {
   const [sortKey, setSortKey] = useState<SortKey>("fecha");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<FilterKey>("TODOS");
 
   async function fetchViajes() {
     setLoading(true);
@@ -79,26 +98,38 @@ export default function ViajesPage() {
     }
   }
 
-  useEffect(() => {
-    fetchViajes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Reset page when period or sort changes
-  useEffect(() => { setPage(1); }, [periodo, sortKey, sortDir]);
+  useEffect(() => { fetchViajes(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setPage(1); }, [periodo, sortKey, sortDir, filter, search]);
 
   const filtered = useMemo(() => {
-    if (periodo.mode === "todo") return rawViajes;
-    return rawViajes.filter((v) => {
-      const d = new Date(v.fecha_programada ?? v.creado_en);
-      return d >= periodo.desde && d <= periodo.hasta;
-    });
-  }, [rawViajes, periodo]);
+    let items = rawViajes;
+    if (periodo.mode !== "todo") {
+      items = items.filter((v) => {
+        const d = new Date(v.fecha_programada ?? v.creado_en);
+        return d >= periodo.desde && d <= periodo.hasta;
+      });
+    }
+    if (filter === "ENTREGADO") items = items.filter((v) => v.estado === "ENTREGADO");
+    else if (filter === "CANCELADO") items = items.filter((v) => v.estado === "CANCELADO");
+    else if (filter === "CON_ALERTAS") items = items.filter((v) => (v.alertas_count ?? 0) > 0);
+    if (search) {
+      const q = search.toLowerCase();
+      items = items.filter((v) => {
+        const origen = v.paradas.find((p) => p.orden === 1)?.direccion ?? "";
+        const destino = v.paradas.reduce((max, p) => (p.orden > max.orden ? p : max), v.paradas[0])?.direccion ?? "";
+        return (
+          origen.toLowerCase().includes(q) ||
+          destino.toLowerCase().includes(q) ||
+          `vj-${v.id_viaje}`.includes(q.replace("vj-", "").replace("vj", ""))
+        );
+      });
+    }
+    return items;
+  }, [rawViajes, periodo, filter, search]);
 
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
-      let va: number | null = null;
-      let vb: number | null = null;
+      let va: number | null = null, vb: number | null = null;
       if (sortKey === "fecha") {
         va = new Date(a.fecha_programada ?? a.creado_en).getTime();
         vb = new Date(b.fecha_programada ?? b.creado_en).getTime();
@@ -120,32 +151,15 @@ export default function ViajesPage() {
   const pageItems = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   function handleSort(key: SortKey) {
-    if (sortKey === key) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortKey(key);
-      setSortDir("desc");
-    }
+    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortKey(key); setSortDir("desc"); }
   }
-
-  const COLS: { label: string; sortable?: SortKey }[] = [
-    { label: "Fecha", sortable: "fecha" },
-    { label: "Ruta" },
-    { label: "Zona" },
-    { label: "Estado" },
-    { label: "Duración", sortable: "duracion_real" },
-    { label: "Estimado" },
-    { label: "Final", sortable: "precio_real" },
-    { label: "Ajuste" },
-    { label: "!" },
-    { label: "" },
-  ];
 
   return (
     <div>
-      <div className="section-header" style={{ marginBottom: 20, display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+      <div className="section-header">
         <div>
-          <h2>Mis viajes</h2>
+          <h2>Record</h2>
           <p>
             {!loading && !error
               ? `${filtered.length} ${filtered.length === 1 ? "viaje" : "viajes"} en el período`
@@ -154,12 +168,36 @@ export default function ViajesPage() {
         </div>
       </div>
 
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 12 }}>
         <SelectorPeriodo />
       </div>
 
+      {/* Toolbar: search + filter chips */}
+      <div className="toolbar">
+        <div className="search-input">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ color: "var(--ink-3)", flexShrink: 0 }}>
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            placeholder="Buscar por dirección o ID de viaje…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        {FILTER_CHIPS.map((c) => (
+          <button
+            key={c.key}
+            className={`chip${filter === c.key ? " is-active" : ""}`}
+            onClick={() => setFilter(c.key)}
+            type="button"
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+
       {error && (
-        <div className="card" style={{ color: "var(--err)", display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+        <div className="error-banner error-banner--row">
           <span>{error}</span>
           <button className="btn" onClick={fetchViajes} type="button">Reintentar</button>
         </div>
@@ -180,111 +218,83 @@ export default function ViajesPage() {
           ))}
         </div>
 
-        {/* Loading skeletons */}
-        {loading &&
-          Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="skeleton-row">
-              {Array.from({ length: 10 }).map((_, j) => (
-                <div key={j} className="skeleton-cell" />
-              ))}
-            </div>
-          ))}
+        {/* Loading */}
+        {loading && Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="skeleton-row">
+            {Array.from({ length: 9 }).map((_, j) => <div key={j} className="skeleton-cell" />)}
+          </div>
+        ))}
 
-        {/* Empty state */}
+        {/* Empty */}
         {!loading && !error && filtered.length === 0 && (
-          <div className="trips-empty">Sin viajes en este período.</div>
+          <div className="trips-empty">Sin viajes que coincidan con los filtros.</div>
         )}
 
         {/* Rows */}
-        {!loading &&
-          pageItems.map((v) => {
-            const origen = v.paradas.find((p) => p.orden === 1)?.direccion ?? "—";
-            const destino =
-              v.paradas.reduce((max, p) => (p.orden > max.orden ? p : max), v.paradas[0])?.direccion ?? "—";
-            const isoStr = v.fecha_programada ?? v.creado_en;
-            const estadoCss = ESTADO_CSS[v.estado] ?? v.estado;
-            const estadoLabel = ESTADO_LABEL[v.estado] ?? v.estado;
-            const ajuste = v.precio_real != null ? v.precio_real - v.precio_estimado : null;
+        {!loading && pageItems.map((v) => {
+          const origen = v.paradas.find((p) => p.orden === 1)?.direccion ?? "—";
+          const destino = v.paradas.reduce((max, p) => (p.orden > max.orden ? p : max), v.paradas[0])?.direccion ?? "—";
+          const isoStr = v.fecha_programada ?? v.creado_en;
+          const estadoCss = ESTADO_CSS[v.estado] ?? v.estado;
+          const estadoLabel = ESTADO_LABEL[v.estado] ?? v.estado;
 
-            return (
-              <div key={v.id_viaje} className="trip-row" onClick={() => router.push(`/viajes/${v.id_viaje}`)}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <span className="trip-row__date">{fmtDate(isoStr)}</span>
-                  <span className="trip-row__time">{fmtTime(isoStr)}</span>
-                </div>
-
-                <div className="trip-row__route">
-                  <span className="trip-row__route-origin">{origen}</span>
-                  <span className="trip-row__route-dest">{destino}</span>
-                </div>
-
-                <span className={`zone-tag ${v.zona}`}>{v.zona}</span>
-
-                <span className={`status ${estadoCss}`}>{estadoLabel}</span>
-
-                <span style={{ fontSize: 12.5, color: v.duracion_real ? "var(--ink)" : "var(--ink-4)" }}>
-                  {formatDuracion(v.duracion_real)}
-                </span>
-
-                <span className="trip-row__price">
-                  {formatARS(v.precio_estimado)}
-                </span>
-
-                <span className={`trip-row__price${v.precio_real == null ? " trip-row__price--null" : ""}`}>
-                  {v.precio_real != null ? formatARS(v.precio_real) : "—"}
-                </span>
-
-                <span
-                  className={`trip-row__ajuste${
-                    ajuste == null
-                      ? " trip-row__ajuste--null"
-                      : ajuste < 0
-                      ? " trip-row__ajuste--lower"
-                      : ajuste > 0
-                      ? " trip-row__ajuste--higher"
-                      : " trip-row__ajuste--equal"
-                  }`}
-                >
-                  {ajuste == null
-                    ? "—"
-                    : ajuste === 0
-                    ? "="
-                    : `${ajuste > 0 ? "+" : ""}${formatARS(ajuste)}`}
-                </span>
-
-                <span>
-                  {v.alertas_count != null && v.alertas_count > 0 ? (
-                    <span className="trip-row__alert-badge">{v.alertas_count}</span>
-                  ) : null}
-                </span>
-
-                <span className="trip-row__chevron">›</span>
+          return (
+            <div key={v.id_viaje} className="trip-row" onClick={() => router.push(`/viajes/${v.id_viaje}`)}>
+              <div>
+                <div className="trip-row__date">{fmtDate(isoStr)}<small>{fmtTime(isoStr)}</small></div>
               </div>
-            );
-          })}
+              <div className="trip-row__route">
+                <div className="trip-row__route-origin">{origen}</div>
+                <div className="trip-row__route-dest">{destino}</div>
+              </div>
+              <div className="trip-row__id">VJ-{v.id_viaje}</div>
+              <span className={`zone-tag ${v.zona}`}>{v.zona}</span>
+              <span className={`status ${estadoCss}`}>{estadoLabel}</span>
+              <span style={{ fontSize: 12.5, color: v.duracion_real ? "var(--ink)" : "var(--ink-4)" }}>
+                {formatDuracion(v.duracion_real)}
+              </span>
+              <span className={`trip-row__price${v.precio_real == null ? " trip-row__price--null" : ""}`}>
+                {v.precio_real != null ? formatARS(v.precio_real) : v.estado === "ENTREGADO" ? "—" : formatARS(v.precio_estimado)}
+              </span>
+              <span>
+                {(v.alertas_count ?? 0) > 0
+                  ? <span className="trip-row__alert-badge">{v.alertas_count}</span>
+                  : null}
+              </span>
+              <span className="trip-row__chevron">›</span>
+            </div>
+          );
+        })}
       </div>
 
       {/* Paginación */}
       {!loading && totalPages > 1 && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 16 }}>
+        <div className="pagination">
           <button
-            className="btn"
+            className="pagination__page"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
             type="button"
           >
-            ← Anterior
+            ←
           </button>
-          <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
-            Página {page} de {totalPages}
-          </span>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+            <button
+              key={n}
+              className={`pagination__page${n === page ? " is-active" : ""}`}
+              onClick={() => setPage(n)}
+              type="button"
+            >
+              {n}
+            </button>
+          ))}
           <button
-            className="btn"
+            className="pagination__page"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
             type="button"
           >
-            Siguiente →
+            →
           </button>
         </div>
       )}

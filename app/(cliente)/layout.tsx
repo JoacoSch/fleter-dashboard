@@ -65,7 +65,7 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
     <div className="app">
       <aside className="sidebar">
         {/* Brand */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 2px", marginBottom: 24 }}>
+        <div className="brand-header">
           <div className="brand-mark">F</div>
           <span className="brand-name">Fleter<em>.</em></span>
         </div>
@@ -77,31 +77,23 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
         </Link>
 
         {/* Nav */}
-        <nav style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <nav className="sidebar__nav">
           {navItems.map(({ href, label, Icon, suffix, disabled }) => {
             const isActive = pathname === href;
             const showBadge = href === "/viajes" && totalViajes > 0;
             if (disabled) {
               return (
-                <span
-                  key={href}
-                  className="nav-item"
-                  style={{ opacity: 0.38, cursor: "not-allowed", pointerEvents: "none" }}
-                >
+                <span key={href} className="nav-item nav-item--disabled">
                   <Icon size={16} className="nav-item__icon" />
-                  <span style={{ flex: 1 }}>{label}</span>
+                  <span className="nav-item__label">{label}</span>
                   <span className="nav-item__suffix">{suffix}</span>
                 </span>
               );
             }
             return (
-              <Link
-                key={href}
-                href={href}
-                className={`nav-item ${isActive ? "is-active" : ""}`}
-              >
+              <Link key={href} href={href} className={`nav-item${isActive ? " is-active" : ""}`}>
                 <Icon size={16} className="nav-item__icon" />
-                <span style={{ flex: 1 }}>{label}</span>
+                <span className="nav-item__label">{label}</span>
                 {showBadge && <span className="nav-item__badge">{totalViajes}</span>}
                 {suffix && !showBadge && <span className="nav-item__suffix">{suffix}</span>}
               </Link>
@@ -135,18 +127,14 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
         {/* User card */}
         <div className="sidebar__user">
           <div className="sidebar__user-avatar">
-            {profile ? `${profile.nombre[0]}${profile.apellido[0]}` : "?"}
+            {`${profile.nombre[0]}${profile.apellido[0]}`}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p className="sidebar__user-name">{profile?.nombre} {profile?.apellido}</p>
-            <p className="sidebar__user-empresa">{profile?.empresa}</p>
+            <p className="sidebar__user-name">{profile.nombre} {profile.apellido}</p>
+            <p className="sidebar__user-empresa">{profile.empresa}</p>
           </div>
-          {profile?.rol && <span className="sidebar__user-role">{profile.rol}</span>}
-          <button
-            onClick={handleLogout}
-            title="Cerrar sesión"
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: "var(--ink-3)", display: "flex", flexShrink: 0 }}
-          >
+          {profile.rol && <span className="sidebar__user-role">{profile.rol}</span>}
+          <button onClick={handleLogout} title="Cerrar sesión" className="btn--icon" type="button">
             <LogOut size={14} />
           </button>
         </div>
@@ -154,8 +142,8 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
 
       <div className="main">
         <header className="topbar">
-          <p style={{ fontFamily: "var(--font-display)", fontSize: 15, color: "var(--ink)" }}>
-            {loading ? "Cargando..." : (profile?.empresa ?? "")}
+          <p className="topbar__company">
+            {loading ? "Cargando..." : (profile.empresa ?? "")}
           </p>
         </header>
         <main className="content">

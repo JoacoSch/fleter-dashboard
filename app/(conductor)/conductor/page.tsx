@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
+import { formatARS, fmtDateTime } from "@/lib/utils";
 import { useSocket } from "@/hooks/useSocket";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -31,19 +32,6 @@ interface ViajeAsignado {
   id_viaje: number;
   conductor: { nombre: string; apellido: string };
   vehiculo: { patente: string; marca: string; modelo: string } | null;
-}
-
-function fmtFecha(iso: string) {
-  return new Date(iso).toLocaleString("es-AR", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function fmtARS(n: number) {
-  return "$" + Math.round(n).toLocaleString("es-AR");
 }
 
 export default function ConductorPage() {
@@ -261,7 +249,7 @@ export default function ConductorPage() {
                       ))}
                     </div>
                     <p style={{ fontFamily: "var(--font-display)", fontSize: 20, color: "var(--ink)", flexShrink: 0 }}>
-                      {fmtARS(viaje.precio_estimado)}
+                      {formatARS(viaje.precio_estimado)}
                     </p>
                   </div>
 
@@ -317,7 +305,7 @@ export default function ConductorPage() {
                         {viaje.cliente?.usuario?.nombre} {viaje.cliente?.usuario?.apellido}
                       </p>
                       <p style={{ fontSize: 12, color: "var(--ink-3)" }}>
-                        {fmtFecha(viaje.fecha_programada)}
+                        {fmtDateTime(viaje.fecha_programada)}
                       </p>
                     </div>
                     <button

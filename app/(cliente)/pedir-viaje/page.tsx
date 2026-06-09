@@ -83,8 +83,18 @@ export default function PedirViajePage() {
     e.preventDefault();
     setError(null);
 
+    if (!fecha) {
+      setError("Seleccioná la fecha y hora del viaje.");
+      return;
+    }
+
     if (paradas.some((p) => !p.direccion.trim())) {
       setError("Completá todas las direcciones.");
+      return;
+    }
+
+    if (paradas.some((p) => p.lat === null || p.lng === null)) {
+      setError("Seleccioná cada dirección desde el menú de sugerencias para confirmar la ubicación.");
       return;
     }
 
@@ -95,7 +105,6 @@ export default function PedirViajePage() {
         fecha_programada: new Date(fecha).toISOString(),
         paradas: paradas.map((p) => ({ lat: p.lat!, lng: p.lng!, direccion: p.direccion.trim() })),
         condiciones_requeridas: Array.from(condiciones),
-        tarifa_hora: 1,
       };
       const result = await api.post<ViajeCreado>("/api/viajes", payload);
       setSuccess(result);
@@ -210,7 +219,6 @@ export default function PedirViajePage() {
                 bottom: 18,
                 width: 1.5,
                 background: "var(--line-strong)",
-                zIndex: 0,
               }} />
 
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -226,7 +234,7 @@ export default function PedirViajePage() {
                     : "var(--ink-3)";
 
                   return (
-                    <div key={parada.id} style={{ display: "flex", alignItems: "center", gap: 10, position: "relative", zIndex: 1 }}>
+                    <div key={parada.id} style={{ display: "flex", alignItems: "center", gap: 10, position: "relative" }}>
                       {/* Dot */}
                       <div style={{
                         width: 20,

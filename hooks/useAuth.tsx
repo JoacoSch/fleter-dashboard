@@ -15,7 +15,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   sendPasswordResetEmail,
-  onAuthStateChanged,
+  onIdTokenChanged,
   type User,
 } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase";
@@ -119,12 +119,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const unsub = onAuthStateChanged(getFirebaseAuth(), async (user) => {
+    const unsub = onIdTokenChanged(getFirebaseAuth(), async (user) => {
       if (!user) {
+        await clearCookieToken();
         setState({ user: null, profile: null, role: null, loading: false });
         return;
       }
       try {
+        const token = await user.getIdToken();
+        await setCookieToken(token);
         const profile = await fetchProfile();
         setState({ user, profile, role: profile.rol, loading: false });
       } catch {

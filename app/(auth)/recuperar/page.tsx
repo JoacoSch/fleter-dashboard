@@ -27,9 +27,9 @@ export default function RecuperarPage() {
 
   return (
     <div className="auth-card">
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
+      <div className="auth-brand">
         <div className="brand-mark">F</div>
-        <span className="brand-name">fle<em>ter</em></span>
+        <span className="brand-name">Fleter<em>.</em></span>
       </div>
 
       {sent ? (
@@ -47,30 +47,21 @@ export default function RecuperarPage() {
           }}>
             ✓
           </div>
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: 20, marginBottom: 8 }}>
-            Revisá tu casilla
-          </h1>
+          <h1 className="auth-title">Revisá tu casilla</h1>
           <p style={{ color: "var(--ink-3)", fontSize: 13, lineHeight: 1.5 }}>
             Te mandamos un link a <strong style={{ color: "var(--ink)" }}>{email}</strong> para
             restablecer tu contraseña.
           </p>
-          <Link
-            href="/login"
-            style={{ display: "inline-block", marginTop: 24, color: "var(--accent)", fontSize: 13, fontWeight: 600 }}
-          >
+          <Link href="/login" className="auth-link" style={{ display: "inline-block", marginTop: 24, fontSize: 13 }}>
             ← Volver al login
           </Link>
         </div>
       ) : (
         <>
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: 22, marginBottom: 6 }}>
-            Recuperar contraseña
-          </h1>
-          <p style={{ color: "var(--ink-3)", fontSize: 13, marginBottom: 24 }}>
-            Te enviamos un link a tu email para restablecerla.
-          </p>
+          <h1 className="auth-title">Recuperar contraseña</h1>
+          <p className="auth-subtitle">Te enviamos un link a tu email para restablecerla.</p>
 
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <form onSubmit={handleSubmit} className="auth-form">
             <div className="field">
               <label htmlFor="email">Email</label>
               <input
@@ -84,24 +75,15 @@ export default function RecuperarPage() {
               />
             </div>
 
-            {error && (
-              <p style={{ color: "var(--err)", fontSize: 13 }}>{error}</p>
-            )}
+            {error && <p className="auth-error">{error}</p>}
 
-            <button
-              type="submit"
-              className="btn btn--primary"
-              disabled={loading}
-              style={{ width: "100%", justifyContent: "center", padding: "10px 12px" }}
-            >
+            <button type="submit" className="btn btn--primary btn--full" disabled={loading}>
               {loading ? "Enviando..." : "Enviar link de recuperación"}
             </button>
           </form>
 
-          <p style={{ textAlign: "center", marginTop: 20, fontSize: 13, color: "var(--ink-3)" }}>
-            <Link href="/login" style={{ color: "var(--accent)", fontWeight: 600 }}>
-              ← Volver al login
-            </Link>
+          <p className="auth-footer auth-footer--mt20">
+            <Link href="/login" className="auth-link">← Volver al login</Link>
           </p>
         </>
       )}
