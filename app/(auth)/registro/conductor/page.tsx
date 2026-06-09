@@ -36,7 +36,7 @@ export default function RegistroConductorPage() {
         telefono: form.telefono || undefined,
         licencia_vencimiento: new Date(form.licencia_vencimiento).toISOString(),
       });
-      router.push("/login");
+      router.push("/conductor/registro-vehiculo");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al registrarse");
     } finally {

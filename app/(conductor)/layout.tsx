@@ -7,8 +7,9 @@ import { useAuth, AuthProvider } from "@/hooks/useAuth";
 import type { ReactNode } from "react";
 
 const navItems = [
-  { href: "/conductor",           label: "Viajes disponibles" },
-  { href: "/conductor/mis-viajes", label: "Mis viajes" },
+  { href: "/conductor",              label: "Viajes disponibles" },
+  { href: "/conductor/mis-viajes",   label: "Mis viajes" },
+  { href: "/conductor/mis-vehiculos", label: "Mis vehículos" },
 ];
 
 function ConductorLayoutInner({ children }: { children: ReactNode }) {

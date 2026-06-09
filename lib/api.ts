@@ -222,6 +222,34 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       conductor: { usuario: { nombre: "Sebastián", apellido: "Ortiz" } },
     },
   ],
+  "/api/conductores/mis-vehiculos": [
+    {
+      id_vehiculo: 1,
+      id_empresa: null,
+      id_conductor: 1,
+      patente: "ABC123",
+      marca: "Ford",
+      modelo: "Transit",
+      anio: 2021,
+      color: "Blanco",
+      tipo_vehiculo: "furgon",
+      condiciones: [
+        { id_condicion: 1, id_vehiculo: 1, condicion: "FRAGIL" },
+      ],
+    },
+    {
+      id_vehiculo: 2,
+      id_empresa: null,
+      id_conductor: 1,
+      patente: "XY567AB",
+      marca: "Mercedes-Benz",
+      modelo: "Sprinter",
+      anio: 2019,
+      color: "Gris",
+      tipo_vehiculo: "camion",
+      condiciones: [],
+    },
+  ],
   "/api/conductor/mis-viajes": [
     {
       id_viaje: 201,
@@ -277,6 +305,12 @@ async function apiFetch<T>(
   options: RequestInit = {}
 ): Promise<T> {
   if (MOCK) {
+    const deleteVehiculo = path.match(/^\/api\/conductores\/mis-vehiculos\/(\d+)$/);
+    if (deleteVehiculo && options.method === "DELETE") {
+      await new Promise((r) => setTimeout(r, 300));
+      return { mensaje: "Vehiculo eliminado" } as T;
+    }
+
     const dynamicViaje = path.match(/^\/api\/viajes\/(\d+)$/);
     if (dynamicViaje) {
       const id = parseInt(dynamicViaje[1], 10);
@@ -321,4 +355,6 @@ export const api = {
       method: "PUT",
       body: JSON.stringify(body),
     }),
+  delete: <T>(path: string) =>
+    apiFetch<T>(path, { method: "DELETE" }),
 };
