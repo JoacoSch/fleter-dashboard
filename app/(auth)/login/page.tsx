@@ -48,19 +48,15 @@ export default function LoginPage() {
 
   return (
     <div className="auth-card">
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
+      <div className="auth-brand">
         <div className="brand-mark">F</div>
-        <span className="brand-name">fle<em>ter</em></span>
+        <span className="brand-name">Fleter<em>.</em></span>
       </div>
 
-      <h1 style={{ fontFamily: "var(--font-display)", fontSize: 22, marginBottom: 6 }}>
-        Iniciá sesión
-      </h1>
-      <p style={{ color: "var(--ink-3)", fontSize: 13, marginBottom: 24 }}>
-        Accedé al panel de tu empresa
-      </p>
+      <h1 className="auth-title">Iniciá sesión</h1>
+      <p className="auth-subtitle">Accedé al panel de tu empresa</p>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <form onSubmit={handleSubmit} className="auth-form">
         <div className="field">
           <label htmlFor="email">Email</label>
           <input
@@ -87,43 +83,26 @@ export default function LoginPage() {
           />
         </div>
 
-        {error && (
-          <p style={{ color: "var(--err)", fontSize: 13 }}>{error}</p>
-        )}
+        {error && <p className="auth-error">{error}</p>}
 
-        <button
-          type="submit"
-          className="btn btn--primary"
-          disabled={loading}
-          style={{ width: "100%", justifyContent: "center", padding: "10px 12px" }}
-        >
+        <button type="submit" className="btn btn--primary btn--full" disabled={loading}>
           {loading ? "Ingresando..." : "Ingresar"}
         </button>
       </form>
 
       <div className="divider" style={{ margin: "20px 0" }}>o</div>
 
-      <button
-        type="button"
-        className="btn"
-        onClick={handleGoogle}
-        disabled={loading}
-        style={{ width: "100%", justifyContent: "center", padding: "10px 12px" }}
-      >
+      <button type="button" className="btn btn--full" onClick={handleGoogle} disabled={loading}>
         Continuar con Google
       </button>
 
-      <p style={{ textAlign: "center", marginTop: 20, fontSize: 13, color: "var(--ink-3)" }}>
-        <Link href="/recuperar" style={{ color: "var(--accent)", fontWeight: 600 }}>
-          Olvidé mi contraseña
-        </Link>
+      <p className="auth-footer auth-footer--mt20">
+        <Link href="/recuperar" className="auth-link">Olvidé mi contraseña</Link>
       </p>
 
-      <p style={{ textAlign: "center", marginTop: 12, fontSize: 13, color: "var(--ink-3)" }}>
+      <p className="auth-footer auth-footer--mt12">
         ¿No tenés cuenta?{" "}
-        <Link href="/registro" style={{ color: "var(--accent)", fontWeight: 600 }}>
-          Registrate
-        </Link>
+        <Link href="/registro" className="auth-link">Registrate</Link>
       </p>
     </div>
   );

@@ -49,8 +49,12 @@ interface ViajeDetalle {
   paradas: Parada[];
   conductor: {
     usuario: { nombre: string; apellido: string };
-    calificacion?: number | null;
+    calificacion_promedio?: number | null;
   } | null;
+}
+
+function initials(nombre: string, apellido: string): string {
+  return `${nombre[0] ?? ""}${apellido[0] ?? ""}`.toUpperCase();
 }
 
 export default function ViajeDetallePage() {
@@ -73,10 +77,8 @@ export default function ViajeDetallePage() {
   if (loading) {
     return (
       <div>
-        <div className="section-header" style={{ marginBottom: 24 }}>
-          <h2>Viaje VJ-{id}</h2>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <button className="btn btn--ghost" style={{ marginBottom: 14 }} onClick={() => router.back()} type="button">← Volver al record</button>
+        <div className="detail__col">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="card" style={{ height: 80, background: "var(--surface-2)" }} />
           ))}
@@ -88,11 +90,8 @@ export default function ViajeDetallePage() {
   if (error || !viaje) {
     return (
       <div>
-        <div className="section-header" style={{ marginBottom: 24 }}>
-          <h2>Viaje VJ-{id}</h2>
-          <p style={{ color: "var(--err)" }}>{error ?? "Viaje no encontrado."}</p>
-        </div>
-        <button className="btn" onClick={() => router.back()} type="button">← Volver</button>
+        <button className="btn btn--ghost" style={{ marginBottom: 14 }} onClick={() => router.back()} type="button">← Volver al record</button>
+        <div className="error-banner">{error ?? "Viaje no encontrado."}</div>
       </div>
     );
   }
@@ -100,215 +99,215 @@ export default function ViajeDetallePage() {
   const paradas = [...viaje.paradas].sort((a, b) => a.orden - b.orden);
   const origen = paradas[0]?.direccion ?? "—";
   const destino = paradas[paradas.length - 1]?.direccion ?? "—";
-  const intermedias = paradas.slice(1, -1);
 
   const isoStr = viaje.fecha_programada ?? viaje.creado_en;
   const estadoCss = ESTADO_CSS[viaje.estado] ?? viaje.estado;
   const estadoLabel = ESTADO_LABEL[viaje.estado] ?? viaje.estado;
   const precioDiff = viaje.precio_real != null ? viaje.precio_real - viaje.precio_estimado : null;
+  const overTime = false; // duracion_estimada pendiente
 
   return (
     <div>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-        <button className="btn" onClick={() => router.back()} type="button" style={{ flexShrink: 0 }}>←</button>
-        <div className="section-header" style={{ flex: 1 }}>
-          <h2 style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            VJ-{viaje.id_viaje}
-            <span className={`status ${estadoCss}`}>{estadoLabel}</span>
-            <span className={`zone-tag ${viaje.zona}`}>{viaje.zona}</span>
-          </h2>
-          <p>{fmtDate(isoStr)} · {fmtTime(isoStr)}</p>
-        </div>
-      </div>
+      <button className="btn btn--ghost" onClick={() => router.back()} style={{ marginBottom: 14 }} type="button">
+        ← Volver al record
+      </button>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {/* Ruta */}
-        <div className="card">
-          <p className="metric__label" style={{ marginBottom: 16 }}>Ruta</p>
-          <div style={{ position: "relative", paddingLeft: 28 }}>
-            <div style={{
-              position: "absolute", left: 8, top: 10, bottom: 10,
-              width: 1.5, background: "var(--line-strong)",
-            }} />
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {/* Origen */}
-              <ParadaItem
-                dot="circle-accent"
-                direccion={origen}
-                estado={paradas[0]?.estado}
-                hora={paradas[0]?.hora_entrega}
-              />
-              {/* Intermedias */}
-              {intermedias.map((p) => (
-                <ParadaItem
-                  key={p.orden}
-                  dot="circle-muted"
-                  direccion={p.direccion}
-                  estado={p.estado}
-                  hora={p.hora_entrega}
-                  small
-                />
-              ))}
-              {/* Destino */}
-              {paradas.length > 1 && (
-                <ParadaItem
-                  dot="square"
-                  direccion={destino}
-                  estado={paradas[paradas.length - 1]?.estado}
-                  hora={paradas[paradas.length - 1]?.hora_entrega}
-                />
+      <div className="detail">
+        {/* Header */}
+        <div className="detail__head">
+          <div>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <span className={`status ${estadoCss}`}>{estadoLabel}</span>
+              <span className={`zone-tag ${viaje.zona}`}>{viaje.zona}</span>
+              <span className="trip-row__id">VJ-{viaje.id_viaje}</span>
+            </div>
+            <h2>{origen} → {destino}</h2>
+            <p className="detail__head-meta">
+              {new Date(isoStr).toLocaleDateString("es-AR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })} · {fmtTime(isoStr)}
+            </p>
+          </div>
+          {viaje.precio_real != null && (
+            <div className="detail__price">
+              <p className="metric__label">Precio final</p>
+              <p className="metric__value">
+                <sup>$</sup>{viaje.precio_real.toLocaleString("es-AR")}
+                {precioDiff != null && precioDiff !== 0 && (
+                  <span className={`delta ${precioDiff > 0 ? "delta--down" : "delta--up"}`}>
+                    {precioDiff > 0 ? "+" : ""}{formatARS(precioDiff)}
+                  </span>
+                )}
+              </p>
+              <p className="metric__hint" style={{ textAlign: "right" }}>
+                Estimado: {formatARS(viaje.precio_estimado)}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Columna izquierda */}
+        <div className="detail__col">
+          {/* Tiempo del viaje */}
+          <div className="card">
+            <p className="card-title">Tiempo del viaje</p>
+            <p className="card-sub">Estimado vs. real al cierre</p>
+            <div className="time-compare">
+              <div className="time-cell">
+                <div className="time-cell__label">Estimado</div>
+                <div className="time-cell__value">—</div>
+              </div>
+              <div className={`time-cell${overTime ? " time-cell--over" : ""}`}>
+                <div className="time-cell__label">Real</div>
+                <div className="time-cell__value">{formatDuracion(viaje.duracion_real)}</div>
+              </div>
+            </div>
+            <div className="kv-grid" style={{ marginTop: 14 }}>
+              <div className="kv">
+                <span>Km recorridos</span>
+                <strong>{viaje.km_reales != null ? `${viaje.km_reales} km` : "—"}</strong>
+              </div>
+              <div className="kv">
+                <span>Carga</span>
+                <strong>—</strong>
+              </div>
+              <div className="kv">
+                <span>Peso</span>
+                <strong>—</strong>
+              </div>
+              <div className="kv">
+                <span>Tipo de zona</span>
+                <strong>{viaje.zona}</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Paradas */}
+          {paradas.length > 0 && (
+            <div className="card">
+              <p className="card-title">Recorrido y paradas</p>
+              <p className="card-sub">{paradas.length} parada{paradas.length !== 1 ? "s" : ""}</p>
+              <div className="timeline">
+                {paradas.map((p, i) => {
+                  const done = p.estado === "ENTREGADO";
+                  return (
+                    <div className="tl-item" key={i}>
+                      <div className="tl-marker">
+                        <span className={`tl-marker__dot${done ? " done" : ""}`} />
+                        <span className="tl-marker__line" />
+                      </div>
+                      <div className="tl-body">
+                        <strong>Parada {p.orden} — {p.direccion}</strong>
+                        <span>{done ? "Confirmada" : "Pendiente"}</span>
+                      </div>
+                      <div className="tl-time">
+                        {p.hora_entrega ? fmtTime(p.hora_entrega) : "—"}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Alertas */}
+          <div className="card">
+            <p className="card-title">Alertas detectadas</p>
+            <p className="card-sub">{viaje.alertas?.length ?? 0} eventos durante el recorrido</p>
+            {(!viaje.alertas || viaje.alertas.length === 0) ? (
+              <div className="ok-state">
+                <span className="ok-state__dot" />
+                Sin alertas — viaje sin desvíos ni paradas sospechosas.
+              </div>
+            ) : (
+              viaje.alertas.map((a, i) => (
+                <div className="alert-row" key={i}>
+                  <div className="alert-row__icon">⚠</div>
+                  <div>
+                    <strong>{a.tipo === "DESVIO" ? "Desvío de ruta" : "Parada sospechosa"}</strong>
+                    <span>{a.descripcion}</span>
+                  </div>
+                  <time>{fmtDate(a.creado_en)} · {fmtTime(a.creado_en)}</time>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Columna derecha */}
+        <div className="detail__col">
+          {/* Chofer */}
+          <div className="card">
+            <p className="card-title">Chofer</p>
+            {viaje.conductor ? (
+              <div className="driver-card">
+                <div className="driver-avatar">
+                  {initials(viaje.conductor.usuario.nombre, viaje.conductor.usuario.apellido)}
+                </div>
+                <div className="driver-info">
+                  <strong>{viaje.conductor.usuario.nombre} {viaje.conductor.usuario.apellido}</strong>
+                  <span>Conductor titular</span>
+                  {viaje.conductor.calificacion_promedio != null && (
+                    <span className="rating">★ {viaje.conductor.calificacion_promedio.toFixed(1)} / 5.0</span>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="empty" style={{ padding: 14 }}>Sin chofer asignado</div>
+            )}
+          </div>
+
+          {/* Vehículo — pendiente de datos del backend */}
+          <div className="card">
+            <p className="card-title">Vehículo utilizado</p>
+            <div className="empty" style={{ padding: "12px 0", fontSize: 12 }}>
+              Sin datos del vehículo disponibles
+            </div>
+          </div>
+
+          {/* Resumen de cobro */}
+          <div className="card">
+            <p className="card-title">Resumen de cobro</p>
+            <div className="billing-rows">
+              <div className="billing-row">
+                <div>
+                  <div className="billing-row__label">Precio estimado</div>
+                  <div className="billing-row__sub">Al momento de solicitar</div>
+                </div>
+                <span className="billing-row__amount">{formatARS(viaje.precio_estimado)}</span>
+              </div>
+              {viaje.precio_real != null && (
+                <div className="billing-row">
+                  <div>
+                    <div className="billing-row__label">Precio final</div>
+                    <div className="billing-row__sub">Al cierre del viaje</div>
+                  </div>
+                  <span className="billing-row__amount">{formatARS(viaje.precio_real)}</span>
+                </div>
+              )}
+              {precioDiff != null && precioDiff !== 0 && (
+                <div className="billing-row">
+                  <div>
+                    <div className="billing-row__label">Diferencia</div>
+                    <div className="billing-row__sub">{precioDiff > 0 ? "Ajuste por encima" : "Ajuste a favor"}</div>
+                  </div>
+                  <span className={`billing-row__amount ${precioDiff > 0 ? "billing-row__amount--up" : "billing-row__amount--down"}`}>
+                    {precioDiff > 0 ? "+" : ""}{formatARS(precioDiff)}
+                  </span>
+                </div>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Precio */}
-        <div className="card">
-          <p className="metric__label" style={{ marginBottom: 12 }}>Precio</p>
-          <div style={{ display: "flex", gap: 32 }}>
-            <div>
-              <p className="metric__label">Estimado</p>
-              <p className="metric__value" style={{ fontSize: 22 }}>{formatARS(viaje.precio_estimado)}</p>
-            </div>
-            {viaje.precio_real != null && (
-              <div>
-                <p className="metric__label">Final</p>
-                <p className="metric__value" style={{ fontSize: 22 }}>{formatARS(viaje.precio_real)}</p>
-              </div>
-            )}
-            {precioDiff != null && precioDiff !== 0 && (
-              <div>
-                <p className="metric__label">Ajuste</p>
-                <p className="metric__value" style={{ fontSize: 22, color: precioDiff > 0 ? "var(--err)" : "var(--ok)" }}>
-                  {precioDiff > 0 ? "+" : ""}{formatARS(precioDiff)}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Info adicional */}
-        <div className="card">
-          <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
-            {viaje.conductor && (
-              <div>
-                <p className="metric__label">Conductor</p>
-                <p style={{ fontSize: 13, color: "var(--ink)", marginTop: 4 }}>
-                  {viaje.conductor.usuario.nombre} {viaje.conductor.usuario.apellido}
-                </p>
-                {viaje.conductor.calificacion != null && (
-                  <p style={{ fontSize: 11.5, color: "var(--warn)", marginTop: 2 }}>
-                    ★ {viaje.conductor.calificacion.toFixed(1)}
-                  </p>
-                )}
-              </div>
-            )}
-            <div>
-              <p className="metric__label">Duración</p>
-              <p style={{ fontSize: 13, color: viaje.duracion_real ? "var(--ink)" : "var(--ink-4)", marginTop: 4 }}>
-                {formatDuracion(viaje.duracion_real)}
-              </p>
-            </div>
-            <div>
-              <p className="metric__label">Distancia</p>
-              <p style={{ fontSize: 13, color: viaje.km_reales ? "var(--ink)" : "var(--ink-4)", marginTop: 4 }}>
-                {viaje.km_reales != null ? `${viaje.km_reales} km` : "—"}
-              </p>
-            </div>
-            {viaje.alertas_count != null && viaje.alertas_count > 0 && (
-              <div>
-                <p className="metric__label">Alertas</p>
-                <p style={{ fontSize: 13, color: "var(--err)", marginTop: 4, fontWeight: 600 }}>
-                  {viaje.alertas_count}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Historial de alertas */}
-        {viaje.alertas && viaje.alertas.length > 0 && (
-          <div className="card">
-            <p className="metric__label" style={{ marginBottom: 12 }}>Historial de alertas</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {viaje.alertas.map((a, i) => (
-                <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                  <span className="status CANCELADO" style={{ flexShrink: 0, fontSize: 10 }}>{a.tipo}</span>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 12.5, color: "var(--ink)" }}>{a.descripcion}</p>
-                    <p style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 2 }}>
-                      {fmtDate(a.creado_en)} · {fmtTime(a.creado_en)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Botón PDF */}
-        {viaje.estado === "ENTREGADO" && (
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          {/* PDF remito */}
+          {viaje.estado === "ENTREGADO" && (
             <a
               href={`/api/viajes/${viaje.id_viaje}/remito`}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn"
+              className="btn btn--full"
               style={{ textDecoration: "none" }}
             >
               Descargar remito PDF
             </a>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ParadaItem({
-  dot,
-  direccion,
-  estado,
-  hora,
-  small = false,
-}: {
-  dot: "circle-accent" | "circle-muted" | "square";
-  direccion: string;
-  estado?: string;
-  hora?: string | null;
-  small?: boolean;
-}) {
-  const dotStyle: React.CSSProperties =
-    dot === "circle-accent"
-      ? { position: "absolute", left: 3, width: 11, height: 11, borderRadius: "50%", background: "var(--accent)", border: "2px solid var(--surface)", boxShadow: "0 0 0 1.5px var(--accent)" }
-      : dot === "square"
-      ? { position: "absolute", left: 3, width: 11, height: 11, borderRadius: 2, background: "var(--ink)", border: "2px solid var(--surface)", boxShadow: "0 0 0 1.5px var(--ink)" }
-      : { position: "absolute", left: 5, width: 7, height: 7, borderRadius: "50%", background: "var(--line-strong)" };
-
-  const estadoLabel = estado ?? "PENDIENTE";
-  const entregada = estadoLabel === "ENTREGADO";
-
-  return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-      <div style={dotStyle} />
-      <div style={{ flex: 1 }}>
-        <p style={{ fontSize: small ? 12 : 13, color: small ? "var(--ink-3)" : "var(--ink)" }}>{direccion}</p>
-        <div style={{ display: "flex", gap: 8, marginTop: 3, alignItems: "center" }}>
-          <span
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.04em",
-              color: entregada ? "var(--ok)" : "var(--ink-4)",
-            }}
-          >
-            {estadoLabel}
-          </span>
-          {entregada && hora && (
-            <span style={{ fontSize: 10.5, color: "var(--ink-3)" }}>
-              {fmtDate(hora)} · {fmtTime(hora)}
-            </span>
           )}
         </div>
       </div>

@@ -40,9 +40,9 @@ const INPUT_STYLE: React.CSSProperties = {
 
 function Row({ label, value }: { label: string; value: string | undefined }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      <p style={LABEL_STYLE}>{label}</p>
-      <p style={{ fontSize: 13.5, color: value ? "var(--ink)" : "var(--ink-4)" }}>{value ?? "—"}</p>
+    <div className="perfil-row">
+      <p className="perfil-row__label">{label}</p>
+      <p className={`perfil-row__value${value ? "" : " perfil-row__value--empty"}`}>{value ?? "—"}</p>
     </div>
   );
 }
@@ -134,7 +134,7 @@ export default function PerfilPage() {
 
   return (
     <div>
-      <div className="section-header" style={{ marginBottom: 24, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+      <div className="section-header section-header--top" style={{ marginBottom: 24 }}>
         <div>
           <h2>Perfil</h2>
           <p>Tus datos de cuenta.</p>
@@ -145,31 +145,31 @@ export default function PerfilPage() {
       </div>
 
       {loading && (
-        <div className="card" style={{ maxWidth: 560 }}>
+        <div className="card perfil-stack">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} style={{ height: 36, background: "var(--surface-2)", borderRadius: 4, marginBottom: 16 }} />
+            <div key={i} style={{ height: 36, background: "var(--surface-2)", borderRadius: 4 }} />
           ))}
         </div>
       )}
 
       {!loading && error && (
-        <div className="card" style={{ maxWidth: 560, color: "var(--err)", fontSize: 13 }}>{error}</div>
+        <div className="error-banner" style={{ maxWidth: 560 }}>{error}</div>
       )}
 
       {!loading && !error && perfil && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 560 }}>
+        <div className="perfil-stack">
           {/* Datos personales */}
           <div className="card">
-            <p className="metric__label" style={{ marginBottom: 16 }}>Datos personales</p>
+            <p className="metric__label card-section-label">Datos personales</p>
             {editing ? (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div className="perfil-grid perfil-grid--edit">
                 <Field label="Nombre" name="nombre" value={draft.nombre ?? ""} onChange={handleChange} />
                 <Field label="Apellido" name="apellido" value={draft.apellido ?? ""} onChange={handleChange} />
                 <Field label="DNI" name="dni" value={draft.dni ?? ""} onChange={handleChange} disabled />
                 <Field label="Teléfono" name="telefono" value={draft.telefono ?? ""} onChange={handleChange} type="tel" />
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+              <div className="perfil-grid">
                 <Row label="Nombre" value={perfil.nombre} />
                 <Row label="Apellido" value={perfil.apellido} />
                 <Row label="DNI" value={perfil.dni} />
@@ -180,20 +180,20 @@ export default function PerfilPage() {
 
           {/* Datos de empresa */}
           <div className="card">
-            <p className="metric__label" style={{ marginBottom: 16 }}>Empresa</p>
+            <p className="metric__label card-section-label">Empresa</p>
             {editing ? (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div className="perfil-grid perfil-grid--edit">
                 <Field label="Empresa" name="empresa" value={draft.empresa ?? ""} onChange={handleChange} />
                 <Field label="CUIT" name="cuit" value={draft.cuit ?? ""} onChange={handleChange} />
-                <div style={{ gridColumn: "1 / -1" }}>
+                <div className="perfil-full">
                   <Field label="Dirección" name="direccion" value={draft.direccion ?? ""} onChange={handleChange} />
                 </div>
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+              <div className="perfil-grid">
                 <Row label="Empresa" value={perfil.empresa} />
                 <Row label="CUIT" value={perfil.cuit} />
-                <div style={{ gridColumn: "1 / -1" }}>
+                <div className="perfil-full">
                   <Row label="Dirección" value={perfil.direccion} />
                 </div>
               </div>
@@ -202,8 +202,8 @@ export default function PerfilPage() {
 
           {/* Cuenta */}
           <div className="card">
-            <p className="metric__label" style={{ marginBottom: 16 }}>Cuenta</p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+            <p className="metric__label card-section-label">Cuenta</p>
+            <div className="perfil-grid">
               <Row label="Email" value={perfil.email} />
               <Row label="Rol" value={perfil.rol} />
               {perfil.fecha_registro && (
@@ -219,19 +219,14 @@ export default function PerfilPage() {
 
           {/* Acciones de edición */}
           {editing && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {saveError && (
-                <p style={{ fontSize: 12.5, color: "var(--err)", background: "var(--err-soft)", padding: "8px 12px", borderRadius: "var(--radius-sm)" }}>
-                  {saveError}
-                </p>
-              )}
-              <div style={{ display: "flex", gap: 8 }}>
+            <div className="perfil-actions">
+              {saveError && <p className="auth-error">{saveError}</p>}
+              <div className="perfil-actions__row">
                 <button
                   className="btn btn--primary"
                   onClick={saveEdit}
                   disabled={saving}
                   type="button"
-                  style={{ opacity: saving ? 0.7 : 1 }}
                 >
                   {saving ? "Guardando..." : "Guardar cambios"}
                 </button>

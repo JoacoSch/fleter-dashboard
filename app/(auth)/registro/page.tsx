@@ -41,17 +41,13 @@ export default function RegistroPage() {
 
   return (
     <div className="auth-card" style={{ maxWidth: 480 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
+      <div className="auth-brand">
         <div className="brand-mark">F</div>
-        <span className="brand-name">fle<em>ter</em></span>
+        <span className="brand-name">Fleter<em>.</em></span>
       </div>
 
-      <h1 style={{ fontFamily: "var(--font-display)", fontSize: 22, marginBottom: 6 }}>
-        Creá tu cuenta
-      </h1>
-      <p style={{ color: "var(--ink-3)", fontSize: 13, marginBottom: 24 }}>
-        Para empresas que contratan fletes
-      </p>
+      <h1 className="auth-title">Creá tu cuenta</h1>
+      <p className="auth-subtitle">Para empresas que contratan fletes</p>
 
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -90,34 +86,21 @@ export default function RegistroPage() {
           <input id="password" type="password" placeholder="Mínimo 8 caracteres" value={form.password} onChange={set("password")} required minLength={8} autoComplete="new-password" />
         </div>
 
-        {error && (
-          <p style={{ color: "var(--err)", fontSize: 13 }}>{error}</p>
-        )}
+        {error && <p className="auth-error">{error}</p>}
 
-        <button
-          type="submit"
-          className="btn btn--primary"
-          disabled={loading}
-          style={{ width: "100%", justifyContent: "center", padding: "10px 12px", marginTop: 4 }}
-        >
+        <button type="submit" className="btn btn--primary btn--full" disabled={loading} style={{ marginTop: 4 }}>
           {loading ? "Creando cuenta..." : "Crear cuenta"}
         </button>
       </form>
 
-      <p style={{ textAlign: "center", marginTop: 20, fontSize: 13, color: "var(--ink-3)" }}>
+      <p className="auth-footer auth-footer--mt20">
         ¿Ya tenés cuenta?{" "}
-        <Link href="/login" style={{ color: "var(--accent)", fontWeight: 600 }}>
-          Iniciá sesión
-        </Link>
+        <Link href="/login" className="auth-link">Iniciá sesión</Link>
       </p>
 
       <div style={{ borderTop: "1px solid var(--line)", marginTop: 20, paddingTop: 16, textAlign: "center" }}>
         <p style={{ fontSize: 13, color: "var(--ink-3)", marginBottom: 10 }}>¿Sos conductor?</p>
-        <Link
-          href="/registro/conductor"
-          className="btn"
-          style={{ display: "inline-flex", justifyContent: "center", padding: "9px 20px", fontSize: 13 }}
-        >
+        <Link href="/registro/conductor" className="btn" style={{ display: "inline-flex", justifyContent: "center", padding: "9px 20px", fontSize: 13 }}>
           Registrate como conductor
         </Link>
       </div>

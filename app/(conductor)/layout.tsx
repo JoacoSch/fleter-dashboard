@@ -7,8 +7,8 @@ import { useAuth, AuthProvider } from "@/hooks/useAuth";
 import type { ReactNode } from "react";
 
 const navItems = [
-  { href: "/conductor", label: "Viajes disponibles", icon: "⊡" },
-  { href: "/conductor/mis-viajes", label: "Mis viajes", icon: "☰" },
+  { href: "/conductor",           label: "Viajes disponibles" },
+  { href: "/conductor/mis-viajes", label: "Mis viajes" },
 ];
 
 function ConductorLayoutInner({ children }: { children: ReactNode }) {
@@ -30,54 +30,38 @@ function ConductorLayoutInner({ children }: { children: ReactNode }) {
   return (
     <div className="app">
       <aside className="sidebar">
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 2px", marginBottom: 20 }}>
+        <div className="brand-header">
           <div className="brand-mark">F</div>
-          <span className="brand-name">fle<em>ter</em></span>
+          <span className="brand-name">Fleter<em>.</em></span>
         </div>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
-          {navItems.map(({ href, label, icon }) => (
+        <nav className="sidebar__nav" style={{ flex: 1 }}>
+          {navItems.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className={`nav-item ${pathname === href ? "is-active" : ""}`}
+              className={`nav-item${pathname === href ? " is-active" : ""}`}
             >
-              <span className="nav-item__icon" style={{ fontSize: 16, width: 20, textAlign: "center" }}>
-                {icon}
-              </span>
               {label}
             </Link>
           ))}
         </nav>
 
-        <div style={{ borderTop: "1px solid var(--line)", paddingTop: 12, marginTop: 8 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px" }}>
-            <div style={{
-              width: 28,
-              height: 28,
-              borderRadius: "50%",
-              background: "var(--accent-soft)",
-              color: "var(--accent-ink)",
-              fontFamily: "var(--font-display)",
-              fontSize: 11,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}>
-              {profile ? `${profile.nombre[0]}${profile.apellido[0]}` : "?"}
+        <div className="sidebar__conductor-footer">
+          <div className="sidebar__conductor-user">
+            <div className="sidebar__conductor-avatar">
+              {`${profile.nombre[0]}${profile.apellido[0]}`}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {profile?.nombre} {profile?.apellido}
-              </p>
-              <p style={{ fontSize: 11, color: "var(--ink-3)" }}>Conductor</p>
+              <p className="sidebar__conductor-name">{profile.nombre} {profile.apellido}</p>
+              <p className="sidebar__conductor-role">Conductor</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="btn btn--ghost"
-            style={{ width: "100%", justifyContent: "flex-start", fontSize: 12.5, color: "var(--ink-3)" }}
+            className="btn btn--ghost btn--full"
+            style={{ justifyContent: "flex-start", fontSize: 12.5, color: "var(--ink-3)" }}
+            type="button"
           >
             Cerrar sesión
           </button>
