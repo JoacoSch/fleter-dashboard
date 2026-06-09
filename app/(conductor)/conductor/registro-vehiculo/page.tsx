@@ -136,16 +136,16 @@ export default function RegistroVehiculoPage() {
 
         <div className="field">
           <label>Condiciones que puede manejar <span style={{ color: "var(--ink-3)", fontWeight: 400 }}>(opcional)</span></label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", marginTop: 6 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
             {CONDICIONES.map((c) => (
-              <label key={c.value} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13.5, cursor: "pointer" }}>
-                <input
-                  type="checkbox"
-                  checked={condiciones.includes(c.value)}
-                  onChange={() => toggleCondicion(c.value)}
-                />
+              <button
+                key={c.value}
+                type="button"
+                className={`chip${condiciones.includes(c.value) ? " is-active" : ""}`}
+                onClick={() => toggleCondicion(c.value)}
+              >
                 {c.label}
-              </label>
+              </button>
             ))}
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { PeriodoProvider } from "@/hooks/usePeriodo";
 import { api } from "@/lib/api";
@@ -20,11 +20,10 @@ interface RecentViaje {
 }
 
 const navItems = [
-  { href: "/",             label: "Analytics",    Icon: BarChart2,    suffix: undefined, disabled: false },
+  { href: "/",             label: "Analytics",    Icon: BarChart2,     suffix: undefined, disabled: false },
   { href: "/viajes",       label: "Record",       Icon: ClipboardList, suffix: undefined, disabled: false },
   { href: "/viaje-activo", label: "Viaje activo", Icon: Truck,         suffix: "Próx.",   disabled: true },
   { href: "/facturacion",  label: "Facturación",  Icon: FileText,      suffix: "Próx.",   disabled: true },
-  { href: "/perfil",       label: "Perfil",       Icon: User,          suffix: undefined, disabled: false },
 ];
 
 function ClienteLayoutInner({ children }: { children: ReactNode }) {
@@ -34,6 +33,19 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
 
   const [recentViajes, setRecentViajes] = useState<RecentViaje[]>([]);
   const [totalViajes, setTotalViajes] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handler(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
 
   useEffect(() => {
     if (!loading && !profile) router.push("/login");
@@ -125,17 +137,40 @@ function ClienteLayoutInner({ children }: { children: ReactNode }) {
         )}
 
         {/* User card */}
-        <div className="sidebar__user">
-          <div className="sidebar__user-avatar">
-            {`${profile.nombre[0]}${profile.apellido[0]}`}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p className="sidebar__user-name">{profile.nombre} {profile.apellido}</p>
-            <p className="sidebar__user-empresa">{profile.empresa}</p>
-          </div>
-          {profile.rol && <span className="sidebar__user-role">{profile.rol}</span>}
-          <button onClick={handleLogout} title="Cerrar sesión" className="btn--icon" type="button">
-            <LogOut size={14} />
+        <div ref={menuRef} className="sidebar__profile-section">
+          {menuOpen && (
+            <div className="sidebar__user-menu">
+              <Link
+                href="/perfil"
+                className="sidebar__user-menu-item"
+                onClick={() => setMenuOpen(false)}
+              >
+                <User size={14} />
+                Mi perfil
+              </Link>
+              <div className="sidebar__user-menu-sep" />
+              <button
+                type="button"
+                className="sidebar__user-menu-item sidebar__user-menu-item--danger"
+                onClick={handleLogout}
+              >
+                <LogOut size={14} />
+                Cerrar sesión
+              </button>
+            </div>
+          )}
+          <button
+            type="button"
+            className="sidebar__user sidebar__user--btn"
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            <div className="sidebar__user-avatar">
+              {`${profile.nombre[0]}${profile.apellido[0]}`}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p className="sidebar__user-name">{profile.nombre} {profile.apellido}</p>
+              <p className="sidebar__user-empresa">{profile.empresa}</p>
+            </div>
           </button>
         </div>
       </aside>

@@ -206,16 +206,16 @@ export default function MisVehiculosPage() {
 
             <div className="field">
               <label>Condiciones <span style={{ color: "var(--ink-3)", fontWeight: 400 }}>(opcional)</span></label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", marginTop: 6 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
                 {CONDICIONES.map((c) => (
-                  <label key={c.value} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13.5, cursor: "pointer" }}>
-                    <input
-                      type="checkbox"
-                      checked={condiciones.includes(c.value)}
-                      onChange={() => toggleCondicion(c.value)}
-                    />
+                  <button
+                    key={c.value}
+                    type="button"
+                    className={`chip${condiciones.includes(c.value) ? " is-active" : ""}`}
+                    onClick={() => toggleCondicion(c.value)}
+                  >
                     {c.label}
-                  </label>
+                  </button>
                 ))}
               </div>
             </div>
@@ -271,20 +271,9 @@ export default function MisVehiculosPage() {
                 {v.marca} {v.modelo} — {v.anio} — {v.color}
               </p>
               {v.condiciones.length > 0 && (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                <div className="cred-list">
                   {v.condiciones.map((c) => (
-                    <span
-                      key={c.id_condicion}
-                      style={{
-                        fontSize: 11.5,
-                        fontWeight: 500,
-                        padding: "2px 8px",
-                        borderRadius: 4,
-                        background: "var(--surface-2)",
-                        color: "var(--ink-2)",
-                        border: "1px solid var(--border)",
-                      }}
-                    >
+                    <span key={c.id_condicion} className="cond">
                       {CONDICION_LABEL[c.condicion] ?? c.condicion}
                     </span>
                   ))}
@@ -293,7 +282,7 @@ export default function MisVehiculosPage() {
             </div>
             <button
               className="btn btn--ghost"
-              style={{ fontSize: 13, color: "var(--error, #F14444)", flexShrink: 0 }}
+              style={{ fontSize: 13, color: "var(--err)", flexShrink: 0 }}
               disabled={deletingId === v.id_vehiculo}
               onClick={() => handleDelete(v.id_vehiculo)}
             >

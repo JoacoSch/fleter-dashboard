@@ -1424,6 +1424,84 @@ html {
   flex-shrink: 0;
 }
 
+/* ── Sidebar profile section ─────────────────────── */
+.sidebar__profile-section {
+  position: relative;
+  margin-top: auto;
+  flex-shrink: 0;
+  margin-left: -12px;
+  margin-right: -12px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--line-strong);
+  background: var(--surface-3);
+}
+
+/* ── Sidebar user popup menu ─────────────────────── */
+.sidebar__user-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+  overflow: hidden;
+  z-index: 100;
+}
+.sidebar__user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: var(--font-ui);
+}
+.sidebar__user-menu-item:hover { background: var(--surface-2); color: var(--ink); }
+.sidebar__user-menu-item--danger { color: var(--err); }
+.sidebar__user-menu-item--danger:hover { background: var(--err-soft); color: var(--err); }
+.sidebar__user-menu-sep { height: 1px; background: var(--line); margin: 2px 0; }
+.sidebar__user--btn {
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: none;
+  width: 100%;
+  text-align: left;
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  transition: background 0.1s, border-color 0.1s;
+}
+.sidebar__user--btn:hover { background: var(--surface-3); border-color: var(--line); }
+
+/* ── Select en .field ────────────────────────────── */
+.field select {
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  font-size: 14px;
+  font-family: var(--font-ui);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.1s;
+  width: 100%;
+  box-sizing: border-box;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238C8676' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+  cursor: pointer;
+}
+.field select:focus { border-color: var(--accent); }
+
 /* ── Scrollbar ───────────────────────────────────── */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 999px; border: 2px solid var(--bg); }
