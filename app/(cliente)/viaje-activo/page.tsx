@@ -82,11 +82,14 @@ function ViajeListView() {
     );
   }
 
-  // Single active trip → auto-redirect
-  if (viajes.length === 1) {
-    router.replace(`/viaje-activo?id=${viajes[0].id_viaje}`);
-    return null;
-  }
+  // Single active trip → auto-redirect (in effect to avoid setState-during-render)
+  useEffect(() => {
+    if (viajes.length === 1) {
+      router.replace(`/viaje-activo?id=${viajes[0].id_viaje}`);
+    }
+  }, [viajes, router]);
+
+  if (viajes.length === 1) return null;
 
   return (
     <div className="viaje-activo-list">
