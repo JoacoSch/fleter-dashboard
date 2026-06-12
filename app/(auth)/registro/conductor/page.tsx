@@ -36,7 +36,7 @@ export default function RegistroConductorPage() {
         telefono: form.telefono || undefined,
         licencia_vencimiento: new Date(form.licencia_vencimiento).toISOString(),
       });
-      router.push("/login");
+      router.push("/conductor/registro-vehiculo");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al registrarse");
     } finally {
@@ -96,7 +96,7 @@ export default function RegistroConductorPage() {
 
         <div className="field">
           <label htmlFor="password">Contraseña</label>
-          <input id="password" type="password" placeholder="Mínimo 6 caracteres" value={form.password} onChange={set("password")} required minLength={8} autoComplete="new-password" />
+          <input id="password" type="password" placeholder="Mínimo 8 caracteres" value={form.password} onChange={set("password")} required minLength={8} autoComplete="new-password" />
         </div>
 
         {error && <p className="auth-error">{error}</p>}

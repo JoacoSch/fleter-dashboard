@@ -82,7 +82,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       zona: "MIXTO",
       precio_estimado: 6800,
       precio_real: null,
-      estado: "EN_CURSO",
+      estado: "EN_RUTA",
       fecha_programada: "2026-05-14T11:00:00.000Z",
       creado_en: "2026-05-14T10:30:00.000Z",
       duracion_real: null,
@@ -91,7 +91,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
         { orden: 1, direccion: "Once, CABA" },
         { orden: 2, direccion: "Quilmes, Buenos Aires" },
       ],
-      conductor: null,
+      conductor: { usuario: { nombre: "Carlos", apellido: "López" } },
     },
     {
       id_viaje: 104,
@@ -222,6 +222,34 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       conductor: { usuario: { nombre: "Sebastián", apellido: "Ortiz" } },
     },
   ],
+  "/api/conductores/mis-vehiculos": [
+    {
+      id_vehiculo: 1,
+      id_empresa: null,
+      id_conductor: 1,
+      patente: "ABC123",
+      marca: "Ford",
+      modelo: "Transit",
+      anio: 2021,
+      color: "Blanco",
+      tipo_vehiculo: "furgon",
+      condiciones: [
+        { id_condicion: 1, id_vehiculo: 1, condicion: "FRAGIL" },
+      ],
+    },
+    {
+      id_vehiculo: 2,
+      id_empresa: null,
+      id_conductor: 1,
+      patente: "XY567AB",
+      marca: "Mercedes-Benz",
+      modelo: "Sprinter",
+      anio: 2019,
+      color: "Gris",
+      tipo_vehiculo: "camion",
+      condiciones: [],
+    },
+  ],
   "/api/conductor/mis-viajes": [
     {
       id_viaje: 201,
@@ -260,6 +288,63 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       cliente: { usuario: { nombre: "Laura", apellido: "Méndez" } },
     },
   ],
+  "/api/viajes/103/detalle": {
+    id_viaje: 103,
+    zona: "MIXTO",
+    precio_estimado: 6800,
+    precio_real: null,
+    descripcion: null,
+    estado: "EN_RUTA",
+    fecha_programada: "2026-05-14T11:00:00.000Z",
+    creado_en: "2026-05-14T10:30:00.000Z",
+    paradas: [
+      {
+        orden: 1,
+        direccion: "Once, CABA",
+        latitud: -34.6087,
+        longitud: -58.4088,
+        estado: "ENTREGADO",
+        fecha_entrega: "2026-05-14T11:28:00.000Z",
+      },
+      {
+        orden: 2,
+        direccion: "Quilmes, Buenos Aires",
+        latitud: -34.7206,
+        longitud: -58.2535,
+        estado: "PENDIENTE",
+        fecha_entrega: null,
+      },
+    ],
+    condiciones_req: [],
+    cliente: {
+      id_cliente: 1,
+      usuario: { nombre: "Joaquín", apellido: "Test", email: "joaco@fleter.com" },
+    },
+    conductor: {
+      id_conductor: 7,
+      calificacion_promedio: 4.8,
+      usuario: { nombre: "Carlos", apellido: "López", telefono: "+5491187654321" },
+    },
+    vehiculo: {
+      patente: "ABC123",
+      marca: "Ford",
+      modelo: "Transit",
+      tipo_vehiculo: "furgon",
+      color: "Blanco",
+    },
+  },
+  "/api/viajes/103/costo-acumulado": {
+    precio_acumulado: 2100,
+    desglose: {
+      precio_por_tiempo: null,
+      precio_por_distancia: 2100,
+      tiempo_horas: 0.7,
+      distancia_km: 21,
+      tarifa_hora: null,
+      tarifa_km: 100,
+      es_hora_pico: false,
+    },
+  },
   "/api/auth/me": {
     id_usuario: 1,
     nombre: "Joaquín",
@@ -277,9 +362,29 @@ async function apiFetch<T>(
   options: RequestInit = {}
 ): Promise<T> {
   if (MOCK) {
+    const deleteVehiculo = path.match(/^\/api\/conductores\/mis-vehiculos\/(\d+)$/);
+    if (deleteVehiculo && options.method === "DELETE") {
+      await new Promise((r) => setTimeout(r, 300));
+      return { mensaje: "Vehiculo eliminado" } as T;
+    }
+
+    const costoAcumulado = path.match(/^\/api\/viajes\/(\d+)\/costo-acumulado$/);
+    if (costoAcumulado) {
+      const id = parseInt(costoAcumulado[1], 10);
+      const fixture = MOCK_FIXTURES[`/api/viajes/${id}/costo-acumulado`];
+      await new Promise((r) => setTimeout(r, 300));
+      if (fixture) return fixture as T;
+      return { precio_acumulado: 0, desglose: null } as T;
+    }
+
     const dynamicViaje = path.match(/^\/api\/viajes\/(\d+)$/);
     if (dynamicViaje) {
       const id = parseInt(dynamicViaje[1], 10);
+      const detailed = MOCK_FIXTURES[`/api/viajes/${id}/detalle`];
+      if (detailed) {
+        await new Promise((r) => setTimeout(r, 300));
+        return detailed as T;
+      }
       const list = MOCK_FIXTURES["/api/viajes/mis-viajes"] as { id_viaje: number }[];
       const found = list?.find((v) => v.id_viaje === id);
       await new Promise((r) => setTimeout(r, 300));
@@ -321,4 +426,6 @@ export const api = {
       method: "PUT",
       body: JSON.stringify(body),
     }),
+  delete: <T>(path: string) =>
+    apiFetch<T>(path, { method: "DELETE" }),
 };

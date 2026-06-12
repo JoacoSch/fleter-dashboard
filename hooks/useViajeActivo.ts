@@ -1,0 +1,228 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { io, type Socket } from "socket.io-client";
+import { api } from "@/lib/api";
+import { getAuthToken } from "@/lib/firebase";
+import { BASE_URL, MOCK } from "@/lib/config";
+
+export interface Parada {
+  orden: number;
+  direccion: string;
+  latitud?: number;
+  longitud?: number;
+  estado: "PENDIENTE" | "ENTREGADO";
+  fecha_entrega: string | null;
+}
+
+export interface ViajeDetalle {
+  id_viaje: number;
+  zona: string;
+  precio_estimado: number;
+  precio_real: number | null;
+  descripcion: string | null;
+  estado: string;
+  fecha_programada: string;
+  creado_en: string;
+  paradas: Parada[];
+  condiciones_req: { condicion: string }[];
+  conductor: {
+    id_conductor: number;
+    calificacion_promedio: number;
+    usuario: { nombre: string; apellido: string; telefono: string };
+  } | null;
+  vehiculo: {
+    patente: string;
+    marca: string;
+    modelo: string;
+    tipo_vehiculo: string;
+    color: string;
+  } | null;
+}
+
+export interface CostoAcumulado {
+  precio_acumulado: number;
+  desglose: {
+    precio_por_tiempo: number | null;
+    precio_por_distancia: number | null;
+    tiempo_horas: number;
+    distancia_km: number;
+    tarifa_hora: number | null;
+    tarifa_km: number | null;
+    es_hora_pico: boolean;
+  } | null;
+}
+
+export interface UbicacionUpdate {
+  lat: number;
+  lng: number;
+  timestamp: number;
+  velocidad_kmh: number;
+}
+
+export interface AlertaItem {
+  id: string;
+  tipo: "desvio" | "parada";
+  mensaje: string;
+  timestamp: number;
+}
+
+export interface ViajeFinalizadoPayload {
+  id_viaje: number;
+  precio_real: number;
+  desglose: {
+    precio_por_tiempo: number | null;
+    precio_por_distancia: number | null;
+    tiempo_horas: number;
+    distancia_km: number;
+    tarifa_hora: number | null;
+    tarifa_km: number | null;
+  };
+  remito_url: string;
+}
+
+export function useViajeActivo(id_viaje: number) {
+  const [viaje, setViaje] = useState<ViajeDetalle | null>(null);
+  const [costo, setCosto] = useState<CostoAcumulado | null>(null);
+  const [estado, setEstado] = useState<string | null>(null);
+  const [ultimaPos, setUltimaPos] = useState<UbicacionUpdate | null>(null);
+  const [alertas, setAlertas] = useState<AlertaItem[]>([]);
+  const [finalizado, setFinalizado] = useState<ViajeFinalizadoPayload | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Initial REST data
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([
+      api.get<ViajeDetalle>(`/api/viajes/${id_viaje}`),
+      api.get<CostoAcumulado>(`/api/viajes/${id_viaje}/costo-acumulado`),
+    ])
+      .then(([v, c]) => {
+        setViaje(v);
+        setEstado(v.estado);
+        setCosto(c);
+      })
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Error al cargar el viaje")
+      )
+      .finally(() => setLoading(false));
+  }, [id_viaje]);
+
+  // Socket
+  useEffect(() => {
+    if (MOCK) {
+      // Simulate incremental cost updates
+      let acc = 2100;
+      const costInterval = setInterval(() => {
+        acc += 60;
+        setCosto((prev) =>
+          prev
+            ? {
+                ...prev,
+                precio_acumulado: acc,
+                desglose: prev.desglose
+                  ? { ...prev.desglose, distancia_km: prev.desglose.distancia_km + 0.6 }
+                  : null,
+              }
+            : null
+        );
+      }, 5000);
+
+      // Simulate conductor GPS movement: Once → Quilmes
+      const p1 = { lat: -34.6087, lng: -58.4088 };
+      const p2 = { lat: -34.7206, lng: -58.2535 };
+      let step = 0;
+      const steps = 30;
+      setUltimaPos({ lat: p1.lat, lng: p1.lng, timestamp: Date.now(), velocidad_kmh: 45 });
+      const gpsInterval = setInterval(() => {
+        step = Math.min(step + 1, steps);
+        const t = step / steps;
+        setUltimaPos({
+          lat: p1.lat + (p2.lat - p1.lat) * t,
+          lng: p1.lng + (p2.lng - p1.lng) * t,
+          timestamp: Date.now(),
+          velocidad_kmh: 45,
+        });
+      }, 3000);
+
+      return () => {
+        clearInterval(costInterval);
+        clearInterval(gpsInterval);
+      };
+    }
+
+    let socket: Socket;
+    let cancelled = false;
+
+    async function connect() {
+      try {
+        const token = await getAuthToken();
+        if (cancelled) return;
+
+        socket = io(BASE_URL, {
+          auth: { token: token ? `Bearer ${token}` : "" },
+          transports: ["websocket", "polling"],
+        });
+
+        socket.on("connect", () => {
+          socket.emit("join:viaje", { id_viaje });
+        });
+
+        socket.on("mapa:actualizar", (data: UbicacionUpdate) => {
+          setUltimaPos(data);
+        });
+
+        socket.on("costo:actualizar", (data: CostoAcumulado) => {
+          setCosto(data);
+        });
+
+        socket.on(
+          "alerta:desvio",
+          (data: { id_viaje: number; distancia_metros: number; mensaje: string }) => {
+            setAlertas((prev) => [
+              { id: `desvio-${Date.now()}`, tipo: "desvio", mensaje: data.mensaje, timestamp: Date.now() },
+              ...prev,
+            ]);
+          }
+        );
+
+        socket.on(
+          "alerta:parada",
+          (data: { id_viaje: number; minutos_detenido: number; mensaje: string }) => {
+            setAlertas((prev) => [
+              { id: `parada-${Date.now()}`, tipo: "parada", mensaje: data.mensaje, timestamp: Date.now() },
+              ...prev,
+            ]);
+          }
+        );
+
+        socket.on(
+          "viaje:estado_cambiado",
+          (data: { estado_anterior: string; estado_nuevo: string }) => {
+            setEstado(data.estado_nuevo);
+          }
+        );
+
+        socket.on("viaje:finalizado", (data: ViajeFinalizadoPayload) => {
+          setFinalizado(data);
+          setEstado("FINALIZADO");
+        });
+      } catch {
+        // socket failure is non-fatal — REST data still displays
+      }
+    }
+
+    connect();
+
+    return () => {
+      cancelled = true;
+      if (socket) {
+        socket.emit("leave:viaje", { id_viaje });
+        socket.disconnect();
+      }
+    };
+  }, [id_viaje]);
+
+  return { viaje, costo, estado, ultimaPos, alertas, finalizado, loading, error };
+}

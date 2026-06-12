@@ -200,6 +200,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       nro_licencia: data.nro_licencia,
       licencia_vencimiento: data.licencia_vencimiento,
     });
+    const cred = await signInWithEmailAndPassword(getFirebaseAuth(), data.email, data.password);
+    const token = await cred.user.getIdToken();
+    await setCookieToken(token);
+    const profile = await fetchProfile();
+    setState({ user: cred.user, profile, role: profile.rol, loading: false });
   }, []);
 
   const logout = useCallback(async () => {
