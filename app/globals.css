@@ -1659,6 +1659,19 @@ html {
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
+.viaje-track__eta-badge {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  background: var(--info-soft);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--info);
+  box-shadow: var(--shadow-card);
+  white-space: nowrap;
+}
 .viaje-track__cost-pill {
   position: absolute;
   bottom: 24px; left: 50%;

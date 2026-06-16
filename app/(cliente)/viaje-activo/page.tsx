@@ -184,7 +184,7 @@ function FinalizadoOverlay({ data }: { data: ViajeFinalizadoPayload }) {
 // ── Tracking view ────────────────────────────────────────────────────────────
 
 function TrackingView({ idViaje }: { idViaje: number }) {
-  const { viaje, costo, estado, ultimaPos, ruta, alertas, finalizado, loading, error } = useViajeActivo(idViaje);
+  const { viaje, costo, estado, ultimaPos, ruta, eta, alertas, finalizado, loading, error } = useViajeActivo(idViaje);
   const [panelOpen, setPanelOpen] = useState(true);
 
   if (loading) {
@@ -227,6 +227,11 @@ function TrackingView({ idViaje }: { idViaje: number }) {
             <span className="nav-item__live-dot" style={{ width: 7, height: 7 }} />
             {ESTADO_LABELS[estadoActual] ?? estadoActual.replace(/_/g, " ")}
           </div>
+          {eta && (
+            <div className="viaje-track__eta-badge">
+              Llega en ~{eta.minutos_restantes} min
+            </div>
+          )}
         </div>
 
         <div className="viaje-track__map-canvas">

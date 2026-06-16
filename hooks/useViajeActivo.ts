@@ -61,6 +61,13 @@ export interface UbicacionUpdate {
   velocidad_kmh: number;
 }
 
+export interface EtaUpdate {
+  id_viaje: number;
+  proxima_parada_id: number;
+  segundos_restantes: number;
+  minutos_restantes: number;
+}
+
 export interface AlertaItem {
   id: string;
   tipo: "desvio" | "parada";
@@ -88,6 +95,7 @@ export function useViajeActivo(id_viaje: number) {
   const [estado, setEstado] = useState<string | null>(null);
   const [ultimaPos, setUltimaPos] = useState<UbicacionUpdate | null>(null);
   const [ruta, setRuta] = useState<[number, number][] | null>(null);
+  const [eta, setEta] = useState<EtaUpdate | null>(null);
   const [alertas, setAlertas] = useState<AlertaItem[]>([]);
   const [finalizado, setFinalizado] = useState<ViajeFinalizadoPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -149,9 +157,28 @@ export function useViajeActivo(id_viaje: number) {
         });
       }, 3000);
 
+      // Simulate ETA countdown to next stop (~31 min → decreasing)
+      let segundos = 31 * 60;
+      setEta({
+        id_viaje,
+        proxima_parada_id: 2,
+        segundos_restantes: segundos,
+        minutos_restantes: Math.ceil(segundos / 60),
+      });
+      const etaInterval = setInterval(() => {
+        segundos = Math.max(0, segundos - 30);
+        setEta({
+          id_viaje,
+          proxima_parada_id: 2,
+          segundos_restantes: segundos,
+          minutos_restantes: Math.ceil(segundos / 60),
+        });
+      }, 5000);
+
       return () => {
         clearInterval(costInterval);
         clearInterval(gpsInterval);
+        clearInterval(etaInterval);
       };
     }
 
@@ -178,6 +205,10 @@ export function useViajeActivo(id_viaje: number) {
 
         socket.on("costo:actualizar", (data: CostoAcumulado) => {
           setCosto(data);
+        });
+
+        socket.on("eta:actualizar", (data: EtaUpdate) => {
+          setEta(data);
         });
 
         socket.on(
@@ -227,5 +258,5 @@ export function useViajeActivo(id_viaje: number) {
     };
   }, [id_viaje]);
 
-  return { viaje, costo, estado, ultimaPos, ruta, alertas, finalizado, loading, error };
+  return { viaje, costo, estado, ultimaPos, ruta, eta, alertas, finalizado, loading, error };
 }
