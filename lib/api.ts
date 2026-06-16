@@ -316,6 +316,15 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       },
     ],
     condiciones_req: [],
+    ruta_planeada: [
+      [-58.4088, -34.6087],
+      [-58.4012, -34.6155],
+      [-58.3705, -34.6298],
+      [-58.3402, -34.6512],
+      [-58.3001, -34.6789],
+      [-58.2755, -34.7012],
+      [-58.2535, -34.7206],
+    ],
     cliente: {
       id_cliente: 1,
       usuario: { nombre: "Joaquín", apellido: "Test", email: "joaco@fleter.com" },

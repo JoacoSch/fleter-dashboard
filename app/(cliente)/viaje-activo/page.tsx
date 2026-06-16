@@ -184,7 +184,7 @@ function FinalizadoOverlay({ data }: { data: ViajeFinalizadoPayload }) {
 // ── Tracking view ────────────────────────────────────────────────────────────
 
 function TrackingView({ idViaje }: { idViaje: number }) {
-  const { viaje, costo, estado, ultimaPos, alertas, finalizado, loading, error } = useViajeActivo(idViaje);
+  const { viaje, costo, estado, ultimaPos, ruta, alertas, finalizado, loading, error } = useViajeActivo(idViaje);
   const [panelOpen, setPanelOpen] = useState(true);
 
   if (loading) {
@@ -230,7 +230,7 @@ function TrackingView({ idViaje }: { idViaje: number }) {
         </div>
 
         <div className="viaje-track__map-canvas">
-          <MapaViajeActivo paradas={viaje.paradas} ultimaPos={ultimaPos} />
+          <MapaViajeActivo paradas={viaje.paradas} ultimaPos={ultimaPos} ruta={ruta} />
         </div>
 
         {/* Floating bottom: cost pill */}

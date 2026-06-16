@@ -38,6 +38,7 @@ export interface ViajeDetalle {
     tipo_vehiculo: string;
     color: string;
   } | null;
+  ruta_planeada: [number, number][] | null;
 }
 
 export interface CostoAcumulado {
@@ -86,6 +87,7 @@ export function useViajeActivo(id_viaje: number) {
   const [costo, setCosto] = useState<CostoAcumulado | null>(null);
   const [estado, setEstado] = useState<string | null>(null);
   const [ultimaPos, setUltimaPos] = useState<UbicacionUpdate | null>(null);
+  const [ruta, setRuta] = useState<[number, number][] | null>(null);
   const [alertas, setAlertas] = useState<AlertaItem[]>([]);
   const [finalizado, setFinalizado] = useState<ViajeFinalizadoPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -101,6 +103,7 @@ export function useViajeActivo(id_viaje: number) {
       .then(([v, c]) => {
         setViaje(v);
         setEstado(v.estado);
+        setRuta(v.ruta_planeada);
         setCosto(c);
       })
       .catch((err) =>
@@ -224,5 +227,5 @@ export function useViajeActivo(id_viaje: number) {
     };
   }, [id_viaje]);
 
-  return { viaje, costo, estado, ultimaPos, alertas, finalizado, loading, error };
+  return { viaje, costo, estado, ultimaPos, ruta, alertas, finalizado, loading, error };
 }
