@@ -227,25 +227,17 @@ function TrackingView({ idViaje }: { idViaje: number }) {
             <span className="nav-item__live-dot" style={{ width: 7, height: 7 }} />
             {ESTADO_LABELS[estadoActual] ?? estadoActual.replace(/_/g, " ")}
           </div>
-          {eta && (
-            <div className="viaje-track__eta-badge">
-              Llega en ~{eta.minutos_restantes} min
-            </div>
-          )}
         </div>
 
         <div className="viaje-track__map-canvas">
           <MapaViajeActivo paradas={viaje.paradas} ultimaPos={ultimaPos} ruta={ruta} />
         </div>
 
-        {/* Floating bottom: cost pill */}
-        {costo && (
+        {/* Floating bottom: ETA pill (el acumulado no se muestra por diseño) */}
+        {eta && (
           <div className="viaje-track__cost-pill">
-            <span className="viaje-track__cost-label">Acumulado</span>
-            <span className="viaje-track__cost-value">{formatARS(costo.precio_acumulado)}</span>
-            {costo.desglose?.distancia_km != null && (
-              <span className="viaje-track__cost-km">{costo.desglose.distancia_km.toFixed(1)} km</span>
-            )}
+            <span className="viaje-track__cost-label">Llega en</span>
+            <span className="viaje-track__cost-value">~{eta.minutos_restantes} min</span>
           </div>
         )}
 
