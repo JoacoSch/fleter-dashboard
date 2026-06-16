@@ -271,7 +271,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
     },
     {
       id_viaje: 203,
-      estado: "EN_CURSO",
+      estado: "EN_RUTA",
       paradas: [
         { orden: 1, direccion: "Retiro, CABA" },
         { orden: 2, direccion: "Tigre, Buenos Aires" },
