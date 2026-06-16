@@ -250,7 +250,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       condiciones: [],
     },
   ],
-  "/api/conductor/mis-viajes": [
+  "/api/viajes/mis-viajes-conductor": [
     {
       id_viaje: 201,
       estado: "ENTREGADO",
