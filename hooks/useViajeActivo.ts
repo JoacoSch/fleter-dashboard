@@ -175,10 +175,31 @@ export function useViajeActivo(id_viaje: number) {
         });
       }, 5000);
 
+      // Simulate a single route recalculation due to a detour
+      const recalcTimeout = setTimeout(() => {
+        setRuta([
+          [-58.4088, -34.6087],
+          [-58.3902, -34.6201],
+          [-58.3502, -34.6402],
+          [-58.3001, -34.6789],
+          [-58.2535, -34.7206],
+        ]);
+        setAlertas((prev) => [
+          {
+            id: `recalculo-${Date.now()}`,
+            tipo: "desvio",
+            mensaje: "Ruta recalculada por desvío",
+            timestamp: Date.now(),
+          },
+          ...prev,
+        ]);
+      }, 12000);
+
       return () => {
         clearInterval(costInterval);
         clearInterval(gpsInterval);
         clearInterval(etaInterval);
+        clearTimeout(recalcTimeout);
       };
     }
 
@@ -210,6 +231,22 @@ export function useViajeActivo(id_viaje: number) {
         socket.on("eta:actualizar", (data: EtaUpdate) => {
           setEta(data);
         });
+
+        socket.on(
+          "ruta:recalculada",
+          (data: { id_viaje: number; nueva_ruta: [number, number][]; proxima_parada_id: number; motivo: string }) => {
+            setRuta(data.nueva_ruta);
+            setAlertas((prev) => [
+              {
+                id: `recalculo-${Date.now()}`,
+                tipo: "desvio",
+                mensaje: "Ruta recalculada por desvío",
+                timestamp: Date.now(),
+              },
+              ...prev,
+            ]);
+          }
+        );
 
         socket.on(
           "alerta:desvio",
