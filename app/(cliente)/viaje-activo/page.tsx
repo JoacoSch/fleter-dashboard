@@ -55,6 +55,14 @@ function ViajeListView() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Single active trip → auto-redirect (in effect to avoid setState-during-render).
+  // Must run before any conditional return to keep hook order stable.
+  useEffect(() => {
+    if (!loading && viajes.length === 1) {
+      router.replace(`/viaje-activo?id=${viajes[0].id_viaje}`);
+    }
+  }, [loading, viajes, router]);
+
   if (loading) {
     return (
       <div className="viaje-activo-list">
@@ -81,13 +89,6 @@ function ViajeListView() {
       </div>
     );
   }
-
-  // Single active trip → auto-redirect (in effect to avoid setState-during-render)
-  useEffect(() => {
-    if (viajes.length === 1) {
-      router.replace(`/viaje-activo?id=${viajes[0].id_viaje}`);
-    }
-  }, [viajes, router]);
 
   if (viajes.length === 1) return null;
 
