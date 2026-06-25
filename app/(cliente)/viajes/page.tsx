@@ -9,18 +9,26 @@ import { formatARS, fmtDate, fmtTime, formatDuracion } from "@/lib/utils";
 
 const ESTADO_LABEL: Record<string, string> = {
   ENTREGADO: "ENTREGADO",
-  EN_CURSO: "EN CURSO",
+  FINALIZADO: "FINALIZADO",
   CANCELADO: "CANCELADO",
   BUSCANDO_CONDUCTOR: "BUSCANDO",
   CONDUCTOR_ASIGNADO: "ASIGNADO",
+  EN_CAMINO_A_ORIGEN: "EN CAMINO",
+  CARGANDO: "CARGANDO",
+  EN_RUTA: "EN RUTA",
+  DESCARGANDO: "DESCARGANDO",
 };
 
 const ESTADO_CSS: Record<string, string> = {
   ENTREGADO: "ENTREGADO",
-  EN_CURSO: "EN_CURSO",
+  FINALIZADO: "ENTREGADO",
   CANCELADO: "CANCELADO",
   BUSCANDO_CONDUCTOR: "BUSCANDO_FLETERO",
   CONDUCTOR_ASIGNADO: "BUSCANDO_FLETERO",
+  EN_CAMINO_A_ORIGEN: "EN_RUTA",
+  CARGANDO: "EN_RUTA",
+  EN_RUTA: "EN_RUTA",
+  DESCARGANDO: "EN_RUTA",
 };
 
 type SortKey = "fecha" | "precio_real" | "duracion_real";

@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main, development]
+
+# Cancela corridas viejas si se pushea de nuevo al mismo branch/PR.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build + typecheck (obligatorio)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Build (next build incluye chequeo de TypeScript)
+        run: npm run build
+        env:
+          # Placeholders para que el build sea determinista en CI.
+          # Los valores reales viven en Vercel (env vars del proyecto), no acá.
+          NEXT_PUBLIC_API_URL: https://example.invalid
+          NEXT_PUBLIC_WS_URL: wss://example.invalid
+          NEXT_PUBLIC_FIREBASE_API_KEY: ci-placeholder
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ci-placeholder.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ci-placeholder
+          NEXT_PUBLIC_GOOGLE_MAPS_KEY: ci-placeholder
+          NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID: ci-placeholder
+          NEXT_PUBLIC_MOCK: "false"
+
+  lint:
+    name: Lint (informativo)
+    runs-on: ubuntu-latest
+    # No bloquea el merge: hoy hay errores conocidos de react-hooks por limpiar.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint

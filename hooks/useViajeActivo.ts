@@ -38,6 +38,7 @@ export interface ViajeDetalle {
     tipo_vehiculo: string;
     color: string;
   } | null;
+  ruta_planeada: [number, number][] | null;
 }
 
 export interface CostoAcumulado {
@@ -58,6 +59,13 @@ export interface UbicacionUpdate {
   lng: number;
   timestamp: number;
   velocidad_kmh: number;
+}
+
+export interface EtaUpdate {
+  id_viaje: number;
+  proxima_parada_id: number;
+  segundos_restantes: number;
+  minutos_restantes: number;
 }
 
 export interface AlertaItem {
@@ -86,6 +94,8 @@ export function useViajeActivo(id_viaje: number) {
   const [costo, setCosto] = useState<CostoAcumulado | null>(null);
   const [estado, setEstado] = useState<string | null>(null);
   const [ultimaPos, setUltimaPos] = useState<UbicacionUpdate | null>(null);
+  const [ruta, setRuta] = useState<[number, number][] | null>(null);
+  const [eta, setEta] = useState<EtaUpdate | null>(null);
   const [alertas, setAlertas] = useState<AlertaItem[]>([]);
   const [finalizado, setFinalizado] = useState<ViajeFinalizadoPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -101,6 +111,7 @@ export function useViajeActivo(id_viaje: number) {
       .then(([v, c]) => {
         setViaje(v);
         setEstado(v.estado);
+        setRuta(v.ruta_planeada);
         setCosto(c);
       })
       .catch((err) =>
@@ -146,9 +157,49 @@ export function useViajeActivo(id_viaje: number) {
         });
       }, 3000);
 
+      // Simulate ETA countdown to next stop (~31 min → decreasing)
+      let segundos = 31 * 60;
+      setEta({
+        id_viaje,
+        proxima_parada_id: 2,
+        segundos_restantes: segundos,
+        minutos_restantes: Math.ceil(segundos / 60),
+      });
+      const etaInterval = setInterval(() => {
+        segundos = Math.max(0, segundos - 30);
+        setEta({
+          id_viaje,
+          proxima_parada_id: 2,
+          segundos_restantes: segundos,
+          minutos_restantes: Math.ceil(segundos / 60),
+        });
+      }, 5000);
+
+      // Simulate a single route recalculation due to a detour
+      const recalcTimeout = setTimeout(() => {
+        setRuta([
+          [-58.4088, -34.6087],
+          [-58.3902, -34.6201],
+          [-58.3502, -34.6402],
+          [-58.3001, -34.6789],
+          [-58.2535, -34.7206],
+        ]);
+        setAlertas((prev) => [
+          {
+            id: `recalculo-${Date.now()}`,
+            tipo: "desvio",
+            mensaje: "Ruta recalculada por desvío",
+            timestamp: Date.now(),
+          },
+          ...prev,
+        ]);
+      }, 12000);
+
       return () => {
         clearInterval(costInterval);
         clearInterval(gpsInterval);
+        clearInterval(etaInterval);
+        clearTimeout(recalcTimeout);
       };
     }
 
@@ -176,6 +227,26 @@ export function useViajeActivo(id_viaje: number) {
         socket.on("costo:actualizar", (data: CostoAcumulado) => {
           setCosto(data);
         });
+
+        socket.on("eta:actualizar", (data: EtaUpdate) => {
+          setEta(data);
+        });
+
+        socket.on(
+          "ruta:recalculada",
+          (data: { id_viaje: number; nueva_ruta: [number, number][]; proxima_parada_id: number; motivo: string }) => {
+            setRuta(data.nueva_ruta);
+            setAlertas((prev) => [
+              {
+                id: `recalculo-${Date.now()}`,
+                tipo: "desvio",
+                mensaje: "Ruta recalculada por desvío",
+                timestamp: Date.now(),
+              },
+              ...prev,
+            ]);
+          }
+        );
 
         socket.on(
           "alerta:desvio",
@@ -224,5 +295,5 @@ export function useViajeActivo(id_viaje: number) {
     };
   }, [id_viaje]);
 
-  return { viaje, costo, estado, ultimaPos, alertas, finalizado, loading, error };
+  return { viaje, costo, estado, ultimaPos, ruta, eta, alertas, finalizado, loading, error };
 }

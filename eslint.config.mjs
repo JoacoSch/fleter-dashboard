@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // No forman parte de la app Next: prototipos de referencia y app móvil separada.
+    "context/prototype/**",
+    "fleter-mobile-master/**",
   ]),
 ]);
 

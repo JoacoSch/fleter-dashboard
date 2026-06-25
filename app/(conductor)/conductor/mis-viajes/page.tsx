@@ -55,7 +55,7 @@ export default function MisViajesPage() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    api.get<MiViaje[]>("/api/conductor/mis-viajes")
+    api.get<MiViaje[]>("/api/viajes/mis-viajes-conductor")
       .then(setViajes)
       .catch(() => setError(true))
       .finally(() => setLoading(false));

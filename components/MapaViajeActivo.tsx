@@ -10,7 +10,13 @@ import {
 } from "@vis.gl/react-google-maps";
 import type { Parada, UbicacionUpdate } from "@/hooks/useViajeActivo";
 
-function RoutePolyline({ paradas }: { paradas: Parada[] }) {
+function RoutePolyline({
+  paradas,
+  ruta,
+}: {
+  paradas: Parada[];
+  ruta?: [number, number][] | null;
+}) {
   const map = useMap();
   const mapsLib = useMapsLibrary("maps");
   const polyRef = useRef<google.maps.Polyline | null>(null);
@@ -18,10 +24,15 @@ function RoutePolyline({ paradas }: { paradas: Parada[] }) {
   useEffect(() => {
     if (!map || !mapsLib) return;
 
-    const path = [...paradas]
-      .sort((a, b) => a.orden - b.orden)
-      .filter((p) => p.latitud != null && p.longitud != null)
-      .map((p) => ({ lat: p.latitud!, lng: p.longitud! }));
+    // Ruta real de Google Directions: array de [lng, lat] (longitud primero).
+    // Si no hay ruta, fallback a la línea recta entre paradas.
+    const path =
+      ruta && ruta.length >= 2
+        ? ruta.map(([lng, lat]) => ({ lat, lng }))
+        : [...paradas]
+            .sort((a, b) => a.orden - b.orden)
+            .filter((p) => p.latitud != null && p.longitud != null)
+            .map((p) => ({ lat: p.latitud!, lng: p.longitud! }));
 
     if (path.length < 2) return;
 
@@ -37,7 +48,7 @@ function RoutePolyline({ paradas }: { paradas: Parada[] }) {
       polyRef.current?.setMap(null);
       polyRef.current = null;
     };
-  }, [map, mapsLib, paradas]);
+  }, [map, mapsLib, paradas, ruta]);
 
   return null;
 }
@@ -65,9 +76,11 @@ function ConductorPin({ pos }: { pos: UbicacionUpdate }) {
 function MapContent({
   paradas,
   ultimaPos,
+  ruta,
 }: {
   paradas: Parada[];
   ultimaPos: UbicacionUpdate | null;
+  ruta?: [number, number][] | null;
 }) {
   const map = useMap();
 
@@ -81,7 +94,7 @@ function MapContent({
 
   return (
     <>
-      <RoutePolyline paradas={paradas} />
+      <RoutePolyline paradas={paradas} ruta={ruta} />
       {paradasConCoords.map((p) => (
         <ParadaPin key={p.orden} parada={p} />
       ))}
@@ -93,9 +106,11 @@ function MapContent({
 export function MapaViajeActivo({
   paradas,
   ultimaPos,
+  ruta,
 }: {
   paradas: Parada[];
   ultimaPos: UbicacionUpdate | null;
+  ruta?: [number, number][] | null;
 }) {
   const paradasConCoords = paradas.filter((p) => p.latitud != null);
   const initialCenter =
@@ -118,7 +133,7 @@ export function MapaViajeActivo({
         gestureHandling="greedy"
         style={{ width: "100%", height: "100%" }}
       >
-        <MapContent paradas={paradas} ultimaPos={ultimaPos} />
+        <MapContent paradas={paradas} ultimaPos={ultimaPos} ruta={ruta} />
       </Map>
     </APIProvider>
   );

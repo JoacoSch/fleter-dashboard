@@ -55,6 +55,14 @@ function ViajeListView() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Single active trip → auto-redirect (in effect to avoid setState-during-render).
+  // Must run before any conditional return to keep hook order stable.
+  useEffect(() => {
+    if (!loading && viajes.length === 1) {
+      router.replace(`/viaje-activo?id=${viajes[0].id_viaje}`);
+    }
+  }, [loading, viajes, router]);
+
   if (loading) {
     return (
       <div className="viaje-activo-list">
@@ -81,13 +89,6 @@ function ViajeListView() {
       </div>
     );
   }
-
-  // Single active trip → auto-redirect (in effect to avoid setState-during-render)
-  useEffect(() => {
-    if (viajes.length === 1) {
-      router.replace(`/viaje-activo?id=${viajes[0].id_viaje}`);
-    }
-  }, [viajes, router]);
 
   if (viajes.length === 1) return null;
 
@@ -184,7 +185,7 @@ function FinalizadoOverlay({ data }: { data: ViajeFinalizadoPayload }) {
 // ── Tracking view ────────────────────────────────────────────────────────────
 
 function TrackingView({ idViaje }: { idViaje: number }) {
-  const { viaje, costo, estado, ultimaPos, alertas, finalizado, loading, error } = useViajeActivo(idViaje);
+  const { viaje, costo, estado, ultimaPos, ruta, eta, alertas, finalizado, loading, error } = useViajeActivo(idViaje);
   const [panelOpen, setPanelOpen] = useState(true);
 
   if (loading) {
@@ -230,17 +231,14 @@ function TrackingView({ idViaje }: { idViaje: number }) {
         </div>
 
         <div className="viaje-track__map-canvas">
-          <MapaViajeActivo paradas={viaje.paradas} ultimaPos={ultimaPos} />
+          <MapaViajeActivo paradas={viaje.paradas} ultimaPos={ultimaPos} ruta={ruta} />
         </div>
 
-        {/* Floating bottom: cost pill */}
-        {costo && (
+        {/* Floating bottom: ETA pill (el acumulado no se muestra por diseño) */}
+        {eta && (
           <div className="viaje-track__cost-pill">
-            <span className="viaje-track__cost-label">Acumulado</span>
-            <span className="viaje-track__cost-value">{formatARS(costo.precio_acumulado)}</span>
-            {costo.desglose?.distancia_km != null && (
-              <span className="viaje-track__cost-km">{costo.desglose.distancia_km.toFixed(1)} km</span>
-            )}
+            <span className="viaje-track__cost-label">Llega en</span>
+            <span className="viaje-track__cost-value">~{eta.minutos_restantes} min</span>
           </div>
         )}
 

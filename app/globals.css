@@ -563,7 +563,7 @@ html {
     flex-shrink: 0;
   }
   .status.ENTREGADO        { background: var(--ok-soft);   color: var(--ok); }
-  .status.EN_CURSO         { background: var(--info-soft); color: var(--info); }
+  .status.EN_RUTA          { background: var(--info-soft); color: var(--info); }
   .status.CANCELADO        { background: var(--err-soft);  color: var(--err); }
   .status.BUSCANDO_FLETERO { background: var(--warn-soft); color: var(--warn); }
 
