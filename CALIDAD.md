@@ -115,6 +115,13 @@ VERCEL_PROJECT_ID  = prj_UjWPpoOFTnnkd87QiNXS8NPBpFpb
 VERCEL_TOKEN       = (generar en Vercel → Account Settings → Tokens)
 ```
 
+**Un solo camino de deploy:** Vercel tiene su propia integración con GitHub que
+deploya automáticamente, pero lo hace *sin esperar* a los checks. Para que el deploy a
+producción dependa de que pasen los tests, se desactiva el auto-deploy nativo en `main`
+vía `vercel.json` (`git.deploymentEnabled.main = false`) y la producción la publica
+únicamente el job `deploy` del pipeline. Los preview deploys de Vercel en los PRs se
+mantienen (son útiles y no pisan producción).
+
 ---
 
 ## 6. Limitaciones y deuda técnica conocida
