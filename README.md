@@ -46,5 +46,4 @@ Detalle de la estrategia de calidad, casos cubiertos y pipeline: ver [`CALIDAD.m
 
 ## Producción
 
-Deploy en Vercel (proyecto `fleter`): https://fleter.vercel.app _(confirmar la URL
-final en el dashboard de Vercel)_.
+Deploy en Vercel (proyecto `fleter`): https://fleter-mu.vercel.app
