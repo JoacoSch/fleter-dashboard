@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fleter Dashboard
 
-## Getting Started
+Panel web de **Fleter**, un marketplace de fletes que conecta clientes (empresas o
+personas que necesitan transporte de carga), conductores y gerentes. Este repo es el
+**frontend** (Next.js 16 + React 19 + TypeScript); el backend es un servicio externo
+que expone una API REST + WebSockets (Socket.io para el tiempo real).
 
-First, run the development server:
+## Correr en local
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+La app queda en http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Para desarrollar **sin backend ni Firebase** (datos de ejemplo), usar el modo MOCK:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+NEXT_PUBLIC_MOCK=true NEXT_PUBLIC_MOCK_ROLE=CLIENTE npm run dev
+```
 
-## Learn More
+En modo MOCK el login no valida credenciales y las pantallas se alimentan de fixtures
+(ver `lib/api.ts`, `hooks/useAuth.tsx` y las ramas MOCK de las API routes).
+`NEXT_PUBLIC_MOCK_ROLE` puede ser `CLIENTE`, `CONDUCTOR` o `GERENTE`.
 
-To learn more about Next.js, take a look at the following resources:
+## Tests
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm test          # unit tests (Vitest)
+npm run test:e2e  # tests end-to-end (Playwright, levanta la app en modo MOCK)
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+La primera vez, instalar el navegador de Playwright: `npx playwright install chromium`.
 
-## Deploy on Vercel
+Detalle de la estrategia de calidad, casos cubiertos y pipeline: ver [`CALIDAD.md`](./CALIDAD.md).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Flujo de trabajo (branches)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Ramas de trabajo: `feature/nombre-feature` o `fix/nombre-bug`.
+- Los Pull Requests van contra `development`.
+- `development` se mergea a `main` para publicar a producción.
+- El pipeline de CI corre en cada push/PR a `main` y `development`; el **deploy a
+  producción solo ocurre en push a `main`** y únicamente si build, lint, unit tests
+  y E2E pasaron (ver `.github/workflows/ci.yml`).
+
+## Producción
+
+Deploy en Vercel (proyecto `fleter`): https://fleter.vercel.app _(confirmar la URL
+final en el dashboard de Vercel)_.
