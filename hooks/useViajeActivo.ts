@@ -93,17 +93,26 @@ export function useViajeActivo(id_viaje: number) {
   const [viaje, setViaje] = useState<ViajeDetalle | null>(null);
   const [costo, setCosto] = useState<CostoAcumulado | null>(null);
   const [estado, setEstado] = useState<string | null>(null);
-  const [ultimaPos, setUltimaPos] = useState<UbicacionUpdate | null>(null);
+  // En MOCK la posición inicial (Once) se deriva en el initializer; en modo
+  // real arranca en null hasta que el socket envíe la primera ubicación.
+  const [ultimaPos, setUltimaPos] = useState<UbicacionUpdate | null>(() =>
+    MOCK ? { lat: -34.6087, lng: -58.4088, timestamp: Date.now(), velocidad_kmh: 45 } : null
+  );
   const [ruta, setRuta] = useState<[number, number][] | null>(null);
-  const [eta, setEta] = useState<EtaUpdate | null>(null);
+  // En MOCK el ETA inicial (~31 min) se deriva en el initializer; en modo real
+  // arranca en null hasta que el socket envíe el primer eta:actualizar.
+  const [eta, setEta] = useState<EtaUpdate | null>(() =>
+    MOCK
+      ? { id_viaje, proxima_parada_id: 2, segundos_restantes: 31 * 60, minutos_restantes: 31 }
+      : null
+  );
   const [alertas, setAlertas] = useState<AlertaItem[]>([]);
   const [finalizado, setFinalizado] = useState<ViajeFinalizadoPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Initial REST data
+  // Initial REST data (loading arranca en true desde el useState inicial)
   useEffect(() => {
-    setLoading(true);
     Promise.all([
       api.get<ViajeDetalle>(`/api/viajes/${id_viaje}`),
       api.get<CostoAcumulado>(`/api/viajes/${id_viaje}/costo-acumulado`),
@@ -145,7 +154,7 @@ export function useViajeActivo(id_viaje: number) {
       const p2 = { lat: -34.7206, lng: -58.2535 };
       let step = 0;
       const steps = 30;
-      setUltimaPos({ lat: p1.lat, lng: p1.lng, timestamp: Date.now(), velocidad_kmh: 45 });
+      // La posición inicial (p1) ya quedó seteada en el useState inicial.
       const gpsInterval = setInterval(() => {
         step = Math.min(step + 1, steps);
         const t = step / steps;
@@ -157,14 +166,9 @@ export function useViajeActivo(id_viaje: number) {
         });
       }, 3000);
 
-      // Simulate ETA countdown to next stop (~31 min → decreasing)
+      // Simulate ETA countdown to next stop (~31 min → decreasing).
+      // El valor inicial ya quedó seteado en el useState inicial.
       let segundos = 31 * 60;
-      setEta({
-        id_viaje,
-        proxima_parada_id: 2,
-        segundos_restantes: segundos,
-        minutos_restantes: Math.ceil(segundos / 60),
-      });
       const etaInterval = setInterval(() => {
         segundos = Math.max(0, segundos - 30);
         setEta({
