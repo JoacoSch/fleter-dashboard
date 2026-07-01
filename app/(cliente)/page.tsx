@@ -62,9 +62,17 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Al cambiar el período se vuelve a mostrar el estado de carga. Se ajusta
+  // durante el render (patrón de React) en vez de llamar setState en el efecto.
+  const fetchKey = JSON.stringify(queryParams) + `|${periodo.mode}`;
+  const [prevFetchKey, setPrevFetchKey] = useState(fetchKey);
+  if (fetchKey !== prevFetchKey) {
+    setPrevFetchKey(fetchKey);
     setLoading(true);
     setError(null);
+  }
+
+  useEffect(() => {
     const params = new URLSearchParams();
     if ("desde" in queryParams) {
       params.set("desde", queryParams.desde);

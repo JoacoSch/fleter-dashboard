@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { getAuthToken } from "@/lib/firebase";
 import { BASE_URL, MOCK } from "@/lib/config";
 
 export function useSocket() {
-  const socketRef = useRef<Socket | null>(null);
+  // El socket se expone vía state (no un ref leído en el render): así los
+  // consumidores que dependen de `socket` re-renderizan cuando conecta.
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,21 +16,21 @@ export function useSocket() {
     if (MOCK) return;
 
     let cancelled = false;
-    let socket: Socket;
+    let s: Socket;
 
     async function connect() {
       try {
         const token = await getAuthToken();
         if (cancelled) return;
-        socket = io(BASE_URL, {
+        s = io(BASE_URL, {
           auth: { token: token ? `Bearer ${token}` : "" },
           transports: ["websocket", "polling"],
         });
 
-        socket.on("connect", () => setConnected(true));
-        socket.on("disconnect", () => setConnected(false));
+        s.on("connect", () => setConnected(true));
+        s.on("disconnect", () => setConnected(false));
 
-        socketRef.current = socket;
+        setSocket(s);
       } catch {
         if (!cancelled) setError("No se pudo conectar al servidor.");
       }
@@ -38,10 +40,10 @@ export function useSocket() {
 
     return () => {
       cancelled = true;
-      socket?.disconnect();
-      socketRef.current = null;
+      s?.disconnect();
+      setSocket(null);
     };
   }, []);
 
-  return { socket: socketRef.current, connected, error };
+  return { socket, connected, error };
 }

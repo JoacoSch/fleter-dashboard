@@ -29,15 +29,18 @@ export default function AddressInput({ placeholder, value, onChange, onSelect, o
   const ready = placesLib !== null;
 
   const [inputValue, setInputValue] = useState(value);
+  const [prevValue, setPrevValue] = useState(value);
   const [suggestions, setSuggestions] = useState<google.maps.places.PlacePrediction[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Sync external value resets (e.g. after adding a stop)
-  useEffect(() => {
-    if (value !== inputValue) setInputValue(value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  // Sync external value resets (e.g. after adding a stop). Patrón de React
+  // "Adjusting state when a prop changes": se ajusta durante el render
+  // comparando con el valor anterior, no dentro de un useEffect.
+  if (value !== prevValue) {
+    setPrevValue(value);
+    setInputValue(value);
+  }
 
   const fetchSuggestions = useCallback(
     async (text: string) => {

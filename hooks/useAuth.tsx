@@ -100,24 +100,26 @@ async function fetchProfile(): Promise<UserProfile> {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    profile: null,
-    role: null,
-    loading: true,
-  });
-
-  useEffect(() => {
+  const [state, setState] = useState<AuthState>(() => {
+    // En modo MOCK el estado inicial se deriva de la cookie con un lazy
+    // initializer (no en un efecto de montaje). Guardado con typeof document
+    // para no romper el render en el servidor (SSR).
     if (MOCK) {
-      const hasCookie = document.cookie.includes("token=mock");
-      setState({
+      const hasCookie =
+        typeof document !== "undefined" && document.cookie.includes("token=mock");
+      return {
         user: null,
         profile: hasCookie ? MOCK_PROFILE : null,
         role: hasCookie ? MOCK_ROLE : null,
         loading: false,
-      });
-      return;
+      };
     }
+    return { user: null, profile: null, role: null, loading: true };
+  });
+
+  useEffect(() => {
+    // En MOCK el estado ya quedó resuelto en el initializer; no hay suscripción.
+    if (MOCK) return;
 
     const unsub = onIdTokenChanged(getFirebaseAuth(), async (user) => {
       if (!user) {

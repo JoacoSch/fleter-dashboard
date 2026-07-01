@@ -94,8 +94,6 @@ export default function ViajesPage() {
   const [filter, setFilter] = useState<FilterKey>("TODOS");
 
   async function fetchViajes() {
-    setLoading(true);
-    setError(null);
     try {
       const data = await api.get<MisViajesItem[]>("/api/viajes/mis-viajes");
       setRawViajes(data);
@@ -106,8 +104,23 @@ export default function ViajesPage() {
     }
   }
 
-  useEffect(() => { fetchViajes(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setPage(1); }, [periodo, sortKey, sortDir, filter, search]);
+  // loading arranca en true desde el useState inicial (fetch de montaje).
+  // setState solo en callbacks async (.then/.catch/.finally), nunca sincrónico.
+  useEffect(() => {
+    api.get<MisViajesItem[]>("/api/viajes/mis-viajes")
+      .then(setRawViajes)
+      .catch((e) => setError(e instanceof Error ? e.message : "Error al cargar los viajes"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Reset a la primera página cuando cambia el período/orden/filtro/búsqueda.
+  // Patrón de React "adjusting state during render" en vez de un useEffect.
+  const resetKey = JSON.stringify(periodo) + `|${sortKey}|${sortDir}|${filter}|${search}`;
+  const [prevResetKey, setPrevResetKey] = useState(resetKey);
+  if (resetKey !== prevResetKey) {
+    setPrevResetKey(resetKey);
+    setPage(1);
+  }
 
   const filtered = useMemo(() => {
     let items = rawViajes;
@@ -207,7 +220,7 @@ export default function ViajesPage() {
       {error && (
         <div className="error-banner error-banner--row">
           <span>{error}</span>
-          <button className="btn" onClick={fetchViajes} type="button">Reintentar</button>
+          <button className="btn" onClick={() => { setLoading(true); setError(null); fetchViajes(); }} type="button">Reintentar</button>
         </div>
       )}
 

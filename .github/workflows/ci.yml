@@ -41,10 +41,8 @@ jobs:
           NEXT_PUBLIC_MOCK: "false"
 
   lint:
-    name: Lint (informativo)
+    name: Lint (obligatorio)
     runs-on: ubuntu-latest
-    # No bloquea el merge: hoy hay errores conocidos de react-hooks por limpiar.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v5
 
