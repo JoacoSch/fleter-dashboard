@@ -21,6 +21,7 @@ import {
 import { getFirebaseAuth } from "@/lib/firebase";
 import { api } from "@/lib/api";
 import { MOCK } from "@/lib/config";
+import type { Rol } from "@/lib/roles";
 
 interface UserProfile {
   id: string;
@@ -29,7 +30,7 @@ interface UserProfile {
   email: string;
   empresa?: string;
   cuit?: string;
-  rol: "CLIENTE" | "CONDUCTOR" | "GERENTE" | "ADMIN";
+  rol: Rol;
 }
 
 interface RegisterData {
@@ -56,7 +57,7 @@ interface RegisterConductorData {
 interface AuthState {
   user: User | null;
   profile: UserProfile | null;
-  role: "CLIENTE" | "CONDUCTOR" | "GERENTE" | "ADMIN" | null;
+  role: Rol | null;
   loading: boolean;
 }
 

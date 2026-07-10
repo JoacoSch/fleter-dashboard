@@ -1,0 +1,81 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import type { ReactNode } from "react";
+import type { SessionUser } from "@/lib/auth-server";
+
+export default function GerenteShell({
+  user,
+  children,
+}: {
+  user: SessionUser;
+  children: ReactNode;
+}) {
+  const { profile, logout } = useAuth();
+  const nombre = profile?.nombre ?? user.nombre;
+  const apellido = profile?.apellido ?? user.apellido;
+  const router = useRouter();
+
+  async function handleLogout() {
+    await logout();
+    router.push("/login");
+  }
+
+  return (
+    <div className="app">
+      <aside className="sidebar">
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 2px", marginBottom: 20 }}>
+          <div className="brand-mark">F</div>
+          <span className="brand-name">fle<em>ter</em></span>
+        </div>
+
+        <div style={{ flex: 1 }} />
+
+        <div style={{ borderTop: "1px solid var(--line)", paddingTop: 12, marginTop: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px" }}>
+            <div style={{
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+              background: "var(--accent-soft)",
+              color: "var(--accent-ink)",
+              fontFamily: "var(--font-display)",
+              fontSize: 11,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              {`${nombre[0]}${apellido[0]}`}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {nombre} {apellido}
+              </p>
+              <p style={{ fontSize: 11, color: "var(--ink-3)" }}>Gerente</p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="btn btn--ghost"
+            style={{ width: "100%", justifyContent: "flex-start", fontSize: 12.5, color: "var(--ink-3)" }}
+          >
+            Cerrar sesión
+          </button>
+        </div>
+      </aside>
+
+      <div className="main">
+        <header className="topbar">
+          <p style={{ fontFamily: "var(--font-display)", fontSize: 15, color: "var(--ink)" }}>
+            Panel del gerente
+          </p>
+        </header>
+        <main className="content">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}

@@ -4,12 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-
-function homeForRole(role: string) {
-  if (role === "CONDUCTOR") return "/conductor";
-  if (role === "GERENTE") return "/gerente";
-  return "/";
-}
+import { homeForRole } from "@/lib/roles";
 
 export default function LoginPage() {
   const { login, loginWithGoogle } = useAuth();

@@ -2,6 +2,7 @@
 
 import { getAuthToken } from "./firebase";
 import { BASE_URL, MOCK } from "./config";
+import type { Rol } from "./roles";
 
 const MOCK_FIXTURES: Record<string, unknown> = {
   "/api/viajes/disponibles": [
@@ -362,15 +363,252 @@ const MOCK_FIXTURES: Record<string, unknown> = {
     dni: "30123456",
     telefono: "+5491112345678",
     fecha_registro: "2026-01-15T00:00:00.000Z",
-    rol: (process.env.NEXT_PUBLIC_MOCK_ROLE ?? "CLIENTE") as "CLIENTE" | "CONDUCTOR" | "GERENTE" | "ADMIN",
+    rol: (process.env.NEXT_PUBLIC_MOCK_ROLE ?? "CLIENTE") as Rol,
   },
 };
+
+// ---- Datos MOCK del panel de administración ----
+
+const ADMIN_USUARIOS = [
+  {
+    id_usuario: 1, nombre: "Joaquín", apellido: "Test", dni: "30123456",
+    email: "joaco@fleter.com", telefono: "+5491112345678", rol: "ADMIN",
+    fecha_registro: "2026-01-15T00:00:00.000Z",
+    cliente: null, conductor: null, empresas_gerente: [],
+  },
+  {
+    id_usuario: 3, nombre: "Juan", apellido: "Pérez", dni: "12345678",
+    email: "juan@example.com", telefono: "+5491112345678", rol: "CLIENTE",
+    fecha_registro: "2026-06-28T12:00:00.000Z",
+    cliente: { id_cliente: 3, id_usuario: 3, cuit: "20-12345678-9", nombre_empresa: "PyME Demo S.A.", direccion_principal: "Av. Corrientes 1234, CABA" },
+    conductor: null, empresas_gerente: [],
+  },
+  {
+    id_usuario: 5, nombre: "Carlos", apellido: "López", dni: "23456789",
+    email: "carlos@example.com", telefono: "+5491187654321", rol: "CONDUCTOR",
+    fecha_registro: "2026-06-20T12:00:00.000Z",
+    cliente: null,
+    conductor: { id_conductor: 4, id_usuario: 5, nro_licencia: "LIC001", licencia_vencimiento: "2028-01-01T00:00:00.000Z", calificacion_promedio: 4.8 },
+    empresas_gerente: [],
+  },
+  {
+    id_usuario: 7, nombre: "Roberto", apellido: "Sanz", dni: "34567890",
+    email: "roberto@example.com", telefono: "+5491199887766", rol: "CONDUCTOR",
+    fecha_registro: "2026-06-15T12:00:00.000Z",
+    cliente: null,
+    conductor: { id_conductor: 6, id_usuario: 7, nro_licencia: "LIC077", licencia_vencimiento: "2027-06-30T00:00:00.000Z", calificacion_promedio: 4.5 },
+    empresas_gerente: [],
+  },
+  {
+    id_usuario: 9, nombre: "María", apellido: "García", dni: "27888999",
+    email: "maria@empresa.com", telefono: "+5491133445566", rol: "GERENTE",
+    fecha_registro: "2026-05-30T12:00:00.000Z",
+    cliente: null, conductor: null,
+    empresas_gerente: [{ id_empresa: 2, nombre: "Fletes García SRL", cuit: "30-70801234-5" }],
+  },
+  {
+    id_usuario: 11, nombre: "Laura", apellido: "Méndez", dni: "31222333",
+    email: "laura@example.com", telefono: null, rol: "CLIENTE",
+    fecha_registro: "2026-05-10T12:00:00.000Z",
+    cliente: { id_cliente: 8, id_usuario: 11, cuit: null, nombre_empresa: null, direccion_principal: null },
+    conductor: null, empresas_gerente: [],
+  },
+];
+
+const ADMIN_USUARIO_DETALLE: Record<number, unknown> = {
+  3: {
+    ...ADMIN_USUARIOS[1],
+    cliente: {
+      ...ADMIN_USUARIOS[1].cliente,
+      viajes: [
+        { id_viaje: 42, estado: "FINALIZADO", precio_real: 1750, creado_en: "2026-06-29T12:00:00.000Z" },
+        { id_viaje: 51, estado: "CANCELADO", precio_real: null, creado_en: "2026-06-25T09:00:00.000Z" },
+      ],
+    },
+  },
+  5: {
+    ...ADMIN_USUARIOS[2],
+    conductor: {
+      ...ADMIN_USUARIOS[2].conductor,
+      vehiculos: [
+        { id_vehiculo: 10, patente: "FLT001", marca: "Ford", modelo: "Transit", anio: 2020, color: "Blanco", tipo_vehiculo: "furgon", condiciones: [{ condicion: "FRAGIL" }] },
+      ],
+      viajes: [
+        { id_viaje: 42, estado: "FINALIZADO", precio_real: 1750, creado_en: "2026-06-29T12:00:00.000Z" },
+        { id_viaje: 60, estado: "FINALIZADO", precio_real: 3200, creado_en: "2026-06-27T14:00:00.000Z" },
+      ],
+    },
+  },
+  9: {
+    ...ADMIN_USUARIOS[4],
+    empresas: [
+      { id_empresa: 2, nombre: "Fletes García SRL", cuit: "30-70801234-5" },
+    ],
+  },
+};
+
+const ADMIN_VIAJES = [
+  { id_viaje: 42, zona: "CABA", estado: "FINALIZADO", precio_estimado: 2500, precio_real: 1750, fecha_programada: "2026-07-01T10:00:00.000Z", creado_en: "2026-06-29T12:00:00.000Z", cliente: { usuario: { nombre: "Juan", apellido: "Pérez", email: "juan@example.com" } }, conductor: { usuario: { nombre: "Carlos", apellido: "López" } }, _count: { paradas: 2 } },
+  { id_viaje: 43, zona: "PROVINCIA", estado: "BUSCANDO_CONDUCTOR", precio_estimado: 8500, precio_real: null, fecha_programada: "2026-07-02T09:00:00.000Z", creado_en: "2026-06-30T08:00:00.000Z", cliente: { usuario: { nombre: "Laura", apellido: "Méndez", email: "laura@example.com" } }, conductor: null, _count: { paradas: 2 } },
+  { id_viaje: 60, zona: "CABA", estado: "FINALIZADO", precio_estimado: 3000, precio_real: 3200, fecha_programada: "2026-06-27T14:00:00.000Z", creado_en: "2026-06-27T12:00:00.000Z", cliente: { usuario: { nombre: "Juan", apellido: "Pérez", email: "juan@example.com" } }, conductor: { usuario: { nombre: "Carlos", apellido: "López" } }, _count: { paradas: 3 } },
+  { id_viaje: 61, zona: "MIXTO", estado: "EN_RUTA", precio_estimado: 6800, precio_real: null, fecha_programada: "2026-07-01T11:00:00.000Z", creado_en: "2026-07-01T10:30:00.000Z", cliente: { usuario: { nombre: "Laura", apellido: "Méndez", email: "laura@example.com" } }, conductor: { usuario: { nombre: "Roberto", apellido: "Sanz" } }, _count: { paradas: 2 } },
+  { id_viaje: 51, zona: "CABA", estado: "CANCELADO", precio_estimado: 2100, precio_real: null, fecha_programada: "2026-06-25T14:00:00.000Z", creado_en: "2026-06-25T09:00:00.000Z", cliente: { usuario: { nombre: "Juan", apellido: "Pérez", email: "juan@example.com" } }, conductor: null, _count: { paradas: 2 } },
+];
+
+const ADMIN_VIAJE_DETALLE: Record<number, unknown> = {
+  42: {
+    id_viaje: 42, zona: "CABA", estado: "FINALIZADO", precio_estimado: 2500, precio_real: 1750, fee: 175,
+    remito_url: "https://pub.r2.example.com/remitos/42.pdf", motivo_cancelacion: null,
+    cancelado_por_admin_id: null, cancelado_por_admin: null,
+    fecha_programada: "2026-07-01T10:00:00.000Z", creado_en: "2026-06-29T12:00:00.000Z",
+    paradas: [
+      { orden: 1, direccion: "Plaza de Mayo, CABA", estado: "ENTREGADO", fecha_entrega: "2026-07-01T11:00:00.000Z" },
+      { orden: 2, direccion: "Recoleta, CABA", estado: "ENTREGADO", fecha_entrega: "2026-07-01T11:40:00.000Z" },
+    ],
+    condiciones_req: [],
+    cliente: { id_cliente: 3, usuario: { nombre: "Juan", apellido: "Pérez", email: "juan@example.com" } },
+    conductor: { id_conductor: 4, calificacion_promedio: 4.8, usuario: { nombre: "Carlos", apellido: "López" } },
+    vehiculo: { id_vehiculo: 10, patente: "FLT001", marca: "Ford", modelo: "Transit" },
+    calificacion: { puntaje: 5, comentario: "Excelente", fecha_hora: "2026-07-01T11:45:00.000Z" },
+  },
+  61: {
+    id_viaje: 61, zona: "MIXTO", estado: "EN_RUTA", precio_estimado: 6800, precio_real: null, fee: null,
+    remito_url: null, motivo_cancelacion: null, cancelado_por_admin_id: null, cancelado_por_admin: null,
+    fecha_programada: "2026-07-01T11:00:00.000Z", creado_en: "2026-07-01T10:30:00.000Z",
+    paradas: [
+      { orden: 1, direccion: "Once, CABA", estado: "ENTREGADO", fecha_entrega: "2026-07-01T11:28:00.000Z" },
+      { orden: 2, direccion: "Quilmes, Buenos Aires", estado: "PENDIENTE", fecha_entrega: null },
+    ],
+    condiciones_req: [{ condicion: "FRAGIL" }],
+    cliente: { id_cliente: 8, usuario: { nombre: "Laura", apellido: "Méndez", email: "laura@example.com" } },
+    conductor: { id_conductor: 6, calificacion_promedio: 4.5, usuario: { nombre: "Roberto", apellido: "Sanz" } },
+    vehiculo: { id_vehiculo: 12, patente: "XY567AB", marca: "Mercedes-Benz", modelo: "Sprinter" },
+    calificacion: null,
+  },
+};
+
+function isoDaysAgo(n: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString().slice(0, 10);
+}
+
+const ADMIN_ESTADISTICAS = {
+  usuarios: {
+    total: ADMIN_USUARIOS.length,
+    por_rol: { CLIENTE: 2, CONDUCTOR: 2, GERENTE: 1, ADMIN: 1 },
+    registrados_ultimo_mes: 4,
+    registrados_por_dia_ultimos_30_dias: Array.from({ length: 30 }, (_, i) => ({
+      fecha: isoDaysAgo(29 - i),
+      cantidad: [0, 0, 1, 0, 0, 2, 0, 1, 0, 0, 0, 3, 0, 0, 1, 0, 0, 0, 2, 0, 1, 0, 0, 0, 1, 0, 2, 0, 0, 1][i],
+    })),
+  },
+  viajes: {
+    total: ADMIN_VIAJES.length,
+    por_estado: {
+      BUSCANDO_CONDUCTOR: 1, CONDUCTOR_ASIGNADO: 0, EN_CAMINO_A_ORIGEN: 0,
+      CARGANDO: 0, EN_RUTA: 1, DESCARGANDO: 0, FINALIZADO: 2, CANCELADO: 1,
+    },
+    por_dia_ultimos_30_dias: Array.from({ length: 30 }, (_, i) => ({
+      fecha: isoDaysAgo(29 - i),
+      cantidad_creados: [0, 1, 0, 2, 0, 1, 3, 0, 1, 0, 2, 0, 1, 4, 0, 1, 0, 2, 0, 3, 1, 0, 2, 0, 1, 0, 3, 1, 0, 2][i],
+      cantidad_finalizados: [0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 2, 0, 0, 1][i],
+    })),
+  },
+  plata: {
+    total_precio_real_finalizados: 4950,
+    total_fee_app: 495,
+    total_neto_conductores: 4455,
+    top_conductores_por_ganancia: [
+      { id_conductor: 4, nombre: "Carlos", apellido: "López", total_ganado: 4950, cantidad_viajes: 2 },
+    ],
+    top_clientes_por_gasto: [
+      { id_cliente: 3, nombre: "Juan", apellido: "Pérez", total_gastado: 4950, cantidad_viajes: 2 },
+    ],
+  },
+};
+
+function paginate<T>(items: T[], page: number, limit: number) {
+  const start = (page - 1) * limit;
+  return items.slice(start, start + limit);
+}
+
+/**
+ * Resuelve las respuestas MOCK de los endpoints /api/admin/*. Devuelve
+ * `undefined` si el path no corresponde a admin (para seguir con el resto).
+ */
+function adminMock(path: string, method: string, body: unknown): unknown | undefined {
+  const [rawPath, queryString] = path.split("?");
+  const q = new URLSearchParams(queryString ?? "");
+
+  if (rawPath === "/api/admin/estadisticas") return ADMIN_ESTADISTICAS;
+
+  if (rawPath === "/api/admin/usuarios") {
+    const rol = q.get("rol");
+    const page = Math.max(1, parseInt(q.get("page") ?? "1", 10));
+    const limit = Math.min(200, Math.max(1, parseInt(q.get("limit") ?? "50", 10)));
+    const filtered = rol ? ADMIN_USUARIOS.filter((u) => u.rol === rol) : ADMIN_USUARIOS;
+    return { total: filtered.length, page, limit, usuarios: paginate(filtered, page, limit) };
+  }
+
+  const usuarioDetalle = rawPath.match(/^\/api\/admin\/usuarios\/(\d+)$/);
+  if (usuarioDetalle) {
+    const id = parseInt(usuarioDetalle[1], 10);
+    return ADMIN_USUARIO_DETALLE[id] ?? ADMIN_USUARIOS.find((u) => u.id_usuario === id) ?? null;
+  }
+
+  const cancelar = rawPath.match(/^\/api\/admin\/viajes\/(\d+)\/cancelar$/);
+  if (cancelar && method === "POST") {
+    const id = parseInt(cancelar[1], 10);
+    const motivo = (body as { motivo?: string } | undefined)?.motivo ?? null;
+    return { mensaje: "Viaje cancelado por admin", id_viaje: id, estado: "CANCELADO", motivo };
+  }
+
+  if (rawPath === "/api/admin/viajes") {
+    const estado = q.get("estado");
+    const zona = q.get("zona");
+    const page = Math.max(1, parseInt(q.get("page") ?? "1", 10));
+    const limit = Math.min(200, Math.max(1, parseInt(q.get("limit") ?? "50", 10)));
+    let filtered = ADMIN_VIAJES;
+    if (estado) filtered = filtered.filter((v) => v.estado === estado);
+    if (zona) filtered = filtered.filter((v) => v.zona === zona);
+    return { total: filtered.length, page, limit, viajes: paginate(filtered, page, limit) };
+  }
+
+  const viajeDetalle = rawPath.match(/^\/api\/admin\/viajes\/(\d+)$/);
+  if (viajeDetalle) {
+    const id = parseInt(viajeDetalle[1], 10);
+    if (ADMIN_VIAJE_DETALLE[id]) return ADMIN_VIAJE_DETALLE[id];
+    const listItem = ADMIN_VIAJES.find((v) => v.id_viaje === id);
+    if (!listItem) throw new Error("Viaje no encontrado");
+    // Detalle mínimo derivado del item de lista para ids sin fixture propio.
+    return {
+      ...listItem, fee: null, remito_url: null, motivo_cancelacion: null,
+      cancelado_por_admin_id: null, cancelado_por_admin: null,
+      paradas: [], condiciones_req: [],
+      cliente: listItem.cliente ? { id_cliente: 0, ...listItem.cliente } : null,
+      conductor: listItem.conductor ? { id_conductor: 0, calificacion_promedio: null, ...listItem.conductor } : null,
+      vehiculo: null, calificacion: null,
+    };
+  }
+
+  return undefined;
+}
 
 async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
   if (MOCK) {
+    if (path.startsWith("/api/admin/")) {
+      const body = options.body ? JSON.parse(options.body as string) : undefined;
+      const result = adminMock(path, options.method ?? "GET", body);
+      if (result !== undefined) {
+        await new Promise((r) => setTimeout(r, 300));
+        return result as T;
+      }
+    }
+
     const deleteVehiculo = path.match(/^\/api\/conductores\/mis-vehiculos\/(\d+)$/);
     if (deleteVehiculo && options.method === "DELETE") {
       await new Promise((r) => setTimeout(r, 300));
