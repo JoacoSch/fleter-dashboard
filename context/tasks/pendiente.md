@@ -1,6 +1,12 @@
 # Pendientes de datos para el dashboard
 
-Estas secciones muestran placeholders porque la API/backend aún no provee los datos necesarios.
+> Revisado el **19-08-2026**. Antes de tomar algo de acá, leer `OPEN.md`: varios de
+> estos huecos dependen de decisiones ABIERTAS (D2 precio, D3 cobro) y no se
+> implementan hasta que cierren.
+
+Estas secciones muestran placeholders porque la API/backend aún no provee los datos
+necesarios. **Este archivo es la lista para pasarle al backend**: cada ítem dice qué
+falta, dónde se nota en el front y qué habría que agregar.
 
 ---
 
@@ -25,6 +31,78 @@ Estas secciones muestran placeholders porque la API/backend aún no provee los d
 - **Qué falta:** No tenemos el ID del último viaje con alerta en el response del resumen.
 - **Dónde:** Card "Alertas recibidas" — botón de acción.
 - **Solución futura:** Agregar `ultimo_viaje_alertado: number | null` al resumen.
+
+---
+
+## Creación de viaje
+
+### ~~`zona` hardcodeada a `"CABA"`~~ — RESUELTO
+- El backend deriva la `zona` de las coordenadas de las paradas (polígono oficial de CABA,
+  `booleanPointInPolygon`). El campo `zona` del body **se acepta pero se descarta**.
+- El front ya no lo manda y muestra la zona que devuelve el backend al crear el viaje.
+
+### `duracion_real` y `alertas_count` no vienen en `GET /api/viajes/mis-viajes`
+- **Qué falta:** el contrato no incluye esos campos, pero el historial ordena por
+  `duracion_real` y tiene un filtro "Con alertas" que usa `alertas_count`. El resumen de
+  analytics también suma `alertas_count`.
+- **Dónde:** `app/(cliente)/viajes/page.tsx` (columna "Duración" y filtro) y
+  `app/api/analytics/cliente/resumen/route.ts`.
+- **Estado:** no rompe — están tipados como opcionales con fallback (`?? null` / `?? 0`), así
+  que la columna queda vacía y el filtro no devuelve nada.
+- **Solución futura:** agregar ambos campos al response de `mis-viajes`.
+
+---
+
+## Gerente (estructura jerárquica)
+
+> **NO VERIFICADO.** Los tres gaps que había acá (no existía `viajes-disponibles`,
+> `/api/empresas/:id/viajes` no traía `condiciones_req`, y el gerente no podía leer
+> `GET /api/viajes/:id`) figuran como resueltos por el fix del backend de agosto 2026,
+> y el front está escrito para consumirlos.
+>
+> Lo verificable acá es solo eso: que el código existe y compila. **Todo el panel de
+> gerente corre contra `lib/mocks-gerente.ts`**, así que ninguna de las tres cosas se
+> probó contra el backend real. Que el mock responda no prueba que el endpoint exista.
+>
+> Para pasar esto a VERIFICADO hay que correr el panel con `NEXT_PUBLIC_MOCK=false`
+> contra staging.
+
+### `costo-acumulado` y `remito` siguen cerrados al gerente
+- **Qué falta:** el fix abrió `GET /api/viajes/:id` al `GERENTE` de la empresa dueña, pero no
+  hizo lo mismo con sus dos endpoints hermanos: `GET /api/viajes/:id/costo-acumulado` y
+  `GET /api/viajes/:id/remito` siguen siendo `CLIENTE` o `CONDUCTOR`. Parece un olvido más que
+  una decisión.
+- **Consecuencia:** el gerente no puede ver el costo en vivo ni descargar el remito de un viaje
+  hecho por su propia flota.
+- **Solución futura:** aplicar en ambos la misma regla de acceso que ya tiene `/api/viajes/:id`.
+
+### El gerente no puede ver el detalle de un viaje del mercado abierto
+- **Qué falta:** `id_empresa` se setea recién al **reservar**, así que un viaje en
+  `BUSCANDO_CONDUCTOR` tiene `id_empresa: null` y el gerente cae en el `403` de
+  `GET /api/viajes/:id`. Decide la reserva sin poder ver la `ruta_planeada`.
+- **Estado:** no bloquea. `GET /api/empresas/:id/viajes-disponibles` trae paradas con
+  coordenadas, cliente, descripción y condiciones, que alcanza para decidir.
+- **Dónde:** `app/(gerente)/gerente/viajes/[id]/page.tsx` — la llamada a `/api/viajes/:id` es
+  best-effort (`.catch(() => null)`) justamente por esto.
+
+### `GET /api/empresas/:id/viajes` sigue sin schema documentado
+- **Qué falta:** es una línea de prosa en la sección de resumen del contrato, sin JSON de
+  ejemplo, pese a ser el endpoint más usado del panel de gerente.
+- **Consecuencia:** los campos que el front consume de ahí —`fecha_reserva` (countdown de la
+  reserva), `id_vehiculo` (default del selector) y `precio_real`— están **inferidos**, no
+  documentados. Si cambian de nombre o desaparecen, se rompe en silencio.
+- **Solución futura:** documentarlo con el mismo formato que el resto de los endpoints.
+
+---
+
+## Inconsistencias del contrato (no bloquean, pero conviene confirmar)
+
+### `viaje:finalizado` y `desglose_estimado` no muestran las magnitudes facturadas
+- La sección "Cómo se factura cada zona" dice que `tiempo_capital` / `distancia_provincia`
+  aparecen también en el evento `viaje:finalizado` y se persisten al cerrar el viaje, pero ni el
+  payload de ese evento ni el `desglose_estimado` de `POST /api/viajes` los incluyen en sus
+  ejemplos.
+- **Estado:** tipados como opcionales en `hooks/useViajeActivo.ts`. Si vienen, se muestran.
 
 ---
 

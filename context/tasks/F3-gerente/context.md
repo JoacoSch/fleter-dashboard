@@ -1,5 +1,25 @@
 # F3-gerente — Dashboard Gerente: Recibir y Distribuir Viajes
 
+> ## ⚠️ DESACTUALIZADO — no implementar contra este archivo
+>
+> Describe un flujo de **asignación directa** que el contrato vigente ya no tiene.
+> Lo que cambió, verificado contra `context/api-contracts/context.md`:
+>
+> - **Hay un paso obligatorio de reserva** entre ver el viaje y asignarlo. El gerente
+>   primero reserva (`POST /api/viajes/:id/reservar`, estado `RESERVADO_POR_EMPRESA`,
+>   `:2592`) y recién después asigna conductor y vehículo. Con timeout: la reserva se
+>   suelta sola a los 10 minutos.
+> - **El endpoint de la lista es otro.** No es `GET /api/viajes/disponibles` (ese es
+>   del conductor) sino `GET /api/empresas/:id/viajes-disponibles` (`:2516`), que
+>   filtra por elegibilidad de la flota de esa empresa.
+> - `GET /api/viajes/:id` ahora también lo puede leer el gerente de la empresa dueña,
+>   pero devuelve `403` mientras el viaje no esté reservado.
+> - Los checkboxes de abajo están todos sin marcar aunque el código está escrito
+>   (seis páginas bajo `app/(gerente)/`, ver `docs/PROYECTO.md` §6).
+>
+> Se deja tal cual, sin reescribir, como registro de lo que se planificó.
+> Para trabajo nuevo usar `context/tasks/_PLANTILLA.md`.
+
 ## Prerequisito
 F1-cliente completo. El login del gerente usa las mismas pantallas de auth — solo cambia el rol en el JWT.
 

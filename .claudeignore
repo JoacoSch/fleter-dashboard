@@ -20,3 +20,8 @@ __tests__/
 postcss.config.js
 tailwind.config.ts # Claude no necesita esto para escribir código
 next.config.ts     # idem, salvo que la tarea lo requiera específicamente
+
+# Material académico (defensa oral de un TP), no documentación de producto.
+# Contamina el contexto de producto: describe el proyecto como trabajo práctico
+# y repite afirmaciones que ya no son ciertas del producto.
+docs/academico/
