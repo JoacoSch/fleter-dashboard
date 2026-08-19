@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
+import { esFinalizado } from "@/lib/estados";
 
 const API_URL = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -67,7 +68,7 @@ async function fetchViajesFromBackend(desde: string | null, hasta: string | null
 function computeChartSemanal(viajes: Viaje[], desde: string | null): { semana: string; viajes: number; gasto: number }[] {
   const periodoStart = desde ? new Date(desde) : new Date();
   const weekSlot = Math.min(4, Math.ceil(periodoStart.getDate() / 7));
-  const entregados = viajes.filter((v) => v.estado === "ENTREGADO" && v.precio_real != null);
+  const entregados = viajes.filter((v) => esFinalizado(v.estado) && v.precio_real != null);
   const gasto = entregados.reduce((a, v) => a + (v.precio_real ?? 0), 0);
   return [1, 2, 3, 4].map((w) => ({
     semana: `S${w}`,
@@ -86,7 +87,7 @@ function computeChartMensual(chartViajes: Viaje[]): { semana: string; viajes: nu
       return d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear();
     });
     const gasto = mesViajes
-      .filter((v) => v.estado === "ENTREGADO" && v.precio_real != null)
+      .filter((v) => esFinalizado(v.estado) && v.precio_real != null)
       .reduce((a, v) => a + (v.precio_real ?? 0), 0);
     return { semana: MESES_SHORT[m.getMonth()], viajes: mesViajes.length, gasto, isCurrent };
   });
@@ -120,7 +121,7 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: "Error al obtener viajes" }, { status: 502 });
   }
 
-  const entregados = viajes.filter((v) => v.estado === "ENTREGADO" && v.precio_real != null);
+  const entregados = viajes.filter((v) => esFinalizado(v.estado) && v.precio_real != null);
   const total_gastado   = entregados.reduce((acc, v) => acc + (v.precio_real ?? 0), 0);
   const cantidad_fletes = viajes.length;
   const costo_promedio  = entregados.length > 0 ? Math.round(total_gastado / entregados.length) : null;

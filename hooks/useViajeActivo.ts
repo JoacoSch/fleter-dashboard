@@ -6,6 +6,9 @@ import { api } from "@/lib/api";
 import { getAuthToken } from "@/lib/firebase";
 import { BASE_URL, MOCK } from "@/lib/config";
 
+/** Umbrales (30 / 120 min por default) los define el backend al iniciar el viaje. */
+export type Puntualidad = "A_TIEMPO" | "TARDE" | "MUY_TARDE";
+
 export interface Parada {
   orden: number;
   direccion: string;
@@ -23,6 +26,10 @@ export interface ViajeDetalle {
   descripcion: string | null;
   estado: string;
   fecha_programada: string;
+  /** Momento real en que se pulsó "Iniciar viaje". `null` hasta que arranca. */
+  fecha_inicio: string | null;
+  /** Calculada al iniciar contra `fecha_programada`. `null` hasta que arranca. */
+  puntualidad_inicio: Puntualidad | null;
   creado_en: string;
   paradas: Parada[];
   condiciones_req: { condicion: string }[];
@@ -41,17 +48,31 @@ export interface ViajeDetalle {
   ruta_planeada: [number, number][] | null;
 }
 
+/**
+ * Cómo se factura, según el contrato:
+ * - `tiempo_horas` / `distancia_km` son los **totales medidos** por GPS.
+ * - `tiempo_capital` / `distancia_provincia` son la parte de esos totales que
+ *   **efectivamente se cobra** (`null` = no se cobra por ese concepto).
+ * En `MIXTO` van prorrateados por `fraccion_caba`; mostrar los totales como si
+ * fueran lo facturado infla el número.
+ */
+export interface DesgloseCosto {
+  precio_por_tiempo: number | null;
+  precio_por_distancia: number | null;
+  tiempo_horas: number;
+  distancia_km: number;
+  tiempo_capital?: number | null;
+  distancia_provincia?: number | null;
+  /** Proporción de paradas dentro de CABA: `1` en CABA, `0` en PROVINCIA. */
+  fraccion_caba?: number;
+  tarifa_hora: number | null;
+  tarifa_km: number | null;
+  es_hora_pico: boolean;
+}
+
 export interface CostoAcumulado {
   precio_acumulado: number;
-  desglose: {
-    precio_por_tiempo: number | null;
-    precio_por_distancia: number | null;
-    tiempo_horas: number;
-    distancia_km: number;
-    tarifa_hora: number | null;
-    tarifa_km: number | null;
-    es_hora_pico: boolean;
-  } | null;
+  desglose: DesgloseCosto | null;
 }
 
 export interface UbicacionUpdate {
@@ -75,17 +96,21 @@ export interface AlertaItem {
   timestamp: number;
 }
 
+/** Payload del evento `viaje:iniciado` (room personal del cliente). */
+export interface ViajeIniciadoPayload {
+  id_viaje: number;
+  fecha_inicio: string;
+  puntualidad_inicio: Puntualidad;
+}
+
 export interface ViajeFinalizadoPayload {
   id_viaje: number;
   precio_real: number;
-  desglose: {
-    precio_por_tiempo: number | null;
-    precio_por_distancia: number | null;
-    tiempo_horas: number;
-    distancia_km: number;
-    tarifa_hora: number | null;
-    tarifa_km: number | null;
-  };
+  /**
+   * El contrato dice que las magnitudes facturadas también viajan acá, pero el
+   * ejemplo del evento no las muestra: por eso son opcionales.
+   */
+  desglose: Omit<DesgloseCosto, "es_hora_pico">;
   remito_url: string;
 }
 
@@ -271,6 +296,29 @@ export function useViajeActivo(id_viaje: number) {
             ]);
           }
         );
+
+        /**
+         * `CONDUCTOR_ASIGNADO → EN_CAMINO_A_ORIGEN` NO pasa por
+         * `viaje:estado_cambiado`: lo dispara el botón "Iniciar viaje" y el
+         * servidor avisa con este evento. Sin escucharlo, la pantalla se queda
+         * en "conductor asignado" con el flete ya en camino.
+         *
+         * Ojo: llega al room **personal** del cliente (`usuario:{id}`), no al
+         * room del viaje — no depende del `join:viaje` de arriba.
+         */
+        socket.on("viaje:iniciado", (data: ViajeIniciadoPayload) => {
+          setEstado("EN_CAMINO_A_ORIGEN");
+          setViaje((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  estado: "EN_CAMINO_A_ORIGEN",
+                  fecha_inicio: data.fecha_inicio,
+                  puntualidad_inicio: data.puntualidad_inicio,
+                }
+              : prev
+          );
+        });
 
         socket.on(
           "viaje:estado_cambiado",

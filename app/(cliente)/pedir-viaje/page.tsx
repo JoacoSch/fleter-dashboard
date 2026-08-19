@@ -18,7 +18,15 @@ interface ViajeCreado {
   id_viaje: number;
   estado: string;
   precio_estimado: number;
+  /** La calcula el backend con las coordenadas de las paradas, no el front. */
+  zona?: "CABA" | "PROVINCIA" | "MIXTO";
 }
+
+const ZONA_LABEL: Record<string, string> = {
+  CABA: "CABA",
+  PROVINCIA: "Provincia",
+  MIXTO: "CABA + Provincia",
+};
 
 const CONDICIONES: { value: Condicion; label: string }[] = [
   { value: "FRAGIL", label: "Frágil" },
@@ -74,7 +82,8 @@ export default function PedirViajePage() {
   function toggleCondicion(c: Condicion) {
     setCondiciones((prev) => {
       const next = new Set(prev);
-      next.has(c) ? next.delete(c) : next.add(c);
+      if (next.has(c)) next.delete(c);
+      else next.add(c);
       return next;
     });
   }
@@ -100,8 +109,10 @@ export default function PedirViajePage() {
 
     setLoading(true);
     try {
+      // Sin `zona`: la deriva el backend de las coordenadas de las paradas
+      // (polígono oficial de CABA). El campo se sigue aceptando en el body por
+      // compatibilidad, pero su valor se descarta — mandarlo sólo confundiría.
       const payload = {
-        zona: "CABA",
         fecha_programada: new Date(fecha).toISOString(),
         paradas: paradas.map((p) => ({ lat: p.lat!, lng: p.lng!, direccion: p.direccion.trim() })),
         condiciones_requeridas: Array.from(condiciones),
@@ -136,6 +147,14 @@ export default function PedirViajePage() {
                 Buscando conductor
               </span>
             </div>
+            {success.zona && (
+              <div>
+                <p className="metric__label">Zona</p>
+                <p style={{ fontSize: 15, color: "var(--ink)", marginTop: 4 }}>
+                  {ZONA_LABEL[success.zona] ?? success.zona}
+                </p>
+              </div>
+            )}
             {success.precio_estimado > 0 && (
               <div>
                 <p className="metric__label">Precio estimado</p>

@@ -1,6 +1,7 @@
 "use client";
 
 import { getAuthToken } from "./firebase";
+import { gerenteMock } from "./mocks-gerente";
 import { BASE_URL, MOCK } from "./config";
 import type { Rol } from "./roles";
 
@@ -51,7 +52,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       zona: "CABA",
       precio_estimado: 3200,
       precio_real: 2900,
-      estado: "ENTREGADO",
+      estado: "FINALIZADO",
       fecha_programada: "2026-05-10T09:00:00.000Z",
       creado_en: "2026-05-09T20:00:00.000Z",
       duracion_real: 95,
@@ -67,7 +68,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       zona: "PROVINCIA",
       precio_estimado: 9500,
       precio_real: 11200,
-      estado: "ENTREGADO",
+      estado: "FINALIZADO",
       fecha_programada: "2026-05-08T08:00:00.000Z",
       creado_en: "2026-05-07T18:00:00.000Z",
       duracion_real: 210,
@@ -115,7 +116,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       zona: "CABA",
       precio_estimado: 4400,
       precio_real: 4400,
-      estado: "ENTREGADO",
+      estado: "FINALIZADO",
       fecha_programada: "2026-05-02T07:00:00.000Z",
       creado_en: "2026-05-01T22:00:00.000Z",
       duracion_real: 60,
@@ -131,7 +132,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       zona: "PROVINCIA",
       precio_estimado: 7200,
       precio_real: 6800,
-      estado: "ENTREGADO",
+      estado: "FINALIZADO",
       fecha_programada: "2026-05-03T10:00:00.000Z",
       creado_en: "2026-05-02T22:00:00.000Z",
       duracion_real: 180,
@@ -163,7 +164,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       zona: "MIXTO",
       precio_estimado: 12000,
       precio_real: 13500,
-      estado: "ENTREGADO",
+      estado: "FINALIZADO",
       fecha_programada: "2026-05-06T06:00:00.000Z",
       creado_en: "2026-05-05T20:00:00.000Z",
       duracion_real: 300,
@@ -179,7 +180,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       zona: "CABA",
       precio_estimado: 2700,
       precio_real: 2700,
-      estado: "ENTREGADO",
+      estado: "FINALIZADO",
       fecha_programada: "2026-05-07T13:00:00.000Z",
       creado_en: "2026-05-07T11:00:00.000Z",
       duracion_real: 45,
@@ -195,7 +196,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       zona: "PROVINCIA",
       precio_estimado: 5500,
       precio_real: 5100,
-      estado: "ENTREGADO",
+      estado: "FINALIZADO",
       fecha_programada: "2026-05-09T08:00:00.000Z",
       creado_en: "2026-05-08T18:00:00.000Z",
       duracion_real: 120,
@@ -211,7 +212,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       zona: "CABA",
       precio_estimado: 3100,
       precio_real: 3400,
-      estado: "ENTREGADO",
+      estado: "FINALIZADO",
       fecha_programada: "2026-04-15T10:00:00.000Z",
       creado_en: "2026-04-14T20:00:00.000Z",
       duracion_real: 75,
@@ -254,7 +255,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
   "/api/viajes/mis-viajes-conductor": [
     {
       id_viaje: 201,
-      estado: "ENTREGADO",
+      estado: "FINALIZADO",
       paradas: [
         { orden: 1, direccion: "Av. Corrientes 1234, CABA" },
         { orden: 2, direccion: "Palermo Soho, CABA" },
@@ -263,7 +264,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
     },
     {
       id_viaje: 202,
-      estado: "ENTREGADO",
+      estado: "FINALIZADO",
       paradas: [
         { orden: 1, direccion: "Microcentro, CABA" },
         { orden: 2, direccion: "La Plata, Buenos Aires" },
@@ -281,7 +282,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
     },
     {
       id_viaje: 204,
-      estado: "ENTREGADO",
+      estado: "FINALIZADO",
       paradas: [
         { orden: 1, direccion: "Once, CABA" },
         { orden: 2, direccion: "Morón, Buenos Aires" },
@@ -297,6 +298,8 @@ const MOCK_FIXTURES: Record<string, unknown> = {
     descripcion: null,
     estado: "EN_RUTA",
     fecha_programada: "2026-05-14T11:00:00.000Z",
+    fecha_inicio: "2026-05-14T11:12:00.000Z",
+    puntualidad_inicio: "A_TIEMPO",
     creado_en: "2026-05-14T10:30:00.000Z",
     paradas: [
       {
@@ -343,14 +346,20 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       color: "Blanco",
     },
   },
+  // Viaje MIXTO: se cobran las dos magnitudes, pero prorrateadas por
+  // `fraccion_caba` (1 de las 2 paradas cae en CABA). Los totales medidos son
+  // 0.7 h y 21 km; lo facturado es la mitad de cada uno.
   "/api/viajes/103/costo-acumulado": {
     precio_acumulado: 2100,
     desglose: {
-      precio_por_tiempo: null,
-      precio_por_distancia: 2100,
+      precio_por_tiempo: 1050,
+      precio_por_distancia: 1050,
       tiempo_horas: 0.7,
       distancia_km: 21,
-      tarifa_hora: null,
+      tiempo_capital: 0.35,
+      distancia_provincia: 10.5,
+      fraccion_caba: 0.5,
+      tarifa_hora: 3000,
       tarifa_km: 100,
       es_hora_pico: false,
     },
@@ -609,10 +618,26 @@ async function apiFetch<T>(
       }
     }
 
+    if (path.startsWith("/api/empresas") || /^\/api\/viajes\/\d+\/(reservar|asignar|reasignar|cancelar-reserva|iniciar)$/.test(path)) {
+      const body = options.body ? JSON.parse(options.body as string) : undefined;
+      const result = gerenteMock(path, options.method ?? "GET", body);
+      if (result !== undefined) {
+        await new Promise((r) => setTimeout(r, 300));
+        return result as T;
+      }
+    }
+
     const deleteVehiculo = path.match(/^\/api\/conductores\/mis-vehiculos\/(\d+)$/);
     if (deleteVehiculo && options.method === "DELETE") {
       await new Promise((r) => setTimeout(r, 300));
       return { mensaje: "Vehiculo eliminado" } as T;
+    }
+
+    const remito = path.match(/^\/api\/viajes\/(\d+)\/remito$/);
+    if (remito) {
+      await new Promise((r) => setTimeout(r, 300));
+      // El endpoint devuelve JSON con la URL pública del PDF, no el PDF.
+      return { remito_url: `https://pub.r2.example.com/remitos/${remito[1]}.pdf` } as T;
     }
 
     const costoAcumulado = path.match(/^\/api\/viajes\/(\d+)\/costo-acumulado$/);

@@ -6,17 +6,13 @@ import { api } from "@/lib/api";
 import { usePeriodo } from "@/hooks/usePeriodo";
 import SelectorPeriodo from "@/components/SelectorPeriodo";
 import { formatARS, fmtDate, fmtTime, formatDuracion } from "@/lib/utils";
+import { ESTADO_LABEL as ESTADO_LABEL_BASE, esFinalizado } from "@/lib/estados";
 
 const ESTADO_LABEL: Record<string, string> = {
+  ...ESTADO_LABEL_BASE,
+  // El cliente ve el estado de la parada además del estado del viaje.
   ENTREGADO: "ENTREGADO",
   FINALIZADO: "FINALIZADO",
-  CANCELADO: "CANCELADO",
-  BUSCANDO_CONDUCTOR: "BUSCANDO",
-  CONDUCTOR_ASIGNADO: "ASIGNADO",
-  EN_CAMINO_A_ORIGEN: "EN CAMINO",
-  CARGANDO: "CARGANDO",
-  EN_RUTA: "EN RUTA",
-  DESCARGANDO: "DESCARGANDO",
 };
 
 const ESTADO_CSS: Record<string, string> = {
@@ -24,6 +20,7 @@ const ESTADO_CSS: Record<string, string> = {
   FINALIZADO: "ENTREGADO",
   CANCELADO: "CANCELADO",
   BUSCANDO_CONDUCTOR: "BUSCANDO_FLETERO",
+  RESERVADO_POR_EMPRESA: "BUSCANDO_FLETERO",
   CONDUCTOR_ASIGNADO: "BUSCANDO_FLETERO",
   EN_CAMINO_A_ORIGEN: "EN_RUTA",
   CARGANDO: "EN_RUTA",
@@ -130,7 +127,7 @@ export default function ViajesPage() {
         return d >= periodo.desde && d <= periodo.hasta;
       });
     }
-    if (filter === "ENTREGADO") items = items.filter((v) => v.estado === "ENTREGADO");
+    if (filter === "ENTREGADO") items = items.filter((v) => esFinalizado(v.estado));
     else if (filter === "CANCELADO") items = items.filter((v) => v.estado === "CANCELADO");
     else if (filter === "CON_ALERTAS") items = items.filter((v) => (v.alertas_count ?? 0) > 0);
     if (search) {
@@ -275,7 +272,7 @@ export default function ViajesPage() {
                 {formatDuracion(v.duracion_real)}
               </span>
               <span className={`trip-row__price${v.precio_real == null ? " trip-row__price--null" : ""}`}>
-                {v.precio_real != null ? formatARS(v.precio_real) : v.estado === "ENTREGADO" ? "—" : formatARS(v.precio_estimado)}
+                {v.precio_real != null ? formatARS(v.precio_real) : esFinalizado(v.estado) ? "—" : formatARS(v.precio_estimado)}
               </span>
               <span>
                 {(v.alertas_count ?? 0) > 0

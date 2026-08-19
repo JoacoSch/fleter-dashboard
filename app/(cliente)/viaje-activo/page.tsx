@@ -7,7 +7,8 @@ import dynamic from "next/dynamic";
 import { useViajeActivo } from "@/hooks/useViajeActivo";
 import type { ViajeFinalizadoPayload } from "@/hooks/useViajeActivo";
 import { api } from "@/lib/api";
-import { formatARS, fmtDate } from "@/lib/utils";
+import { formatARS } from "@/lib/utils";
+import { ESTADO_LABEL_ACTIVO } from "@/lib/estados";
 import { ChevronLeft, Phone, Star, Truck, AlertTriangle, Package } from "lucide-react";
 
 const MapaViajeActivo = dynamic(
@@ -23,13 +24,7 @@ const ACTIVE_ESTADOS = new Set([
   "DESCARGANDO",
 ]);
 
-const ESTADO_LABELS: Record<string, string> = {
-  CONDUCTOR_ASIGNADO: "Conductor asignado",
-  EN_CAMINO_A_ORIGEN: "En camino al origen",
-  EN_RUTA: "En ruta",
-  CARGANDO: "Cargando",
-  DESCARGANDO: "Descargando",
-};
+const ESTADO_LABELS: Record<string, string> = ESTADO_LABEL_ACTIVO;
 
 interface ViajeListItem {
   id_viaje: number;
@@ -360,11 +355,32 @@ function TrackingView({ idViaje }: { idViaje: number }) {
                     <span>Distancia</span><span>{costo.desglose.distancia_km.toFixed(1)} km</span>
                   </div>
                 )}
+                {/*
+                  En un viaje MIXTO no se factura el total medido: se cobra la
+                  distancia por la parte en provincia y el tiempo por la parte
+                  en CABA. Sólo se muestran estas filas cuando lo facturado
+                  difiere del total, para no repetir el mismo número en los
+                  viajes de zona pura.
+                */}
+                {costo.desglose.distancia_provincia != null &&
+                  costo.desglose.distancia_provincia < costo.desglose.distancia_km && (
+                    <div className="viaje-track__desglose-row">
+                      <span>Distancia facturada</span>
+                      <span>{costo.desglose.distancia_provincia.toFixed(1)} km</span>
+                    </div>
+                  )}
                 {costo.desglose.tiempo_horas > 0 && (
                   <div className="viaje-track__desglose-row">
                     <span>Tiempo</span><span>{(costo.desglose.tiempo_horas * 60).toFixed(0)} min</span>
                   </div>
                 )}
+                {costo.desglose.tiempo_capital != null &&
+                  costo.desglose.tiempo_capital < costo.desglose.tiempo_horas && (
+                    <div className="viaje-track__desglose-row">
+                      <span>Tiempo facturado</span>
+                      <span>{(costo.desglose.tiempo_capital * 60).toFixed(0)} min</span>
+                    </div>
+                  )}
                 {costo.desglose.es_hora_pico && (
                   <div className="viaje-track__desglose-row viaje-track__desglose-row--warn">
                     <span>⚡ Hora pico</span><span>activo</span>
