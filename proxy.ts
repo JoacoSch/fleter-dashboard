@@ -5,6 +5,7 @@ const PUBLIC_PATHS = new Set([
   "/login",
   "/registro",
   "/registro/conductor",
+  "/registro/gerente",
   "/recuperar",
 ]);
 
