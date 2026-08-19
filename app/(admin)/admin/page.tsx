@@ -8,6 +8,7 @@ import type { AdminEstadisticas } from "@/lib/types-admin";
 
 const ESTADO_LABELS: Record<string, string> = {
   BUSCANDO_CONDUCTOR: "Buscando",
+  RESERVADO_POR_EMPRESA: "Reservado",
   CONDUCTOR_ASIGNADO: "Asignado",
   EN_CAMINO_A_ORIGEN: "En camino",
   CARGANDO: "Cargando",

@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { formatARS, fmtDate } from "@/lib/utils";
+import { ESTADO_LABEL_ACTIVO } from "@/lib/estados";
 import { BarChart2, ClipboardList, Truck, FileText, User, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
@@ -29,11 +30,8 @@ const ACTIVE_ESTADOS = new Set([
 ]);
 
 const ACTIVE_ESTADO_LABELS: Record<string, string> = {
-  CONDUCTOR_ASIGNADO: "Conductor asignado",
-  EN_CAMINO_A_ORIGEN: "En camino al origen",
-  EN_RUTA: "En ruta",
+  ...ESTADO_LABEL_ACTIVO,
   CARGANDO: "Cargando mercadería",
-  DESCARGANDO: "Descargando",
 };
 
 export default function ClienteShell({
@@ -204,7 +202,14 @@ export default function ClienteShell({
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p className="sidebar__user-name">{nombre} {apellido}</p>
-              <p className="sidebar__user-empresa">{empresa}</p>
+              {/*
+                El nombre de la empresa sale del perfil de Firebase (cliente),
+                no de la sesión del server: `GET /api/auth/me` no lo devuelve.
+                El server renderiza vacío y el cliente lo completa, así que la
+                diferencia en la hidratación es esperada — sin esto React tira
+                un error de hidratación y regenera todo el árbol.
+              */}
+              <p className="sidebar__user-empresa" suppressHydrationWarning>{empresa}</p>
             </div>
           </button>
         </div>
@@ -212,7 +217,8 @@ export default function ClienteShell({
 
       <div className="main">
         <header className="topbar">
-          <p className="topbar__company">{empresa}</p>
+          {/* Client-only, igual que en el sidebar: ver comentario de arriba. */}
+          <p className="topbar__company" suppressHydrationWarning>{empresa}</p>
         </header>
         {activeViajes.length > 0 && (
           <Link

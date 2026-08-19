@@ -2,6 +2,7 @@ import type { Rol } from "./roles";
 
 export type EstadoViaje =
   | "BUSCANDO_CONDUCTOR"
+  | "RESERVADO_POR_EMPRESA"
   | "CONDUCTOR_ASIGNADO"
   | "EN_CAMINO_A_ORIGEN"
   | "CARGANDO"
@@ -14,6 +15,7 @@ export type Zona = "CABA" | "PROVINCIA" | "MIXTO";
 
 export const ESTADOS_VIAJE: EstadoViaje[] = [
   "BUSCANDO_CONDUCTOR",
+  "RESERVADO_POR_EMPRESA",
   "CONDUCTOR_ASIGNADO",
   "EN_CAMINO_A_ORIGEN",
   "CARGANDO",

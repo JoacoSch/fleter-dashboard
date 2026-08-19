@@ -2090,6 +2090,7 @@ html {
 /* Estados de viaje que faltaban en .status */
 .status.FINALIZADO         { background: var(--ok-soft);   color: var(--ok); }
 .status.BUSCANDO_CONDUCTOR { background: var(--warn-soft); color: var(--warn); }
+.status.RESERVADO_POR_EMPRESA { background: var(--info-soft); color: var(--info); }
 .status.CONDUCTOR_ASIGNADO { background: var(--info-soft); color: var(--info); }
 .status.EN_CAMINO_A_ORIGEN { background: var(--info-soft); color: var(--info); }
 .status.CARGANDO           { background: var(--accent-soft); color: var(--accent-ink); }

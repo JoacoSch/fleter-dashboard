@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Navigation, ClipboardList, Truck, User, LogOut } from "lucide-react";
+import { Navigation, ClipboardList, Truck, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
 
@@ -71,15 +71,6 @@ export default function ConductorShell({
           <div ref={menuRef} style={{ position: "relative" }}>
             {menuOpen && (
               <div className="sidebar__user-menu">
-                <Link
-                  href="/conductor/perfil"
-                  className="sidebar__user-menu-item"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <User size={14} />
-                  Mi perfil
-                </Link>
-                <div className="sidebar__user-menu-sep" />
                 <button
                   type="button"
                   className="sidebar__user-menu-item sidebar__user-menu-item--danger"
