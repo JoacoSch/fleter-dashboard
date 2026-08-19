@@ -36,11 +36,34 @@ const CONDICIONES: { value: Condicion; label: string }[] = [
   { value: "VOLUMINOSO", label: "Voluminoso" },
 ];
 
+/**
+ * Anticipación mínima para programar un viaje, en minutos.
+ *
+ * La autoridad es el backend (`ANTICIPACION_MINIMA_MINUTOS`, default 60): valida
+ * el mínimo y responde `400` si no se cumple. Acá se replica sólo para evitar el
+ * ida y vuelta. En staging el backend la baja (incluso a 0) para poder crear un
+ * viaje y debuggearlo al toque, así que esto tiene que poder acompañarlo.
+ */
+const ANTICIPACION_MINIMA_MINUTOS = Number(
+  process.env.NEXT_PUBLIC_ANTICIPACION_MINIMA_MINUTOS ?? 60,
+);
+
+/**
+ * Mínimo del `<input type="datetime-local">`, que espera **hora local**.
+ *
+ * No usar `toISOString()`: devuelve UTC, y en UTC-3 eso corría el mínimo tres
+ * horas hacia adelante — el cliente no podía elegir un horario que el backend
+ * sí aceptaba.
+ */
 function getMinFecha() {
   const d = new Date();
-  d.setHours(d.getHours() + 1);
-  // datetime-local needs "YYYY-MM-DDTHH:MM"
-  return d.toISOString().slice(0, 16);
+  d.setMinutes(d.getMinutes() + ANTICIPACION_MINIMA_MINUTOS);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  // "YYYY-MM-DDTHH:MM" en hora local
+  return (
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+    `T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  );
 }
 
 export default function PedirViajePage() {

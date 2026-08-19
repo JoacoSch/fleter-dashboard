@@ -56,12 +56,14 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       fecha_programada: "2026-05-10T09:00:00.000Z",
       creado_en: "2026-05-09T20:00:00.000Z",
       duracion_real: 95,
+      duracion_estimada: 80,
       alertas_count: 0,
       paradas: [
         { orden: 1, direccion: "Av. Corrientes 1234, CABA" },
         { orden: 2, direccion: "Palermo Soho, CABA" },
       ],
       conductor: { usuario: { nombre: "Carlos", apellido: "López" } },
+      vehiculo: { patente: "ABC123", marca: "Ford", modelo: "Transit", tipo_vehiculo: "furgon" },
     },
     {
       id_viaje: 102,
@@ -72,12 +74,16 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       fecha_programada: "2026-05-08T08:00:00.000Z",
       creado_en: "2026-05-07T18:00:00.000Z",
       duracion_real: 210,
+      duracion_estimada: 240,
       alertas_count: 2,
       paradas: [
         { orden: 1, direccion: "Microcentro, CABA" },
         { orden: 2, direccion: "La Plata, Buenos Aires" },
       ],
       conductor: { usuario: { nombre: "Roberto", apellido: "Sanz" } },
+      // Sin `vehiculo`: la card del detalle cae al estado vacío, que es lo que
+      // pasa en un viaje sin conductor asignado.
+      vehiculo: null,
     },
     {
       id_viaje: 103,
@@ -88,6 +94,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       fecha_programada: "2026-05-14T11:00:00.000Z",
       creado_en: "2026-05-14T10:30:00.000Z",
       duracion_real: null,
+      duracion_estimada: 42,
       alertas_count: 0,
       paradas: [
         { orden: 1, direccion: "Once, CABA" },
@@ -104,6 +111,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       fecha_programada: "2026-05-05T14:00:00.000Z",
       creado_en: "2026-05-05T12:00:00.000Z",
       duracion_real: null,
+      duracion_estimada: 60,
       alertas_count: 0,
       paradas: [
         { orden: 1, direccion: "Retiro, CABA" },
@@ -120,6 +128,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       fecha_programada: "2026-05-02T07:00:00.000Z",
       creado_en: "2026-05-01T22:00:00.000Z",
       duracion_real: 60,
+      duracion_estimada: 55,
       alertas_count: 0,
       paradas: [
         { orden: 1, direccion: "Puerto Madero, CABA" },
@@ -136,6 +145,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       fecha_programada: "2026-05-03T10:00:00.000Z",
       creado_en: "2026-05-02T22:00:00.000Z",
       duracion_real: 180,
+      duracion_estimada: 150,
       alertas_count: 1,
       paradas: [
         { orden: 1, direccion: "Villa Urquiza, CABA" },
@@ -152,6 +162,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       fecha_programada: "2026-05-15T15:00:00.000Z",
       creado_en: "2026-05-14T12:00:00.000Z",
       duracion_real: null,
+      duracion_estimada: 90,
       alertas_count: 0,
       paradas: [
         { orden: 1, direccion: "Flores, CABA" },
@@ -168,6 +179,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       fecha_programada: "2026-05-06T06:00:00.000Z",
       creado_en: "2026-05-05T20:00:00.000Z",
       duracion_real: 300,
+      duracion_estimada: 300,
       alertas_count: 0,
       paradas: [
         { orden: 1, direccion: "Constitución, CABA" },
@@ -184,6 +196,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       fecha_programada: "2026-05-07T13:00:00.000Z",
       creado_en: "2026-05-07T11:00:00.000Z",
       duracion_real: 45,
+      duracion_estimada: 40,
       alertas_count: 0,
       paradas: [
         { orden: 1, direccion: "Núñez, CABA" },
@@ -200,6 +213,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       fecha_programada: "2026-05-09T08:00:00.000Z",
       creado_en: "2026-05-08T18:00:00.000Z",
       duracion_real: 120,
+      duracion_estimada: 110,
       alertas_count: 0,
       paradas: [
         { orden: 1, direccion: "Almagro, CABA" },
@@ -300,6 +314,8 @@ const MOCK_FIXTURES: Record<string, unknown> = {
     fecha_programada: "2026-05-14T11:00:00.000Z",
     fecha_inicio: "2026-05-14T11:12:00.000Z",
     puntualidad_inicio: "A_TIEMPO",
+    // Minutos enteros = round(duracion_estimada_horas * 60).
+    duracion_estimada: 42,
     creado_en: "2026-05-14T10:30:00.000Z",
     paradas: [
       {
@@ -361,6 +377,23 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       fraccion_caba: 0.5,
       tarifa_hora: 3000,
       tarifa_km: 100,
+      es_hora_pico: false,
+    },
+  },
+  // Costo en vivo del viaje 495 del panel de gerente (EN_RUTA, zona CABA:
+  // sólo se cobra tiempo).
+  "/api/viajes/495/costo-acumulado": {
+    precio_acumulado: 6250,
+    desglose: {
+      precio_por_tiempo: 6250,
+      precio_por_distancia: null,
+      tiempo_horas: 1.25,
+      distancia_km: 14.8,
+      tiempo_capital: 1.25,
+      distancia_provincia: null,
+      fraccion_caba: 1,
+      tarifa_hora: 5000,
+      tarifa_km: null,
       es_hora_pico: false,
     },
   },
@@ -604,6 +637,30 @@ function adminMock(path: string, method: string, body: unknown): unknown | undef
   return undefined;
 }
 
+
+/**
+ * Error de la API que conserva el status HTTP. El contrato distingue casos que
+ * el mensaje solo no permite separar: un `409` significa que otro ganó la
+ * carrera y hay que refrescar, no reintentar; un `400` es input a corregir.
+ *
+ * `message` sigue siendo el `error` del body, así que el código que sólo hace
+ * `(err as Error).message` no necesita cambiar.
+ */
+export class ApiError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+/** `true` si el error viene de la API y tiene ese status. */
+export function esStatus(err: unknown, status: number): boolean {
+  return err instanceof ApiError && err.status === status;
+}
+
 async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
@@ -680,7 +737,7 @@ async function apiFetch<T>(
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error ?? `Error ${res.status}`);
+    throw new ApiError(body.error ?? `Error ${res.status}`, res.status);
   }
 
   return res.json() as Promise<T>;
