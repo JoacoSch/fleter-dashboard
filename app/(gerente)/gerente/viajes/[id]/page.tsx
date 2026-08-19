@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import { api, esStatus } from "@/lib/api";
 import { formatARS, fmtDateTime } from "@/lib/utils";
-import { ESTADO_LABEL } from "@/lib/estados";
+import { ESTADO_LABEL, ESTADOS_EN_CURSO, esFinalizado } from "@/lib/estados";
+import type { CostoAcumulado } from "@/hooks/useViajeActivo";
 import { useEmpresa } from "@/hooks/useEmpresa";
 import {
   CONDICION_LABEL,
@@ -54,6 +55,9 @@ export default function GerenteViajeDetallePage() {
   const [accion, setAccion] = useState<string | null>(null);
   const [accionError, setAccionError] = useState<string | null>(null);
   const [confirmSoltar, setConfirmSoltar] = useState(false);
+  const [costo, setCosto] = useState<CostoAcumulado | null>(null);
+  const [remitoLoading, setRemitoLoading] = useState(false);
+  const [remitoError, setRemitoError] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
     if (!idEmpresa) return;
@@ -99,6 +103,48 @@ export default function GerenteViajeDetallePage() {
     };
   }, [idEmpresa, id]);
 
+  /**
+   * Costo en vivo mientras el viaje está en curso. El gerente de la empresa
+   * dueña ahora pasa el control de acceso de `costo-acumulado` (misma regla que
+   * el detalle). Best-effort: si falla, la card simplemente no aparece.
+   */
+  const estado = viaje?.estado;
+  useEffect(() => {
+    if (!estado || !ESTADOS_EN_CURSO.includes(estado)) return;
+    let cancelled = false;
+    api
+      .get<CostoAcumulado>(`/api/viajes/${id}/costo-acumulado`)
+      .then((c) => {
+        if (!cancelled) setCosto(c);
+      })
+      .catch(() => {
+        if (!cancelled) setCosto(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id, estado]);
+
+  /**
+   * El endpoint no devuelve el PDF sino JSON `{ remito_url }` con una URL
+   * pública de R2: hay que pedirlo con `api` (que agrega BASE_URL y el
+   * Authorization) y recién después abrir esa URL.
+   */
+  async function abrirRemito() {
+    setRemitoLoading(true);
+    setRemitoError(null);
+    try {
+      const { remito_url } = await api.get<{ remito_url: string }>(
+        `/api/viajes/${id}/remito`,
+      );
+      window.open(remito_url, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      setRemitoError(e instanceof Error ? e.message : "No se pudo obtener el remito");
+    } finally {
+      setRemitoLoading(false);
+    }
+  }
+
   async function ejecutar(nombre: string, fn: () => Promise<unknown>) {
     setAccion(nombre);
     setAccionError(null);
@@ -106,7 +152,16 @@ export default function GerenteViajeDetallePage() {
       await fn();
       await cargar();
     } catch (err) {
-      setAccionError((err as Error).message);
+      // `reservar`, `asignar` y `reasignar` son atómicos: ante dos gerentes o un
+      // doble-submit, exactamente uno recibe 200 y el otro 409. Un 409 no se
+      // reintenta — significa que alguien más ya resolvió el viaje, así que se
+      // refresca el estado en vez de mostrar el mensaje crudo del backend.
+      if (esStatus(err, 409)) {
+        setAccionError("Otro usuario ya resolvió este viaje. Se actualizó el estado.");
+        await cargar();
+      } else {
+        setAccionError((err as Error).message);
+      }
     } finally {
       setAccion(null);
     }
@@ -267,6 +322,39 @@ export default function GerenteViajeDetallePage() {
             )}
           </div>
         </div>
+
+        {/* Costo en vivo — sólo mientras el viaje está en curso */}
+        {costo && (
+          <div className="card">
+            <p className="metric__label" style={{ marginBottom: 8 }}>Costo acumulado</p>
+            <p style={{ fontFamily: "var(--font-display)", fontSize: 22, color: "var(--ink)" }}>
+              {formatARS(costo.precio_acumulado)}
+            </p>
+            {costo.desglose && (
+              <p style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 4 }}>
+                {costo.desglose.distancia_km} km · {costo.desglose.tiempo_horas} h
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Remito — sólo en viajes finalizados */}
+        {esFinalizado(viaje.estado) && (
+          <div className="card">
+            <p className="metric__label" style={{ marginBottom: 8 }}>Remito</p>
+            <button
+              className="btn btn--ghost"
+              onClick={abrirRemito}
+              disabled={remitoLoading}
+              type="button"
+            >
+              {remitoLoading ? "Abriendo..." : "Ver remito (PDF)"}
+            </button>
+            {remitoError && (
+              <p style={{ fontSize: 12, color: "var(--err)", marginTop: 8 }}>{remitoError}</p>
+            )}
+          </div>
+        )}
 
         {/* Asignación actual */}
         {viaje.conductor && (

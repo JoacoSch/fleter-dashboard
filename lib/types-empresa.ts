@@ -107,33 +107,64 @@ export interface ParadaEmpresa {
 
 // ---- GET /api/empresas/:id/viajes ----
 
+/**
+ * Viajes de la empresa, del más nuevo al más viejo. Trae **todos** los que
+ * tienen `id_empresa = :id`, es decir desde que un gerente reservó
+ * (`RESERVADO_POR_EMPRESA`) en adelante, incluidos `FINALIZADO` y `CANCELADO`.
+ *
+ * El contrato documenta el JSON completo, así que estos campos ya no están
+ * inferidos.
+ */
 export interface ViajeEmpresa {
   id_viaje: number;
   zona: Zona;
   estado: EstadoViaje;
   precio_estimado: number;
+  /** Sólo tiene valor en `FINALIZADO`; `null` incluso en `CANCELADO`. */
   precio_real: number | null;
   fecha_programada: string;
-  fecha_reserva?: string | null;
-  fecha_inicio?: string | null;
-  creado_en?: string;
-  descripcion?: string | null;
-  id_empresa?: number | null;
-  id_conductor?: number | null;
-  id_vehiculo?: number | null;
+  /**
+   * Momento de la reserva; contra esto corre el timeout
+   * (`RESERVA_TIMEOUT_MINUTOS`, default 10). Vuelve a `null` si la reserva se
+   * libera, y se reinicia si el conductor cancela.
+   */
+  fecha_reserva: string | null;
+  fecha_inicio: string | null;
+  creado_en: string;
+  descripcion: string | null;
+  id_empresa: number | null;
+  id_conductor: number | null;
+  /** FK cruda; `vehiculo` es la misma relación expandida. Comparar por acá. */
+  id_vehiculo: number | null;
+  iniciado_por?: "CONDUCTOR" | "GERENTE" | null;
+  motivo_cancelacion?: string | null;
+  tarifa_hora?: number | null;
+  tarifa_km?: number | null;
+  /** Horas float. `null` hasta el cierre: se persisten al finalizar. */
+  tiempo_capital?: number | null;
+  distancia_provincia?: number | null;
+  /** Horas float — este endpoint devuelve la fila cruda, no los minutos. */
+  duracion_estimada_horas?: number | null;
   paradas: ParadaEmpresa[];
   condiciones_req: { condicion: Condicion }[];
   cliente: { usuario: { nombre: string; apellido: string; telefono?: string | null } } | null;
   conductor: {
     id_conductor: number;
     calificacion_promedio?: number | null;
+    nro_licencia?: string;
+    licencia_vencimiento?: string;
     usuario: { nombre: string; apellido: string; telefono?: string | null };
   } | null;
   vehiculo?: {
     id_vehiculo: number;
+    id_empresa?: number | null;
     patente: string;
     marca: string;
     modelo: string;
+    anio?: number;
+    color?: string;
+    tipo_vehiculo?: string;
+    /** Expandido a propósito: es lo que filtra la flota sin pedirla aparte. */
     condiciones: { condicion: Condicion }[];
   } | null;
 }
@@ -150,6 +181,16 @@ export interface ViajeDetalleGerente {
   ruta_planeada: [number, number][] | null;
   /** `null` si el viaje no es de ninguna empresa (conductor independiente). */
   empresa: { id_empresa: number; nombre: string; id_gerente: number } | null;
+  /** Minutos enteros — distinto de `duracion_estimada_horas` de `ViajeEmpresa`. */
+  duracion_estimada?: number | null;
+  /** `null` mientras no haya conductor asignado. */
+  vehiculo?: {
+    id_vehiculo: number;
+    patente: string;
+    marca: string;
+    modelo: string;
+    tipo_vehiculo: string;
+  } | null;
 }
 
 // ---- Viajes del mercado abierto ----

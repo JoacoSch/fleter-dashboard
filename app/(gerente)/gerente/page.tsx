@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import { api, esStatus } from "@/lib/api";
 import { formatARS, fmtDateTime } from "@/lib/utils";
 import { useSocket } from "@/hooks/useSocket";
 import { useEmpresa } from "@/hooks/useEmpresa";
@@ -165,9 +165,16 @@ export default function GerenteDisponiblesPage() {
       setViajes((prev) => prev.filter((v) => v.id_viaje !== id_viaje));
       router.push(`/gerente/viajes/${id_viaje}`);
     } catch (err) {
-      // El backend responde 409 cuando el viaje ya salió del pool.
-      setViajes((prev) => prev.filter((v) => v.id_viaje !== id_viaje));
-      mostrarAviso(`No se pudo reservar VJ-${id_viaje}: ${(err as Error).message}`);
+      // La reserva es atómica: el backend responde 409 cuando otro gerente ganó
+      // y el viaje ya salió del pool. Sólo en ese caso corresponde sacarlo de la
+      // lista; ante cualquier otro error (red, 500) el viaje sigue disponible y
+      // borrarlo escondería un viaje reservable hasta el próximo refetch.
+      if (esStatus(err, 409)) {
+        setViajes((prev) => prev.filter((v) => v.id_viaje !== id_viaje));
+        mostrarAviso(`VJ-${id_viaje} ya fue reservado por otra empresa.`);
+      } else {
+        mostrarAviso(`No se pudo reservar VJ-${id_viaje}: ${(err as Error).message}`);
+      }
     } finally {
       setReservando(null);
     }
