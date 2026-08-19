@@ -76,9 +76,17 @@ evidencia en el repo de una corrida end-to-end contra Railway.
 | Panel gerente: empresa / flota / conductores | `app/(gerente)/gerente/{empresa,flota,conductores}/page.tsx` | EXISTE-SIN-PROBAR |
 | Formateo de precios, fechas y duraciones | `lib/utils.ts`, `__tests__/unit/utils.test.ts` | FUNCIONA-PROBADO (13 casos) |
 
-Entorno local: `.env.local` tiene `NEXT_PUBLIC_MOCK=true` y `MOCK_ROLE=ADMIN` —
-**la configuración con la que hoy se levanta la app no toca el backend**. Hay un
-deploy en Vercel (`README.md:49`) cuyo comportamiento real no es verificable acá.
+Entorno local **al 19-08**: `.env.local` tiene `NEXT_PUBLIC_MOCK=false` y
+`NEXT_PUBLIC_API_URL` apuntando a
+`https://nombre-proyecto-back-staging.up.railway.app`, así que la app **ya se
+levanta contra staging**. `NEXT_PUBLIC_MOCK_ROLE=ADMIN` queda inerte: sólo se lee
+cuando `MOCK` es `true` (todos los sitios comparan `=== "true"`, así que el
+espacio de más al final del valor no molesta). Hay un deploy en Vercel
+(`README.md:49`) cuyo comportamiento real no es verificable acá.
+
+Staging responde: `GET /health` devuelve `200 {"status":"ok"}` y los endpoints
+autenticados devuelven `401 {"error":"Token no proporcionado"}` sin token
+(verificado el 19-08 con `curl`).
 
 ---
 
@@ -128,13 +136,18 @@ backend. Se indica cuál es cuál en cada caso.
 
 ### Momento y método de cobro
 
-- **No existe cobro en el sistema.** Ni endpoint de pago, ni estado de pago en el
-  viaje, ni campo `pagado`, ni integración de MercadoPago. **Corrección
-  (12-08-2026):** una versión anterior de este archivo decía que había un
-  `MERCADOPAGO_ACCESS_TOKEN` en `.env`; hoy no está — las únicas claves con valor son
-  `DATABASE_URL`, `REDIS_URL`, `FIREBASE_*`, `PORT` y `NODE_ENV`. La mención de
-  MercadoPago en `docs/PROYECTO.md` ya se sacó. El medio de cobro es `OPEN.md` → D3,
-  ABIERTA.
+- **No existe cobro en el frontend.** Ni endpoint de pago, ni estado de pago en el
+  viaje, ni campo `pagado`, ni integración de MercadoPago en este repo.
+  **Corrección (19-08-2026):** la "corrección" del 12-08 que decía que
+  `MERCADOPAGO_ACCESS_TOKEN` ya no estaba en `.env` era **falsa**. Sí está. Las
+  variables de `.env` son `DATABASE_URL`, `FIREBASE_PROJECT_ID`,
+  `FIREBASE_PRIVATE_KEY`, `FIREBASE_CLIENT_EMAIL`, `REDIS_URL`,
+  `CLOUDFLARE_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`,
+  `R2_BUCKET_NAME`, `R2_PUBLIC_URL`, `MERCADOPAGO_ACCESS_TOKEN`,
+  `GOOGLE_MAPS_API_KEY`, `PORT` y `NODE_ENV` (verificado leyendo los nombres, no
+  los valores). Es el `.env` **del backend**, que no debería estar en este repo.
+  Que exista el token no prueba que el backend cobre: prueba que alguien lo
+  configuró. El medio de cobro sigue siendo `OPEN.md` → D3, ABIERTA.
 - Lo único que se emite al final es un **remito PDF**
   (`context/api-contracts/context.md:1962-1980`): cliente, conductor, paradas con
   fecha de entrega y desglose de costo. No es comprobante fiscal ni de cobro.
@@ -339,12 +352,15 @@ que atacar.
   "quedaron resueltos e integrados". Marcado **NO VERIFICADO**, con el porqué: el
   panel corre contra `lib/mocks-gerente.ts` y que el mock responda no prueba que el
   endpoint exista.
-- `docs/academico/DEFENSA.md:136` afirma que ningún secreto está en el repo / `.env.local`
-  tiene la API key de Firebase y la de Google Maps en claro, y `.env` tiene
-  `DATABASE_URL`, `REDIS_URL` y `FIREBASE_PRIVATE_KEY` (no hay R2 ni MercadoPago).
-  Están ignorados por git y no aparecen en el historial (`git log --all -- .env`
-  vacío): la afirmación vale para el repo, no para la máquina. **Corregido en
-  `docs/academico/DEFENSA.md` el 12-08-2026.**
+- `docs/academico/DEFENSA.md:136` afirma que ningún secreto está en el repo.
+  `.env.local` tiene la API key de Firebase y la de Google Maps en claro, y `.env`
+  tiene además de `DATABASE_URL`, `REDIS_URL` y `FIREBASE_PRIVATE_KEY` **las cuatro
+  claves de R2, el account id de Cloudflare y `MERCADOPAGO_ACCESS_TOKEN`**
+  (corregido el 19-08: el 12-08 se escribió acá que R2 y MercadoPago no estaban, y
+  era falso). Están ignorados por git y no aparecen en el historial
+  (`git log --all -- .env` vacío): la afirmación vale para el repo, **no para la
+  máquina**. `.env` es el del backend y no tendría que estar en este repo; conviene
+  moverlo y, si esas claves son de producción, rotarlas.
 - **ABIERTA, a propósito** — `docs/academico/DEFENSA.md` termina en las líneas
   210-211 con etiquetas XML residuales: quedó cortado a mitad de una generación. Se
   decidió dejarlo así y solo moverlo.
