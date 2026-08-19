@@ -12,7 +12,6 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
-  createUserWithEmailAndPassword,
   signOut,
   sendPasswordResetEmail,
   onIdTokenChanged,
@@ -54,6 +53,17 @@ interface RegisterConductorData {
   licencia_vencimiento: string;
 }
 
+interface RegisterGerenteData {
+  nombre: string;
+  apellido: string;
+  dni: string;
+  email: string;
+  password: string;
+  telefono?: string;
+  cuit_empresa: string;
+  nombre_empresa: string;
+}
+
 interface AuthState {
   user: User | null;
   profile: UserProfile | null;
@@ -66,6 +76,7 @@ interface AuthContextValue extends AuthState {
   loginWithGoogle: () => Promise<string>;
   register: (data: RegisterData) => Promise<void>;
   registerConductor: (data: RegisterConductorData) => Promise<void>;
+  registerGerente: (data: RegisterGerenteData) => Promise<void>;
   logout: () => Promise<void>;
   sendRecovery: (email: string) => Promise<void>;
 }
@@ -210,6 +221,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState({ user: cred.user, profile, role: profile.rol, loading: false });
   }, []);
 
+  const registerGerente = useCallback(async (data: RegisterGerenteData) => {
+    if (MOCK) return;
+    // El backend crea el gerente y su primera empresa (con codigo_afiliacion)
+    // en una sola operación.
+    await api.post("/api/auth/registro-gerente", {
+      nombre: data.nombre,
+      apellido: data.apellido,
+      dni: data.dni,
+      email: data.email,
+      contrasena: data.password,
+      telefono: data.telefono,
+      cuit_empresa: data.cuit_empresa,
+      nombre_empresa: data.nombre_empresa,
+    });
+    const cred = await signInWithEmailAndPassword(getFirebaseAuth(), data.email, data.password);
+    const token = await cred.user.getIdToken();
+    await setCookieToken(token);
+    const profile = await fetchProfile();
+    setState({ user: cred.user, profile, role: profile.rol, loading: false });
+  }, []);
+
   const logout = useCallback(async () => {
     if (MOCK) {
       document.cookie = "token=; path=/; max-age=0";
@@ -227,7 +259,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, loginWithGoogle, register, registerConductor, logout, sendRecovery }}>
+    <AuthContext.Provider value={{ ...state, login, loginWithGoogle, register, registerConductor, registerGerente, logout, sendRecovery }}>
       {children}
     </AuthContext.Provider>
   );
