@@ -1,9 +1,21 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useEmpresa } from "@/hooks/useEmpresa";
+import { Navigation, ClipboardList, Users, Truck, Building2, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
+
+const navItems = [
+  { href: "/gerente",             label: "Viajes disponibles", Icon: Navigation },
+  { href: "/gerente/viajes",      label: "Mis viajes",         Icon: ClipboardList },
+  { href: "/gerente/conductores", label: "Conductores",        Icon: Users },
+  { href: "/gerente/flota",       label: "Flota",              Icon: Truck },
+  { href: "/gerente/empresa",     label: "Mi empresa",         Icon: Building2 },
+];
 
 export default function GerenteShell({
   user,
@@ -13,9 +25,25 @@ export default function GerenteShell({
   children: ReactNode;
 }) {
   const { profile, logout } = useAuth();
+  const { empresas, empresaActiva, setEmpresaActiva } = useEmpresa();
   const nombre = profile?.nombre ?? user.nombre;
   const apellido = profile?.apellido ?? user.apellido;
+
+  const pathname = usePathname();
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handler(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
 
   async function handleLogout() {
     await logout();
@@ -25,52 +53,84 @@ export default function GerenteShell({
   return (
     <div className="app">
       <aside className="sidebar">
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 2px", marginBottom: 20 }}>
+        <div className="brand-header">
           <div className="brand-mark">F</div>
-          <span className="brand-name">fle<em>ter</em></span>
+          <span className="brand-name">Fleter<em>.</em></span>
         </div>
 
-        <div style={{ flex: 1 }} />
+        <nav className="sidebar__nav" style={{ flex: 1 }}>
+          {navItems.map(({ href, label, Icon }) => {
+            const isActive =
+              href === "/gerente" ? pathname === href : pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`nav-item${isActive ? " is-active" : ""}`}
+              >
+                <Icon size={16} className="nav-item__icon" />
+                <span className="nav-item__label">{label}</span>
+              </Link>
+            );
+          })}
+        </nav>
 
-        <div style={{ borderTop: "1px solid var(--line)", paddingTop: 12, marginTop: 8 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px" }}>
-            <div style={{
-              width: 28,
-              height: 28,
-              borderRadius: "50%",
-              background: "var(--accent-soft)",
-              color: "var(--accent-ink)",
-              fontFamily: "var(--font-display)",
-              fontSize: 11,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}>
-              {`${nombre[0]}${apellido[0]}`}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {nombre} {apellido}
-              </p>
-              <p style={{ fontSize: 11, color: "var(--ink-3)" }}>Gerente</p>
-            </div>
+        <div className="sidebar__profile-section">
+          <div ref={menuRef} style={{ position: "relative" }}>
+            {menuOpen && (
+              <div className="sidebar__user-menu">
+                <button
+                  type="button"
+                  className="sidebar__user-menu-item sidebar__user-menu-item--danger"
+                  onClick={handleLogout}
+                >
+                  <LogOut size={14} />
+                  Cerrar sesión
+                </button>
+              </div>
+            )}
+            <button
+              type="button"
+              className="sidebar__conductor-user sidebar__user--btn"
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              <div className="sidebar__conductor-avatar">
+                {`${nombre[0]}${apellido[0]}`}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p className="sidebar__conductor-name">{nombre} {apellido}</p>
+                <p className="sidebar__conductor-role">Gerente</p>
+              </div>
+            </button>
           </div>
-          <button
-            onClick={handleLogout}
-            className="btn btn--ghost"
-            style={{ width: "100%", justifyContent: "flex-start", fontSize: 12.5, color: "var(--ink-3)" }}
-          >
-            Cerrar sesión
-          </button>
         </div>
       </aside>
 
       <div className="main">
         <header className="topbar">
-          <p style={{ fontFamily: "var(--font-display)", fontSize: 15, color: "var(--ink)" }}>
-            Panel del gerente
-          </p>
+          {empresaActiva && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 11.5, color: "var(--ink-3)" }}>Empresa</span>
+              {empresas.length > 1 ? (
+                <select
+                  value={empresaActiva.id_empresa}
+                  onChange={(e) => setEmpresaActiva(Number(e.target.value))}
+                  className="input"
+                  style={{ fontSize: 12.5, padding: "4px 8px", width: "auto" }}
+                >
+                  {empresas.map((e) => (
+                    <option key={e.id_empresa} value={e.id_empresa}>
+                      {e.nombre}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>
+                  {empresaActiva.nombre}
+                </span>
+              )}
+            </div>
+          )}
         </header>
         <main className="content">
           {children}
