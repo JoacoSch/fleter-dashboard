@@ -301,7 +301,7 @@ El conductor lleva más de 5 minutos detenido fuera de una parada. Solo en zonas
 ```
 
 ### `viaje:finalizado`
-Se confirma la última parada por QR. El viaje se cierra automáticamente.
+Se confirma la última parada por proximidad GPS (el QR salió el 19-08). El viaje se cierra automáticamente.
 ```json
 {
   "id_viaje": 42,

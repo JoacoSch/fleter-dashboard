@@ -106,6 +106,28 @@ asignó directo? En el segundo caso se cae buena parte de lo listado arriba.
 **Mientras tanto:** no construir más sobre el mercado abierto. Si una tarea nueva
 toca `viajes-disponibles`, `reservar` o `viaje:aceptar`, parar y preguntar.
 
+### El contrato del 19-08 profundiza el conflicto
+
+La entrega nueva del backend agrega una **cuarta vía de acceso** a
+`GET /api/viajes/:id`: un `GERENTE` cuya empresa tiene al menos un vehículo que
+cumple todas las `condiciones_req` puede abrir el detalle de un viaje en
+`BUSCANDO_CONDUCTOR` — o sea, de un viaje que **no es de su empresa y que nadie
+reservó todavía**. El criterio es el mismo que decide a qué gerentes les llega el
+push `viaje:disponible`: si te llegó el push, podés abrir el detalle.
+
+Resuelve un pendiente real que le habíamos pasado (el gerente decidía la reserva
+sin poder ver la `ruta_planeada`), pero lo resuelve **construyendo más
+marketplace abierto**, que es justo el nivel 3 que D4 descartó.
+
+**Decisión del 19-08: no se consume.** El tipo `ViajeDetalleGerente` está listo,
+y `app/(gerente)/gerente/viajes/[id]/page.tsx:32` ya llama al endpoint como
+best-effort (`.catch(() => null)`), así que si D4 se resuelve a favor del mercado
+abierto empieza a funcionar solo, sin tocar código. Si se resuelve en contra, esa
+llamada se borra. En ninguno de los dos casos hace falta escribir nada ahora.
+
+Esto también significa que el backend está invirtiendo en una superficie que
+puede caerse entera. **Conviene avisarle antes de que siga.**
+
 ---
 
 ## D5 — CIERRE DEL VIAJE · CERRADA
@@ -115,26 +137,40 @@ toca `viajes-disponibles`, `reservar` o `viaje:aceptar`, parar y preguntar.
 **Entra:** foto del remito conformado + geolocalización + timestamp + validación
 de GPS en radio del destino, generando un **comprobante PDF**.
 
-**Estado al 19-08:** el backend lo habría resuelto en su entrega nueva —
-**supuestamente, sin verificar todavía**. Cuando llegue el contrato actualizado hay
-que chequear tres cosas antes de escribir una línea:
+**Estado al 19-08, verificado contra el contrato nuevo.** El backend sacó el QR:
+se eliminó `GET /api/viajes/:id/qr-paradas` y el campo `qr_firmado` del body.
+`POST /api/viajes/:id/confirmar-parada` ahora recibe `{ id_parada, lat, lng }` y
+valida proximidad. Las tres preguntas que estaban acá:
 
-1. **Qué dispara el cierre**, ahora que no es el escaneo del QR. Hasta la versión
-   anterior del contrato, confirmar la última parada por QR era *lo único* que
-   pasaba un viaje de `DESCARGANDO` a `FINALIZADO` y emitía `viaje:finalizado` con
-   el `precio_real` y el remito. Si cambió el disparador, ese evento tiene que
-   seguir emitiéndose igual o se rompe la pantalla de viaje activo
-   (`hooks/useViajeActivo.ts`).
-2. **El radio de validación del GPS, y qué pasa si la foto se saca afuera:** ¿se
-   bloquea la entrega, o se registra con alerta y se cierra igual? Es decisión de
-   producto, no técnica, y no está tomada.
-3. **Si el comprobante PDF nuevo reemplaza al remito actual o convive con él.** El
-   remito ya existe y el front ya lo abre
-   (`app/(cliente)/viajes/[id]/page.tsx:73-92`); si son dos documentos distintos,
-   hay que decidir cuál ve el cliente.
+1. **Qué dispara el cierre — RESPONDIDA.** Confirmar la última parada pendiente
+   pasa el viaje a `FINALIZADO` y emite `viaje:finalizado` **con el mismo
+   payload de antes**. La pantalla de viaje activo (`hooks/useViajeActivo.ts`)
+   no se rompe. Verificado leyendo el contrato, no probado contra staging.
+2. **El radio — RESPONDIDA, pero la decidió el backend.** Es
+   `RADIO_CONFIRMACION_METROS`, variable de entorno con **default 50 m** (antes
+   estaba fijo en 200: se bajó porque con el QR la proximidad era un control
+   secundario y ahora es el único). Fuera del radio devuelve `400` y **bloquea la
+   entrega**: no se registra con alerta ni se cierra igual.
 
-Lo que la entrega nueva no cubra de esos tres puntos, va a la lista de pedidos al
-backend.
+   Esto estaba marcado acá como decisión de producto sin tomar, y se tomó del
+   lado del backend sin preguntar. **Conviene ratificarlo**: 50 m es agresivo
+   para GPS urbano entre edificios altos, y el modo de falla es un conductor que
+   está parado en la puerta y no puede cerrar la entrega. El contrato dice que
+   por eso la dejaron configurable sin redeploy.
+3. **El comprobante PDF — SIN RESPUESTA, y falta lo principal.**
+
+**⚠️ La foto del remito conformado no existe en el contrato nuevo.** Busqué
+`foto`, `imagen`, `comprobante`, `upload`, `multipart` y `storage`: cero
+apariciones. `remito_url` sigue siendo el mismo PDF autogenerado de siempre.
+
+Es decir: de "foto del remito conformado + geolocalización + timestamp +
+validación de GPS" se implementaron los últimos tres, y **falta el primero**, que
+es el núcleo de la decisión y el diferencial de producto. Sin la foto, sacar el
+QR no agrega prueba de entrega — sólo la quita.
+
+El front web no sube la foto (eso es la app del conductor), pero sí tendría que
+mostrarla en el detalle del viaje. **Va primero en la lista de pedidos al
+backend** (`context/tasks/pendiente.md`).
 
 ---
 

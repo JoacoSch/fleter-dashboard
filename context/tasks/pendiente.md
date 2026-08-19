@@ -1,12 +1,46 @@
 # Pendientes de datos para el dashboard
 
-> Revisado el **19-08-2026**. Antes de tomar algo de acá, leer `OPEN.md`: varios de
-> estos huecos dependen de decisiones ABIERTAS (D2 precio, D3 cobro) y no se
-> implementan hasta que cierren.
+> Revisado el **19-08-2026** contra la entrega nueva del backend. Antes de tomar
+> algo de acá, leer `OPEN.md`: varios de estos huecos dependen de decisiones
+> ABIERTAS (D2 precio, D3 cobro) y no se implementan hasta que cierren.
+>
+> **Resueltos por la entrega del 19-08** (ya integrados en el front): acceso del
+> gerente a `costo-acumulado` y `remito`, schema documentado de
+> `GET /api/empresas/:id/viajes`, `duracion_real` en `mis-viajes`,
+> `duracion_estimada` y `vehiculo` en el detalle, y `tiempo_capital` /
+> `distancia_provincia` en `desglose_estimado` y en `viaje:finalizado`.
 
 Estas secciones muestran placeholders porque la API/backend aún no provee los datos
 necesarios. **Este archivo es la lista para pasarle al backend**: cada ítem dice qué
 falta, dónde se nota en el front y qué habría que agregar.
+
+---
+
+## ⚠️ La foto del remito conformado — lo más urgente (19-08)
+
+> Bloquea **D5**, que está CERRADA. Ver `OPEN.md` → D5.
+
+- **Qué falta:** la entrega del 19-08 eliminó el QR (`GET /api/viajes/:id/qr-paradas` y el
+  campo `qr_firmado`) y lo reemplazó por confirmación por proximidad GPS
+  (`POST /api/viajes/:id/confirmar-parada` con `{ id_parada, lat, lng }`,
+  radio `RADIO_CONFIRMACION_METROS`, default 50 m). Pero **no se implementó la foto**.
+  Busqué `foto`, `imagen`, `comprobante`, `upload`, `multipart` y `storage` en el contrato:
+  cero apariciones. `remito_url` sigue siendo el PDF autogenerado de siempre.
+- **Por qué importa:** D5 define el cierre como "foto del remito conformado +
+  geolocalización + timestamp + validación de GPS". Se hicieron los últimos tres. Sin la foto,
+  sacar el QR **no agrega prueba de entrega, sólo la quita**: antes el token firmado probaba
+  la presencia, ahora el único control es una coordenada que el cliente de la app manda.
+- **Qué haría falta:** subida de la foto en `confirmar-parada` (multipart o URL prefirmada),
+  persistirla por parada, y exponerla en `GET /api/viajes/:id` y en el remito para que el
+  cliente la vea.
+- **Dónde impacta el front web:** el dashboard no sube la foto (eso es la app del conductor),
+  pero tiene que mostrarla en el detalle del viaje y en el remito.
+
+### Ratificar el radio de 50 m
+- Fuera del radio el backend devuelve `400` y **bloquea la entrega** — no la registra con
+  alerta. Es una decisión de producto que `OPEN.md` tenía marcada como abierta y que se tomó
+  del lado del backend. 50 m es agresivo para GPS urbano entre edificios altos; el modo de
+  falla es un conductor parado en la puerta que no puede cerrar. Confirmar que es lo deseado.
 
 ---
 
@@ -41,68 +75,53 @@ falta, dónde se nota en el front y qué habría que agregar.
   `booleanPointInPolygon`). El campo `zona` del body **se acepta pero se descarta**.
 - El front ya no lo manda y muestra la zona que devuelve el backend al crear el viaje.
 
-### `duracion_real` y `alertas_count` no vienen en `GET /api/viajes/mis-viajes`
-- **Qué falta:** el contrato no incluye esos campos, pero el historial ordena por
-  `duracion_real` y tiene un filtro "Con alertas" que usa `alertas_count`. El resumen de
-  analytics también suma `alertas_count`.
-- **Dónde:** `app/(cliente)/viajes/page.tsx` (columna "Duración" y filtro) y
-  `app/api/analytics/cliente/resumen/route.ts`.
-- **Estado:** no rompe — están tipados como opcionales con fallback (`?? null` / `?? 0`), así
-  que la columna queda vacía y el filtro no devuelve nada.
-- **Solución futura:** agregar ambos campos al response de `mis-viajes`.
+### ~~`duracion_real` en `GET /api/viajes/mis-viajes`~~ — RESUELTO (19-08)
+- Viene en **minutos enteros**. Es `null` si el viaje no está `FINALIZADO` o nunca arrancó.
+- Se calcula al leer (`max(fecha_entrega) − fecha_inicio`), no es columna. Toma el **máximo**
+  de las `fecha_entrega` y no la parada de mayor `orden`, porque el orden de confirmación
+  entre paradas no se valida.
+
+### `alertas_count` sigue sin venir en `GET /api/viajes/mis-viajes`
+- **Qué falta:** el historial tiene un filtro "Con alertas" que usa `alertas_count`, y el
+  resumen de analytics lo suma. La entrega del 19-08 no lo agregó.
+- **Dónde:** `app/(cliente)/viajes/page.tsx:132` (filtro) y
+  `app/api/analytics/cliente/resumen/route.ts:142`.
+- **Estado:** no rompe — tipado opcional con fallback (`?? 0`), así que **el filtro "Con
+  alertas" simplemente no devuelve nada**. Es un filtro muerto en la UI.
+- **Solución futura:** agregar `alertas_count` al response de `mis-viajes`.
 
 ---
 
-## Gerente (estructura jerárquica)
+## Gerente (estructura jerárquica) — RESUELTO (19-08)
 
-> **NO VERIFICADO.** Los tres gaps que había acá (no existía `viajes-disponibles`,
-> `/api/empresas/:id/viajes` no traía `condiciones_req`, y el gerente no podía leer
-> `GET /api/viajes/:id`) figuran como resueltos por el fix del backend de agosto 2026,
-> y el front está escrito para consumirlos.
+> Los tres gaps que quedaban acá los cerró la entrega del 19-08:
 >
-> Lo verificable acá es solo eso: que el código existe y compila. **Todo el panel de
-> gerente corre contra `lib/mocks-gerente.ts`**, así que ninguna de las tres cosas se
-> probó contra el backend real. Que el mock responda no prueba que el endpoint exista.
+> - **`costo-acumulado` y `remito`**: ahora aplican la misma regla de acceso que
+>   `GET /api/viajes/:id` (helper `puedeVerViaje`), así que el gerente de la empresa dueña
+>   ve el costo en vivo y descarga el remito. Ya integrado en
+>   `app/(gerente)/gerente/viajes/[id]/page.tsx`.
+> - **Detalle de un viaje del mercado abierto**: resuelto con una cuarta vía de acceso para
+>   gerentes con flota elegible sobre viajes en `BUSCANDO_CONDUCTOR`. **No se consume** —
+>   ver `OPEN.md` → D4, que congeló esa superficie.
+> - **`GET /api/empresas/:id/viajes`**: documentado con el JSON completo. `fecha_reserva`,
+>   `id_vehiculo` y `precio_real` dejaron de estar inferidos y `lib/types-empresa.ts` ya
+>   refleja el schema real.
 >
-> Para pasar esto a VERIFICADO hay que correr el panel con `NEXT_PUBLIC_MOCK=false`
-> contra staging.
-
-### `costo-acumulado` y `remito` siguen cerrados al gerente
-- **Qué falta:** el fix abrió `GET /api/viajes/:id` al `GERENTE` de la empresa dueña, pero no
-  hizo lo mismo con sus dos endpoints hermanos: `GET /api/viajes/:id/costo-acumulado` y
-  `GET /api/viajes/:id/remito` siguen siendo `CLIENTE` o `CONDUCTOR`. Parece un olvido más que
-  una decisión.
-- **Consecuencia:** el gerente no puede ver el costo en vivo ni descargar el remito de un viaje
-  hecho por su propia flota.
-- **Solución futura:** aplicar en ambos la misma regla de acceso que ya tiene `/api/viajes/:id`.
-
-### El gerente no puede ver el detalle de un viaje del mercado abierto
-- **Qué falta:** `id_empresa` se setea recién al **reservar**, así que un viaje en
-  `BUSCANDO_CONDUCTOR` tiene `id_empresa: null` y el gerente cae en el `403` de
-  `GET /api/viajes/:id`. Decide la reserva sin poder ver la `ruta_planeada`.
-- **Estado:** no bloquea. `GET /api/empresas/:id/viajes-disponibles` trae paradas con
-  coordenadas, cliente, descripción y condiciones, que alcanza para decidir.
-- **Dónde:** `app/(gerente)/gerente/viajes/[id]/page.tsx` — la llamada a `/api/viajes/:id` es
-  best-effort (`.catch(() => null)`) justamente por esto.
-
-### `GET /api/empresas/:id/viajes` sigue sin schema documentado
-- **Qué falta:** es una línea de prosa en la sección de resumen del contrato, sin JSON de
-  ejemplo, pese a ser el endpoint más usado del panel de gerente.
-- **Consecuencia:** los campos que el front consume de ahí —`fecha_reserva` (countdown de la
-  reserva), `id_vehiculo` (default del selector) y `precio_real`— están **inferidos**, no
-  documentados. Si cambian de nombre o desaparecen, se rompe en silencio.
-- **Solución futura:** documentarlo con el mismo formato que el resto de los endpoints.
+> **Sigue NO VERIFICADO contra el backend.** Todo el panel de gerente corre contra
+> `lib/mocks-gerente.ts`: que el mock responda no prueba que el endpoint exista. Para pasar a
+> VERIFICADO hay que correr con `NEXT_PUBLIC_MOCK=false` contra staging.
 
 ---
 
 ## Inconsistencias del contrato (no bloquean, pero conviene confirmar)
 
-### `viaje:finalizado` y `desglose_estimado` no muestran las magnitudes facturadas
-- La sección "Cómo se factura cada zona" dice que `tiempo_capital` / `distancia_provincia`
-  aparecen también en el evento `viaje:finalizado` y se persisten al cerrar el viaje, pero ni el
-  payload de ese evento ni el `desglose_estimado` de `POST /api/viajes` los incluyen en sus
-  ejemplos.
-- **Estado:** tipados como opcionales en `hooks/useViajeActivo.ts`. Si vienen, se muestran.
+### ~~`viaje:finalizado` y `desglose_estimado` no muestran las magnitudes facturadas~~ — RESUELTO (19-08)
+- `tiempo_capital` y `distancia_provincia` ahora sí figuran en los ejemplos de
+  `desglose_estimado` (`POST /api/viajes`) y del evento `viaje:finalizado`.
+- El desglose de `viaje:finalizado` **no** incluye `fraccion_caba` ni `es_hora_pico`; el de la
+  estimación sí. Ya está tipado así en `hooks/useViajeActivo.ts`.
+- `desglose_estimado` de `POST /api/viajes` y `desglose` de `POST /api/viajes/estimar-costo`
+  son **el mismo objeto con dos nombres**. No se unificaron porque el front consume ambos.
 
 ---
 
@@ -135,15 +154,21 @@ falta, dónde se nota en el front y qué habría que agregar.
 
 ## Detail (viaje individual)
 
-### Duración estimada
-- **Qué falta:** El endpoint `/api/viajes/:id` no devuelve `duracion_estimada`, solo `duracion_real`.
-- **Dónde:** Card "Tiempo del viaje" — celda "Estimado" del time-compare.
-- **Solución futura:** Exponer `duracion_estimada` en el detalle del viaje.
+### ~~Duración estimada~~ — RESUELTO (19-08)
+- `GET /api/viajes/:id` devuelve `duracion_estimada` en **minutos enteros** y
+  `duracion_estimada_horas` en **horas float**. La card "Tiempo del viaje" ya compara
+  estimado vs. real.
+- **Cuidado con las unidades:** todo `duracion_*` sin sufijo va en minutos enteros; todo
+  `tiempo_*` y `*_horas` va en horas float. `GET /api/empresas/:id/viajes` devuelve la fila
+  cruda, así que ahí sólo está `duracion_estimada_horas`.
 
-### Vehículo
-- **Qué falta:** El endpoint de detalle no devuelve datos del vehículo asignado.
-- **Dónde:** Card "Vehículo" en la columna derecha del detalle.
-- **Solución futura:** Agregar `vehiculo: { patente, tipo, condiciones[], credenciales[] }` al detalle del viaje.
+### Vehículo en el detalle — RESUELTO PARCIAL (19-08)
+- **Ya viene:** `id_vehiculo`, `patente`, `marca`, `modelo`, `anio`, `color`, `tipo_vehiculo`.
+  Es `null` mientras no haya conductor asignado, y la clave siempre está presente. Ya integrado
+  en `app/(cliente)/viajes/[id]/page.tsx`.
+- **Falta todavía:** `condiciones[]` y `credenciales[]` del vehículo en el detalle del cliente.
+  El gerente sí las recibe por `GET /api/empresas/:id/viajes`, el cliente no.
+- **Falta también la capacidad** (kg, m³, pallets) — ver la sección que bloquea D2.
 
 ### Ayudante
 - **Qué falta:** No hay datos de ayudante en el response.

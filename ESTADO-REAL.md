@@ -22,6 +22,16 @@ Tres tandas de trabajo, todas sobre el árbol sucio:
    reescribió `CLAUDE.md`, se movió el material académico a `docs/academico/` y se
    generó `docs/PROPUESTA-CONTRATO.md`. La sección 4 de este archivo quedó en buena
    parte saldada por eso — está marcada ítem por ítem.
+4. **Entrega nueva del backend** (19-08, 484 inserciones reales en el contrato).
+   **Se eliminó el flujo de QR** y el cierre pasó a confirmación por proximidad GPS.
+   Se cobraron siete pendientes: acceso del gerente a `costo-acumulado` y `remito`,
+   schema documentado de `GET /api/empresas/:id/viajes`, `duracion_real` en
+   `mis-viajes`, `duracion_estimada` y `vehiculo` en el detalle, y
+   `tiempo_capital`/`distancia_provincia` en el desglose. Se arreglaron dos bugs
+   propios: `getMinFecha()` construía el mínimo del `datetime-local` en UTC en vez
+   de hora local (en UTC-3 corría el mínimo tres horas de más), y `lib/api.ts`
+   descartaba el status HTTP, así que el front no podía distinguir un `409` de un
+   `400`. Ahora existe `ApiError` con `status`.
 
 **Nada de esto está verificado contra el backend real.** Sigue sin haber una sola
 evidencia en el repo de una corrida end-to-end contra Railway.
@@ -129,11 +139,10 @@ backend. Se indica cuál es cuál en cada caso.
   (`context/api-contracts/context.md:1962-1980`): cliente, conductor, paradas con
   fecha de entrega y desglose de costo. No es comprobante fiscal ni de cobro.
 - **El precio se congela** al confirmar la última parada: el backend emite
-  `viaje:finalizado` con `precio_real` y `remito_url` (`:1871-1892`). El disparador
-  documentado sigue siendo el QR, que **ya no es el producto** (D5): cuando se
-  construya el cierre por foto del remito, este evento tiene que seguir emitiéndose
-  igual. Quién paga a quién, cuándo y por qué medio: **no está en ningún lado**, y es
-  D3, ABIERTA.
+  `viaje:finalizado` con `precio_real` y `remito_url`. Desde el 19-08 el disparador
+  ya no es el QR sino la confirmación por proximidad GPS, y el evento **se sigue
+  emitiendo igual**. Falta todavía la foto del remito conformado (D5). Quién paga a
+  quién, cuándo y por qué medio: **no está en ningún lado**, y es D3, ABIERTA.
 
 ### Estados del viaje y qué cierra cada parada
 
@@ -146,12 +155,20 @@ Nueve estados, congelados en `lib/estados.ts:9-19` y `:25-35` y en el contrato
   front: `EN_CAMINO_A_ORIGEN`, `CARGANDO`, `EN_RUTA`, `DESCARGANDO` (`:41-46`).
 - Transiciones válidas: tabla en `context/api-contracts/context.md:2395-2415`;
   cualquier otra se rechaza con 400.
-- **Qué cierra cada parada (según el contrato, ya desalineado del producto):** el
-  escaneo del QR de esa parada por el conductor
-  (`POST /api/viajes/:id/confirmar-parada`, `context/api-contracts/context.md:1792`).
-  Confirmar la **última** parada pendiente cierra el viaje
-  (`DESCARGANDO → FINALIZADO`, `:2412`). El QR lo genera el backend y **lo tiene
-  que mostrar el cliente en pantalla** — pantalla que en este repo no existe.
+- **Qué cierra cada parada (actualizado 19-08, el QR ya no existe):** el conductor
+  confirma la parada con `POST /api/viajes/:id/confirmar-parada` mandando
+  `{ id_parada, lat, lng }`, y el backend valida que esté dentro de
+  `RADIO_CONFIRMACION_METROS` (**default 50 m**, antes 200 fijo). Fuera del radio
+  devuelve `400` y bloquea la entrega. Confirmar la **última** parada pendiente
+  cierra el viaje (`DESCARGANDO → FINALIZADO`) y emite `viaje:finalizado` con el
+  mismo payload de antes, así que `hooks/useViajeActivo.ts` no se vio afectado.
+  Se eliminaron `GET /api/viajes/:id/qr-paradas` y el campo `qr_firmado`; el front
+  web nunca los usó (eran de la app del conductor), así que no hubo nada que borrar.
+  **El orden entre paradas no se valida:** se puede confirmar la 2 antes que la 1.
+  `qr_token` sigue apareciendo en las paradas pero es **campo muerto** — no se
+  firma, no se valida, no se muestra.
+- **Falta la foto del remito conformado**, que es el núcleo de D5. Ver
+  `OPEN.md` → D5 y `context/tasks/pendiente.md`.
 - Transiciones manuales del conductor: solo `CARGANDO` y `DESCARGANDO`
   (`context/api-contracts/context.md:885`). `EN_CAMINO_A_ORIGEN` se dispara solo
   con el **primer ping GPS** (`context/model/context.md:1305`).
@@ -392,7 +409,10 @@ Lo que **no** se puede demostrar, en ninguna configuración:
 
 - Cobrar, facturar o ver un saldo. Calificar al conductor. Estimar un precio antes
   de confirmar el pedido.
-- Cerrar un viaje: no hay pantalla de QR, así que el flujo no tiene final.
+- Cerrar un viaje: lo cierra la app del conductor confirmando la última parada por
+  proximidad GPS, que en este repo no existe. Desde el dashboard web el flujo no
+  tiene final. La foto del remito conformado tampoco está implementada del lado del
+  backend, así que no hay nada que mostrar todavía.
 - Cotizar por peso, volumen o pallets: esos datos no se piden.
 - Que un viaje a provincia se cobre distinto de uno a CABA (`zona` va fija).
 - Dos usuarios de la misma empresa cliente viendo los mismos viajes.

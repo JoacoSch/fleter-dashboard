@@ -165,8 +165,10 @@ devuelva.
 
 `POST /api/viajes/estimar-costo` está documentado (`:322`) y **no se llama desde
 ningún archivo** del repo; `POST /api/viajes/:id/calificacion` (`:1979`) tampoco.
-Los endpoints de QR (`:1817`, `:1862`) quedaron sin uso y además contradicen
-`OPEN.md` → **D5**, que sacó el QR del producto.
+~~Los endpoints de QR quedaron sin uso y además contradicen `OPEN.md` → **D5**.~~
+**RESUELTO el 19-08:** el backend eliminó `GET /api/viajes/:id/qr-paradas` y el
+campo `qr_firmado`; `confirmar-parada` ahora valida por proximidad GPS. Sigue
+faltando la foto del remito conformado, que es el resto de D5.
 
 ---
 
