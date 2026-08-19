@@ -88,6 +88,48 @@ Staging responde: `GET /health` devuelve `200 {"status":"ok"}` y los endpoints
 autenticados devuelven `401 {"error":"Token no proporcionado"}` sin token
 (verificado el 19-08 con `curl`).
 
+### Intento de verificación contra staging — CORTADO (19-08)
+
+Se levantó la app contra staging y **no se pudo pasar del login**. Lo verificado
+antes de trabarse:
+
+| Chequeo | Resultado |
+|---|---|
+| `GET /health` | `200 {"status":"ok"}` |
+| Endpoint autenticado sin token | `401 "Token no proporcionado"` |
+| `/`, `/viajes`, `/gerente` sin sesión | `307 → /login` (el proxy corta bien) |
+| `/login` | `200`, consola sin errores ni warnings de hidratación |
+| Firebase init | Sin `auth/invalid-api-key`: la key de `.env.local` es válida |
+| Login con Firebase | **Funciona** — la sesión se crea en el cliente |
+| `GET /api/auth/me` y `POST /api/auth/login` con token fresco | **401** |
+| `POST /api/auth/registro-cliente` | **409** (email ya en Firebase) y después **500** |
+
+**Causa más probable: se acabó el uso de Neon**, detectado al final de la sesión.
+Sin base, el registro crea el usuario en Firebase pero no escribe la fila
+(→ `500` + cuenta huérfana), y `/api/auth/me` no puede resolver el usuario
+(→ `401`). **No verificado**: no se confirmó el estado de Neon ni se leyeron los
+logs de Railway.
+
+Dos bugs del backend quedan en pie aunque Neon vuelva, porque la caída sólo los
+expuso:
+
+1. **El registro no es atómico.** Si falla la escritura en la DB, el usuario de
+   Firebase queda creado. Esa cuenta no puede entrar (el backend no la reconoce)
+   ni volver a registrarse (`409` por duplicado en Firebase): el email queda
+   quemado.
+2. **`401` donde el contrato dice `404`.** `POST /api/auth/login` y
+   `GET /api/auth/me` devuelven `401` con un token válido y sin fila en la DB; el
+   contrato documenta `404 "Usuario no registrado"` para ese caso. El `401` hace
+   parecer un problema de token lo que es un usuario faltante.
+
+Herramientas dejadas para retomar: `scripts/verificar-staging.mjs` (contrasta los
+campos nuevos contra el contrato) y `scripts/diagnostico-auth.js` (separa "no
+llega el header" de "otro proyecto Firebase" de "falta la fila"). El pedido
+armado para el backend está en `PEDIDO-BACKEND-19-08.md` (temporal).
+
+**Conclusión: nada de la entrega del 19-08 está verificado contra el backend
+real.** Todo lo integrado sigue probado sólo contra mocks.
+
 ---
 
 ## 2. Decisiones de negocio hardcodeadas

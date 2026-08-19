@@ -16,6 +16,24 @@ falta, dónde se nota en el front y qué habría que agregar.
 
 ---
 
+## ⚠️ Auth de staging caída — bloquea toda verificación (19-08)
+
+> Estado al cierre del 19-08. Detalle en `ESTADO-REAL.md` → "Intento de
+> verificación contra staging" y el pedido armado en `PEDIDO-BACKEND-19-08.md`.
+
+- **Se acabó el uso de Neon.** Es la causa raíz más probable del `500` en
+  `registro-cliente` y del `401` en `/api/auth/me`. **Sin confirmar**: no se
+  chequeó el estado de Neon ni los logs de Railway.
+- **Primer paso al retomar:** confirmar que la base está arriba y reintentar el
+  login. Buena parte de esto puede desaparecer solo.
+- Quedan en pie dos bugs que la caída sólo expuso: el registro no es atómico
+  (deja cuentas huérfanas que no pueden entrar ni re-registrarse) y `login`/`me`
+  devuelven `401` donde el contrato dice `404 "Usuario no registrado"`.
+- **Consecuencia:** nada de la entrega del 19-08 está verificado contra el
+  backend real. Todo el front sigue probado sólo contra mocks.
+
+---
+
 ## ⚠️ La foto del remito conformado — lo más urgente (19-08)
 
 > Bloquea **D5**, que está CERRADA. Ver `OPEN.md` → D5.
