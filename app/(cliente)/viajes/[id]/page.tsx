@@ -48,6 +48,8 @@ interface ViajeDetalle {
   fecha_programada: string;
   creado_en: string;
   duracion_real?: number | null;
+  /** Minutos enteros. `null` en viajes viejos o si Google Maps falló al crearlo. */
+  duracion_estimada?: number | null;
   km_reales?: number | null;
   alertas_count?: number;
   alertas?: Alerta[];
@@ -55,6 +57,13 @@ interface ViajeDetalle {
   conductor: {
     usuario: { nombre: string; apellido: string };
     calificacion_promedio?: number | null;
+  } | null;
+  /** `null` mientras no haya conductor asignado. La clave siempre viene. */
+  vehiculo?: {
+    patente: string;
+    marca: string;
+    modelo: string;
+    tipo_vehiculo: string;
   } | null;
 }
 
@@ -131,7 +140,11 @@ export default function ViajeDetallePage() {
   const estadoCss = ESTADO_CSS[viaje.estado] ?? viaje.estado;
   const estadoLabel = ESTADO_LABEL[viaje.estado] ?? viaje.estado;
   const precioDiff = viaje.precio_real != null ? viaje.precio_real - viaje.precio_estimado : null;
-  const overTime = false; // duracion_estimada pendiente
+  // Sólo marca exceso si tenemos ambos números; con uno en `null` no hay comparación.
+  const overTime =
+    viaje.duracion_real != null &&
+    viaje.duracion_estimada != null &&
+    viaje.duracion_real > viaje.duracion_estimada;
 
   return (
     <div>
@@ -180,7 +193,7 @@ export default function ViajeDetallePage() {
             <div className="time-compare">
               <div className="time-cell">
                 <div className="time-cell__label">Estimado</div>
-                <div className="time-cell__value">—</div>
+                <div className="time-cell__value">{formatDuracion(viaje.duracion_estimada)}</div>
               </div>
               <div className={`time-cell${overTime ? " time-cell--over" : ""}`}>
                 <div className="time-cell__label">Real</div>
@@ -282,12 +295,24 @@ export default function ViajeDetallePage() {
             )}
           </div>
 
-          {/* Vehículo — pendiente de datos del backend */}
+          {/* Vehículo */}
           <div className="card">
             <p className="card-title">Vehículo utilizado</p>
-            <div className="empty" style={{ padding: "12px 0", fontSize: 12 }}>
-              Sin datos del vehículo disponibles
-            </div>
+            {viaje.vehiculo ? (
+              <div className="viaje-track__vehiculo-info">
+                <span className="viaje-track__patente-sm">{viaje.vehiculo.patente}</span>
+                <span className="viaje-track__vehiculo-nombre">
+                  {viaje.vehiculo.marca} {viaje.vehiculo.modelo}
+                </span>
+                <span className="viaje-track__vehiculo-nombre">
+                  {viaje.vehiculo.tipo_vehiculo}
+                </span>
+              </div>
+            ) : (
+              <div className="empty" style={{ padding: "12px 0", fontSize: 12 }}>
+                Todavía no hay un vehículo asignado
+              </div>
+            )}
           </div>
 
           {/* Resumen de cobro */}
