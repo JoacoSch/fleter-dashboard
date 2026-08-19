@@ -26,11 +26,70 @@ falta, dónde se nota en el front y qué habría que agregar.
   chequeó el estado de Neon ni los logs de Railway.
 - **Primer paso al retomar:** confirmar que la base está arriba y reintentar el
   login. Buena parte de esto puede desaparecer solo.
-- Quedan en pie dos bugs que la caída sólo expuso: el registro no es atómico
-  (deja cuentas huérfanas que no pueden entrar ni re-registrarse) y `login`/`me`
-  devuelven `401` donde el contrato dice `404 "Usuario no registrado"`.
+- Quedan en pie **dos bugs que la caída sólo expuso, no causó** — ver las dos
+  secciones que siguen. No se cierran cuando vuelva Neon.
 - **Consecuencia:** nada de la entrega del 19-08 está verificado contra el
   backend real. Todo el front sigue probado sólo contra mocks.
+
+---
+
+## El registro de usuarios no es atómico — deja cuentas huérfanas
+
+> **No es un problema de Neon.** La caída de la base lo hizo visible, pero el bug
+> es la falta de rollback y vuelve cada vez que la escritura falle por cualquier
+> motivo: un timeout, un deploy a mitad de request, una constraint violada.
+> **No cerrar este ítem cuando vuelva la base.**
+
+- **Qué pasa:** `POST /api/auth/registro-cliente` (y presumiblemente
+  `registro-conductor` y `registro-gerente`, mismo patrón) hace dos escrituras en
+  dos sistemas distintos:
+  1. crea el usuario en Firebase
+  2. inserta la fila en la DB
+
+  Si (2) falla, **(1) ya ocurrió y no se deshace**. Queda un usuario que existe en
+  Firebase y no en la DB.
+
+- **Por qué es grave, y no sólo feo:** esa cuenta queda en un estado sin salida.
+  - **Entrar** falla: Firebase la autentica, pero el backend no la reconoce.
+  - **Registrarse de nuevo** falla con `409 "El email ya esta registrado"` — el
+    contrato aclara que ese `409` es por duplicado **en Firebase**.
+
+  El email queda quemado de forma permanente. El usuario no tiene ninguna acción
+  disponible para recuperarse, y desde el front no hay nada que se pueda hacer:
+  no existe endpoint para limpiar el huérfano.
+
+- **Observado el 19-08:** `registro-cliente` devolvió `500` y los reintentos
+  pasaron a devolver `409` indefinidamente. Es exactamente esta secuencia.
+
+- **Qué haría falta:**
+  1. **Rollback:** si falla la escritura en la DB, borrar el usuario recién creado
+     en Firebase (`deleteUser`) antes de responder el error. Alternativa más
+     robusta: escribir primero en la DB y crear en Firebase al final.
+  2. **Limpiar los huérfanos que ya existen** en staging (y chequear producción).
+  3. Que el `409` distinga el caso "existe en Firebase pero no en la DB" del
+     "email realmente ya registrado", para poder dar un mensaje útil en vez de
+     dejar al usuario golpeando una puerta cerrada.
+
+---
+
+## `login` y `me` devuelven 401 donde el contrato dice 404
+
+> Tampoco se cierra cuando vuelva Neon: es el código de estado equivocado para un
+> caso que el contrato documenta explícitamente.
+
+- **Qué pasa:** con un token de Firebase **válido** y sin fila en la DB,
+  `POST /api/auth/login` y `GET /api/auth/me` responden `401`.
+- **Qué dice el contrato:** ese caso es `404 "Usuario no registrado"`. El `401`
+  está documentado sólo para `"Token no proporcionado"` y
+  `"Token invalido o expirado"`.
+- **Por qué importa:** el `401` hace que un **usuario faltante** parezca un
+  **problema de token**, y manda a debuggear al lado equivocado. Es literalmente
+  lo que pasó el 19-08: se perdió tiempo buscando un cruce de proyectos de
+  Firebase cuando el token estaba perfecto.
+- **Impacto en el front:** con el `404` documentado se puede mandar al usuario a
+  completar el registro. Con el `401` no se puede distinguir de una sesión vencida,
+  así que la única reacción posible es tirarlo al login — donde va a entrar de
+  nuevo y volver a fallar.
 
 ---
 
