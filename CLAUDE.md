@@ -29,15 +29,16 @@ Verificado contra `package.json`:
 - **Tests:** Vitest (unit) + Playwright (e2e)
 - **Pagos:** ninguno. No hay dependencia ni código. Ver `OPEN.md` → **D3**.
 
-## Regla de cálculo — PENDIENTE DE DEFINIR
-La regla vieja decía que el frontend **nunca calcula nada**. Hoy eso es falso:
-`app/api/analytics/cliente/resumen/route.ts:124-156` calcula, en un Route Handler de
-Next, el total gastado, el costo promedio, el flete más caro y más barato, el conteo
-por zona, la suma de alertas y el top de destinos, a partir de `GET /api/viajes/mis-viajes`.
-Los gráficos también se arman ahí (`:68-94`).
+## Regla de cálculo — ver `OPEN.md` → D6 (ABIERTA)
+La regla vieja decía que el frontend **nunca calcula nada**. Matiz importante:
+`app/api/analytics/cliente/resumen/route.ts:124-156` sí calcula seis métricas (total
+gastado, costo promedio, extremos, conteo por zona, suma de alertas, top de destinos)
+y arma los gráficos en `:68-94` — pero **es un BFF, no el browser**. Corre en el
+servidor de Next y el cliente no tiene acceso ni a los viajes crudos ni a la lógica.
+Fue una decisión tomada a propósito, por lo específicos que son esos cálculos.
 
-Es una capa BFF, no un cálculo en el browser — pero la regla escrita no la contempla.
-**Hasta que se defina, no agregar cálculo nuevo sin preguntar.**
+Queda **ABIERTA** igual: falta definir el límite, sobre todo de cara a la liquidación
+de D3. **No agregar cálculo nuevo en el BFF sin preguntar.**
 
 ## Orden de desarrollo
 | Fase | Qué es | Estado |

@@ -106,6 +106,33 @@ falta, dónde se nota en el front y qué habría que agregar.
 
 ---
 
+## Datos de la carga y del vehículo — bloquean D2 (19-08)
+
+> Prioritario. No depende de que estén las tarifas: son dos trabajos independientes
+> y este es el que tiene lead time. Ver `OPEN.md` → **D2**.
+
+### La carga no se modela en ningún lado
+- **Qué falta:** para cobrar **por palet o por tonelada** hay que pedir el palet y la
+  tonelada, y hoy no se piden. No hay `peso_kg`, ni volumen, ni cantidad de bultos,
+  ni valor declarado — ni en `POST /api/viajes`, ni en `GET /api/viajes/:id`, ni en
+  el modelo. Lo único que describe la carga es `descripcion`, texto libre que el
+  propio contrato declara inerte ("no afecta matching ni costo") y que el formulario
+  ni siquiera expone.
+- **Solución futura:** agregar `peso_kg` y `cantidad_pallets` (o la unidad que se
+  elija en D2) al alta del viaje, al detalle y al remito.
+
+### El vehículo no declara capacidad
+- **Qué falta:** un vehículo se describe por `patente`, `marca`, `modelo`, `anio`,
+  `color`, `tipo_vehiculo` y `condiciones[]`. **No hay kg máximos, ni m³, ni largo de
+  caja, ni pallets.** Se lo describe por marca y color, no por lo que puede
+  transportar.
+- **Consecuencia:** no se puede validar que el vehículo asignado entre la carga, ni
+  cotizar por capacidad. Hoy la elegibilidad se resuelve sólo con las
+  `condiciones_req`.
+- **Solución futura:** agregar capacidad al vehículo y usarla en la elegibilidad.
+
+---
+
 ## Detail (viaje individual)
 
 ### Duración estimada
