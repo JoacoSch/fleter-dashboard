@@ -3,26 +3,14 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import { useViajeActivo } from "@/hooks/useViajeActivo";
 import type { ViajeFinalizadoPayload } from "@/hooks/useViajeActivo";
 import { api } from "@/lib/api";
 import { formatARS } from "@/lib/utils";
-import { ESTADO_LABEL_ACTIVO } from "@/lib/estados";
-import { ChevronLeft, Phone, Star, Truck, AlertTriangle, Package } from "lucide-react";
-
-const MapaViajeActivo = dynamic(
-  () => import("@/components/MapaViajeActivo").then((m) => m.MapaViajeActivo),
-  { ssr: false, loading: () => <div className="viaje-track__map-canvas viaje-track__map-canvas--loading" /> }
-);
-
-const ACTIVE_ESTADOS = new Set([
-  "CONDUCTOR_ASIGNADO",
-  "EN_CAMINO_A_ORIGEN",
-  "EN_RUTA",
-  "CARGANDO",
-  "DESCARGANDO",
-]);
+import { ESTADO_LABEL_ACTIVO, esEnCurso } from "@/lib/estados";
+import { ChevronLeft, Star, Truck, AlertTriangle, Package } from "lucide-react";
+import MapaRuta from "@/components/MapaRuta";
+import ContactoConductor from "@/components/ContactoConductor";
 
 const ESTADO_LABELS: Record<string, string> = ESTADO_LABEL_ACTIVO;
 
@@ -46,7 +34,7 @@ function ViajeListView() {
 
   useEffect(() => {
     api.get<ViajeListItem[]>("/api/viajes/mis-viajes")
-      .then((data) => setViajes(data.filter((v) => ACTIVE_ESTADOS.has(v.estado))))
+      .then((data) => setViajes(data.filter((v) => esEnCurso(v.estado))))
       .finally(() => setLoading(false));
   }, []);
 
@@ -75,11 +63,15 @@ function ViajeListView() {
         <div className="section-header"><h2>Viajes en curso</h2></div>
         <div className="card" style={{ textAlign: "center", padding: "48px 24px", color: "var(--ink-4)" }}>
           <Truck size={36} style={{ marginBottom: 12, opacity: 0.4 }} />
-          <p style={{ fontWeight: 600, fontSize: 15 }}>No tenés viajes activos</p>
-          <p style={{ fontSize: 13, marginTop: 4 }}>Cuando solicites un flete vas a poder seguirlo desde acá</p>
-          <Link href="/pedir-viaje" className="btn" style={{ display: "inline-block", marginTop: 20 }}>
-            Solicitar flete
-          </Link>
+          <p style={{ fontWeight: 600, fontSize: 15 }}>No tenés viajes en curso</p>
+          <p style={{ fontSize: 13, marginTop: 4 }}>
+            Un viaje aparece acá cuando el conductor lo inicia. Los que ya tienen conductor pero
+            todavía no arrancaron figuran como <strong>Próximo</strong> en Record, con su mapa y detalle.
+          </p>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 20 }}>
+            <Link href="/viajes" className="btn">Ver Record</Link>
+            <Link href="/pedir-viaje" className="btn btn--primary">Solicitar flete</Link>
+          </div>
         </div>
       </div>
     );
@@ -206,6 +198,24 @@ function TrackingView({ idViaje }: { idViaje: number }) {
   const paradasEntregadas = paradas.filter((p) => p.estado === "ENTREGADO").length;
   const estadoActual = estado ?? viaje.estado;
 
+  // Un link viejo (o el banner de antes) puede traer un viaje que todavía no
+  // arrancó. No hay nada que seguir en vivo: se manda al detalle, que tiene mapa.
+  if (!finalizado && !esEnCurso(estadoActual)) {
+    return (
+      <div className="viaje-activo-list" style={{ padding: 28 }}>
+        <div className="empty-state">
+          <div className="empty-state__icon"><Truck size={24} /></div>
+          <p className="empty-state__title">VJ-{viaje.id_viaje} no está en curso</p>
+          <p className="empty-state__text">
+            Estado: {ESTADO_LABELS[estadoActual] ?? estadoActual}. El seguimiento en vivo empieza cuando el
+            conductor inicia el viaje; mientras tanto podés ver el recorrido y los datos en el detalle.
+          </p>
+          <Link href={`/viajes/${viaje.id_viaje}`} className="btn btn--primary">Ver detalle del viaje</Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="viaje-track">
       {finalizado && <FinalizadoOverlay data={finalizado} />}
@@ -226,7 +236,7 @@ function TrackingView({ idViaje }: { idViaje: number }) {
         </div>
 
         <div className="viaje-track__map-canvas">
-          <MapaViajeActivo paradas={viaje.paradas} ultimaPos={ultimaPos} ruta={ruta} />
+          <MapaRuta paradas={viaje.paradas} ultimaPos={ultimaPos} ruta={ruta} seguirConductor />
         </div>
 
         {/* Floating bottom: ETA pill (el acumulado no se muestra por diseño) */}
@@ -290,14 +300,9 @@ function TrackingView({ idViaje }: { idViaje: number }) {
                     </div>
                   )}
                 </div>
-                <a
-                  href={`tel:${viaje.conductor.usuario.telefono}`}
-                  className="viaje-track__call-btn"
-                  title="Llamar al conductor"
-                >
-                  <Phone size={15} />
-                </a>
               </div>
+              {/* Antes era un `tel:` pelado: en desktop no hacía nada. */}
+              <ContactoConductor telefono={viaje.conductor.usuario.telefono} compacto />
             </div>
           )}
 

@@ -13,6 +13,9 @@ const ESTADO_LABEL: Record<string, string> = {
   // El cliente ve el estado de la parada además del estado del viaje.
   ENTREGADO: "ENTREGADO",
   FINALIZADO: "FINALIZADO",
+  // Asignado o reservado pero sin arrancar: es un viaje próximo, no uno en curso.
+  RESERVADO_POR_EMPRESA: "PRÓXIMO",
+  CONDUCTOR_ASIGNADO: "PRÓXIMO",
 };
 
 const ESTADO_CSS: Record<string, string> = {
@@ -20,8 +23,8 @@ const ESTADO_CSS: Record<string, string> = {
   FINALIZADO: "ENTREGADO",
   CANCELADO: "CANCELADO",
   BUSCANDO_CONDUCTOR: "BUSCANDO_FLETERO",
-  RESERVADO_POR_EMPRESA: "BUSCANDO_FLETERO",
-  CONDUCTOR_ASIGNADO: "BUSCANDO_FLETERO",
+  RESERVADO_POR_EMPRESA: "CONDUCTOR_ASIGNADO",
+  CONDUCTOR_ASIGNADO: "CONDUCTOR_ASIGNADO",
   EN_CAMINO_A_ORIGEN: "EN_RUTA",
   CARGANDO: "EN_RUTA",
   EN_RUTA: "EN_RUTA",
