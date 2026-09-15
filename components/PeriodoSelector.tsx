@@ -105,7 +105,7 @@ export default function PeriodoSelector({ conTodo = false }: { conTodo?: boolean
           </button>
           {periodo.mode === "personalizado" ? (
             <button type="button" className="periodo__label" onClick={abrirRango} title="Cambiar rango">
-              <CalendarRange size={13} style={{ verticalAlign: "-2px", marginRight: 6, color: "var(--ink-3)" }} />
+              <CalendarRange size={13} />
               {etiquetaPeriodo(periodo.mode, periodo.desde, periodo.hasta)}
             </button>
           ) : (
@@ -153,7 +153,7 @@ export default function PeriodoSelector({ conTodo = false }: { conTodo?: boolean
               />
             </div>
           </div>
-          <div className="form-actions form-actions--end" style={{ marginTop: 0 }}>
+          <div className="form-actions form-actions--end">
             <button type="button" className="btn btn--ghost" onClick={() => setAbierto(false)}>Cancelar</button>
             <button
               type="button"

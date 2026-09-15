@@ -40,7 +40,7 @@ export default function FacturacionPage() {
   }
 
   return (
-    <div style={{ maxWidth: 1000 }}>
+    <div className="page-wide">
       <div className="section-header">
         <div>
           <h2>Facturación</h2>
@@ -56,7 +56,7 @@ export default function FacturacionPage() {
       {error && <div className="error-banner">{error}</div>}
 
       {!meses && !error && (
-        <div className="fact-month" style={{ height: 220, background: "var(--surface-2)" }} />
+        <div className="fact-month skeleton" />
       )}
 
       {meses && meses.length === 0 && (
@@ -89,22 +89,22 @@ export default function FacturacionPage() {
           {m.comprobantes.map((c) => (
             <div key={c.id_viaje}>
               <div className="fact-row">
-                <div>
-                  <div style={{ fontWeight: 600 }}>{fmtDate(c.fecha)}</div>
-                  <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{fmtHora24(c.fecha)} h</div>
+                <div className="fact-row__fecha">
+                  <div>{fmtDate(c.fecha)}</div>
+                  <div>{fmtHora24(c.fecha)} h</div>
                 </div>
                 <div className="fact-row__ruta">
                   <div>{c.origen ? separarDireccion(c.origen).calle : "—"}</div>
                   <div>→ {c.destino ? separarDireccion(c.destino).calle : "—"}</div>
                 </div>
-                <Link href={`/viajes/${c.id_viaje}`} className="trip-row__id" style={{ textDecoration: "none" }}>VJ-{c.id_viaje}</Link>
+                <Link href={`/viajes/${c.id_viaje}`} className="trip-row__id">VJ-{c.id_viaje}</Link>
                 <span className="fact-row__monto">{formatARS(c.precio_real)}</span>
                 <button type="button" className="btn" onClick={() => abrirRemito(c.id_viaje)} disabled={abriendo === c.id_viaje}>
                   <FileDown size={14} /> {abriendo === c.id_viaje ? "Abriendo..." : "Remito"}
                 </button>
               </div>
               {remitoError?.id === c.id_viaje && (
-                <p style={{ fontSize: 12, color: "var(--err)", padding: "0 18px 10px" }}>{remitoError.msg}</p>
+                <p className="fact-row__error">{remitoError.msg}</p>
               )}
             </div>
           ))}

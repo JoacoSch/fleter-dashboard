@@ -255,17 +255,6 @@ html {
     white-space: nowrap;
     margin: 0;
   }
-  .sidebar__user-role {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: var(--ink-3);
-    border: 1px solid var(--line-strong);
-    border-radius: 4px;
-    padding: 2px 5px;
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
 
   /* Sidebar helpers */
   .brand-header {
@@ -286,23 +275,11 @@ html {
     pointer-events: none;
   }
   .nav-item__label { flex: 1; }
-  .btn--icon {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    color: var(--ink-3);
-    display: flex;
-    flex-shrink: 0;
-  }
-  .btn--icon:hover { color: var(--ink); }
+  .sidebar__nav--grow { flex: 1; }
+  .sidebar__new-plus { font-size: 18px; line-height: 1; margin-right: 2px; }
+  .sidebar__user-anchor { position: relative; }
+  .sidebar__user-info { flex: 1; min-width: 0; }
 
-  /* Conductor sidebar footer */
-  .sidebar__conductor-footer {
-    border-top: 1px solid var(--line);
-    padding-top: 12px;
-    margin-top: 8px;
-  }
   .sidebar__conductor-user {
     display: flex;
     align-items: center;
@@ -368,9 +345,6 @@ html {
   .card--ink .metric__label,
   .card--ink .metric__hint { color: rgba(255,255,255,.6); }
   .card--ink .metric__value { color: #fff; }
-  .card--hero {
-    background: linear-gradient(180deg, var(--surface) 65%, var(--accent-softer) 100%);
-  }
 
   /* Métricas */
   .metric__label {
@@ -412,6 +386,7 @@ html {
     cursor: pointer;
     transition: background 0.1s;
     font-family: var(--font-ui);
+    text-decoration: none;
   }
   .btn:hover {
     background: var(--surface-3);
@@ -442,6 +417,14 @@ html {
     justify-content: center;
     padding: 10px 12px;
   }
+  .btn--lg {
+    padding: 11px 22px;
+    font-size: 14px;
+  }
+  .btn--danger { color: var(--err); }
+  .btn--danger:hover { background: var(--err-soft); }
+  /* "Volver" / "Cambiar perfil": ghost corrido para alinear el ícono con el contenido */
+  .back-link { margin: 0 0 14px -10px; }
 
   /* Auth helpers */
   .auth-brand {
@@ -449,6 +432,7 @@ html {
     align-items: center;
     gap: 10px;
     margin-bottom: 28px;
+    text-decoration: none;
   }
   .auth-title {
     font-family: var(--font-display);
@@ -477,8 +461,6 @@ html {
     font-size: 13px;
     color: var(--ink-3);
   }
-  .auth-footer--mt20 { margin-top: 20px; }
-  .auth-footer--mt12 { margin-top: 12px; }
   .auth-link {
     color: var(--accent);
     font-weight: 600;
@@ -502,45 +484,9 @@ html {
   }
 
   /* Dashboard layout helpers */
-  .section-controls {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-  }
-  .date-range {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .date-range__sep {
-    font-size: 12px;
-    color: var(--ink-4);
-  }
-  .date-range input {
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--line-strong);
-    background: var(--surface);
-    font-size: 13px;
-    font-family: var(--font-ui);
-    color: var(--ink);
-    outline: none;
-  }
+
   .grid-row {
     margin-bottom: 16px;
-  }
-  .card--col-between {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  .chart-axis-label {
-    font-size: 11px;
-    color: var(--ink-3);
-    font-weight: 600;
-    letter-spacing: .06em;
-    text-transform: uppercase;
   }
 
   /* Status badges */
@@ -609,25 +555,7 @@ html {
     font-size: 13px;
     margin: 4px 0 0;
   }
-
-  /* Auth layout */
-  .auth-layout {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-    padding: 24px;
-  }
-  .auth-card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    padding: 40px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: var(--shadow-pop);
-  }
+  .section-header--wrap { flex-wrap: wrap; }
 
   /* Form elements */
   .field {
@@ -659,13 +587,13 @@ html {
   .field input::placeholder {
     color: var(--ink-4);
   }
-  .field--error input {
-    border-color: var(--err);
+  .field input.patente {
+    font-family: var(--font-mono);
+    letter-spacing: 1px;
+    text-transform: uppercase;
   }
-  .field__error {
-    font-size: 11.5px;
-    color: var(--err);
-  }
+  .field__label-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .field__label-row .auth-link { font-size: 12px; }
 
   /* Divider */
   .divider {
@@ -681,37 +609,6 @@ html {
     flex: 1;
     height: 1px;
     background: var(--line);
-  }
-
-  /* ── Period Selector ─────────────────────────────── */
-  .selector-periodo {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  .selector-periodo__dates {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: 8px;
-  }
-  .selector-periodo__dates input {
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--line-strong);
-    background: var(--surface);
-    font-size: 13px;
-    font-family: var(--font-ui);
-    color: var(--ink);
-    outline: none;
-  }
-  .selector-periodo__dates input:focus {
-    border-color: var(--accent);
-  }
-  .selector-periodo__sep {
-    font-size: 12px;
-    color: var(--ink-4);
   }
 
   /* ── Trips Table ─────────────────────────────────── */
@@ -808,21 +705,6 @@ html {
     color: var(--warn);
     margin-right: 5px;
   }
-  .trip-row__route-id {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--ink-4);
-    letter-spacing: 0.03em;
-  }
-  /* keep old route-sep in case it's referenced elsewhere */
-  .trip-row__route-sep {
-    color: var(--ink-4);
-    margin: 0 3px;
-  }
-  .trip-row__meta {
-    font-size: 12.5px;
-    color: var(--ink-2);
-  }
   .trip-row__price {
     font-family: var(--font-mono);
     font-size: 13px;
@@ -831,36 +713,12 @@ html {
   .trip-row__price--null {
     color: var(--ink-4);
   }
-  .trip-row__ajuste {
-    font-size: 11.5px;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 4px;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    white-space: nowrap;
+  .trip-row__dur {
+    font-size: 12.5px;
+    color: var(--ink);
   }
-  .trip-row__ajuste--lower {
-    color: var(--ok);
-    background: var(--ok-soft);
-  }
-  .trip-row__ajuste--higher {
-    color: var(--err);
-    background: var(--err-soft);
-  }
-  .trip-row__ajuste--equal {
-    color: var(--ink-3);
-    background: var(--surface-3);
-  }
-  .trip-row__ajuste--null {
-    color: var(--ink-4);
-  }
-  .trip-row__alert-icon {
-    color: var(--warn);
-    font-size: 14px;
-    text-align: center;
-  }
+  .trip-row__dur--null { color: var(--ink-4); }
+  a.trip-row__id { text-decoration: none; }
   .trip-row__alert-badge {
     display: inline-flex;
     align-items: center;
@@ -873,10 +731,6 @@ html {
     font-size: 11px;
     font-weight: 700;
     font-family: var(--font-mono);
-  }
-  .trip-row__time {
-    font-size: 11px;
-    color: var(--ink-3);
   }
   .trip-row__date {
     font-size: 13px;
@@ -933,11 +787,6 @@ html {
   .pagination__page:disabled {
     opacity: 0.35;
     cursor: default;
-  }
-  .pagination__ellipsis {
-    font-size: 13px;
-    color: var(--ink-4);
-    padding: 0 4px;
   }
 
   /* ── Empty / Error / Loading states ─────────────── */
@@ -1002,11 +851,10 @@ html {
   color: var(--ink-3);
   margin: 0 0 14px;
 }
+.card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 
 /* ── Delta badges ────────────────────────────────── */
 .delta { font-weight: 600; font-size: 11.5px; padding: 2px 6px; border-radius: 4px; }
-.delta--up   { color: var(--ok);  background: var(--ok-soft); }
-.delta--down { color: var(--err); background: var(--err-soft); }
 
 /* ── Bar chart (CSS-only) ────────────────────────── */
 .bars {
@@ -1024,34 +872,6 @@ html {
   gap: 6px;
   height: 100%;
   justify-content: end;
-}
-.bar__col {
-  width: 100%;
-  background: var(--accent);
-  border-radius: 6px 6px 0 0;
-  position: relative;
-  transition: background .15s;
-  min-height: 4px;
-}
-.bar__col::after {
-  content: attr(data-amount);
-  position: absolute;
-  top: -22px; left: 0; right: 0;
-  text-align: center;
-  font-size: 11px;
-  color: var(--ink-2);
-  font-weight: 600;
-  font-feature-settings: "tnum";
-  white-space: nowrap;
-}
-.bar:hover .bar__col { background: var(--accent-ink); }
-.bar__count {
-  position: absolute;
-  top: 8px; left: 0; right: 0;
-  text-align: center;
-  color: #fff;
-  font-family: var(--font-display);
-  font-size: 16px;
 }
 .bar__label {
   font-size: 11.5px;
@@ -1105,7 +925,8 @@ html {
   padding-top: 12px;
   border-top: 1px solid var(--line);
 }
-.extreme__route { font-size: 12px; color: var(--ink-2); font-weight: 500; }
+.extreme__text { min-width: 0; }
+.extreme__route { font-size: 12px; color: var(--ink-2); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .extreme__id { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); margin-top: 2px; }
 .extreme__btn {
   font-size: 11.5px;
@@ -1122,19 +943,6 @@ html {
   flex-shrink: 0;
 }
 .extreme__btn:hover { background: var(--accent-soft); }
-
-/* ── Alerts strip ────────────────────────────────── */
-.alerts-strip { display: flex; align-items: center; gap: 14px; }
-.alerts-strip__num {
-  font-family: var(--font-display);
-  font-size: 36px;
-  color: var(--err);
-  line-height: 1;
-  flex-shrink: 0;
-}
-.alerts-strip__num.zero { color: var(--ok); }
-.alerts-strip__text { font-size: 12.5px; color: var(--ink-2); }
-.alerts-strip__text strong { display: block; color: var(--ink); }
 
 /* ── Frequent destinations ───────────────────────── */
 .dest-row {
@@ -1186,6 +994,7 @@ html {
   color: var(--ink);
 }
 .search-input input::placeholder { color: var(--ink-4); }
+.search-input svg { color: var(--ink-3); flex-shrink: 0; }
 .chip {
   padding: 6px 12px;
   border: 1px solid var(--line-strong);
@@ -1200,29 +1009,6 @@ html {
 }
 .chip:hover { background: var(--surface-3); }
 .chip.is-active { background: var(--ink); color: #fff; border-color: var(--ink); }
-
-/* ── Detail layout ───────────────────────────────── */
-.detail {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 18px;
-}
-.detail__head {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
-}
-.detail__head h2 {
-  font-family: var(--font-display);
-  font-size: 26px;
-  letter-spacing: -0.01em;
-  margin: 6px 0 6px;
-}
-.detail__price { text-align: right; }
-.detail__price .metric__value { font-size: 30px; }
-.detail__price .delta { margin-left: 8px; }
 
 /* ── Timeline (paradas) ──────────────────────────── */
 .timeline { display: flex; flex-direction: column; }
@@ -1271,14 +1057,7 @@ html {
 .kv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
 .kv { font-size: 12px; color: var(--ink-3); }
 .kv strong { display: block; color: var(--ink); font-size: 13.5px; font-weight: 600; margin-top: 2px; }
-
-/* ── Time compare ────────────────────────────────── */
-.time-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.time-cell { background: var(--surface-2); border-radius: 8px; padding: 12px; }
-.time-cell__label { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
-.time-cell__value { font-family: var(--font-display); font-size: 22px; margin-top: 4px; }
-.time-cell--over { background: var(--err-soft); }
-.time-cell--over .time-cell__value { color: var(--err); }
+.kv strong.kv__texto { font-weight: 500; }
 
 /* ── Driver card ─────────────────────────────────── */
 .driver-card {
@@ -1332,7 +1111,6 @@ html {
 
 /* ── Credentials ─────────────────────────────────── */
 .cred-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-.cred { font-size: 11px; padding: 3px 8px; border-radius: 4px; background: var(--ok-soft); color: var(--ok); font-weight: 600; }
 .cond { font-size: 10.5px; font-weight: 700; padding: 3px 7px; border-radius: 4px; background: var(--ink); color: #fff; letter-spacing: 0.04em; }
 
 /* ── Empty state ─────────────────────────────────── */
@@ -1382,18 +1160,6 @@ html {
 }
 .section-header--top { align-items: flex-start; }
 .card-section-label { margin-bottom: 16px; }
-
-/* ── Detail page ─────────────────────────────────── */
-.detail__col {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.detail__head-meta {
-  margin: 0;
-  color: var(--ink-3);
-  font-size: 13px;
-}
 
 /* ── Billing rows ────────────────────────────────── */
 .billing-rows { display: flex; flex-direction: column; }
@@ -1578,6 +1344,7 @@ html {
   border-top: 1px solid var(--line);
   padding-top: 10px;
 }
+.viaje-activo-list__footer span { font-size: 13px; }
 
 /* ── Viaje activo — tracking view ────────────────── */
 .viaje-track {
@@ -1589,7 +1356,7 @@ html {
 .viaje-track__map {
   flex: 1;
   position: relative;
-  background: #E8E4DA;
+  background: var(--line);
   overflow: hidden;
 }
 .viaje-track__map-canvas {
@@ -1609,6 +1376,7 @@ html {
   font-weight: 600;
   text-align: center;
 }
+.viaje-track__map-empty-icon { font-size: 32px; }
 .viaje-track__map-topbar {
   position: absolute;
   top: 16px; left: 16px;
@@ -1676,7 +1444,6 @@ html {
 }
 .viaje-track__cost-label { font-size: 11px; font-weight: 600; opacity: 0.55; text-transform: uppercase; letter-spacing: 0.5px; }
 .viaje-track__cost-value { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
-.viaje-track__cost-km { font-size: 12px; font-weight: 600; opacity: 0.5; }
 .viaje-track__alerts {
   position: absolute;
   top: 64px; left: 16px;
@@ -1796,18 +1563,8 @@ html {
   font-weight: 600;
   color: var(--ink-2);
 }
-.viaje-track__call-btn {
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  background: var(--ok-soft);
-  color: var(--ok);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.1s;
-}
-.viaje-track__call-btn:hover { background: #C5E6C8; }
+.viaje-track__rating svg { color: var(--warn); }
+.viaje-track__conductor-info { flex: 1; min-width: 0; }
 .viaje-track__patente {
   display: inline-block;
   font-family: var(--font-mono);
@@ -1859,14 +1616,6 @@ html {
 .viaje-track__stop-info { flex: 1; padding-bottom: 14px; padding-top: 0; }
 .viaje-track__stop-addr { font-size: 13px; font-weight: 600; margin: 0 0 3px; color: var(--ink); }
 .viaje-track__stop-addr.is-done { color: var(--ink-4); text-decoration: line-through; }
-.viaje-track__stop-time {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  color: var(--ok);
-  font-weight: 600;
-}
 .viaje-track__desglose {
   background: var(--surface-2);
   border-radius: var(--radius-sm);
@@ -2009,9 +1758,6 @@ html {
   border: 2.5px solid white;
   animation: live-pulse 2s ease-in-out infinite;
 }
-
-/* Map canvas loading placeholder */
-.viaje-track__map-canvas--loading { background: var(--surface-2); }
 
 /* ── Panel stop status labels ────────────────────── */
 .viaje-track__stop-status {
@@ -2341,6 +2087,11 @@ html {
 .auth-split__bullets li { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; color: rgba(255,255,255,.85); line-height: 1.4; }
 .auth-split__bullets svg { color: var(--accent); flex-shrink: 0; margin-top: 1px; }
 .auth-split__foot { font-size: 12px; color: rgba(255,255,255,.4); position: relative; z-index: 1; }
+.auth-split__aside .auth-brand,
+.auth-split__intro { position: relative; z-index: 1; }
+.auth-split__panel .back-link { margin-bottom: 16px; }
+.auth-subtitle strong { color: var(--ink); }
+.form-actions .auth-footer { text-align: left; }
 .auth-split__main {
   display: flex;
   align-items: center;
@@ -2381,12 +2132,14 @@ html {
 .form-actions--end { justify-content: flex-end; }
 .field__hint { font-size: 11.5px; color: var(--ink-3); }
 .field label .opt { color: var(--ink-4); font-weight: 500; }
+.form-section__title .opt { text-transform: none; letter-spacing: 0; }
+.cluster + .field__hint { margin-top: 8px; }
 @media (max-width: 640px) {
   .form-grid, .form-grid--3 { grid-template-columns: 1fr; }
 }
 
 /* ── Stepper ─────────────────────────────────────── */
-.stepper { display: flex; gap: 8px; margin-bottom: 28px; }
+.stepper { display: flex; gap: 8px; margin-bottom: 28px; list-style: none; }
 .stepper__step { flex: 1; display: flex; flex-direction: column; gap: 8px; }
 .stepper__bar { height: 4px; border-radius: 999px; background: var(--line); }
 .stepper__step.is-done .stepper__bar,
@@ -2479,6 +2232,9 @@ html {
 .empty-state__title { font-family: var(--font-display); font-size: 17px; color: var(--ink); }
 .empty-state__text { font-size: 13px; color: var(--ink-3); max-width: 440px; line-height: 1.5; }
 .empty-state .btn { margin-top: 10px; }
+.empty-state--solid { border-style: solid; }
+.empty-state__icon--ok { background: var(--ok-soft); color: var(--ok); }
+.empty-state .cluster { margin-top: 10px; }
 
 .note {
   font-size: 12px;
@@ -2489,6 +2245,7 @@ html {
   line-height: 1.45;
 }
 .note--warn { background: var(--warn-soft); color: #8A5E0B; }
+.note--row { display: flex; justify-content: space-between; align-items: center; }
 
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -2525,6 +2282,7 @@ html {
   border: 0; background: transparent; font-family: inherit;
 }
 button.periodo__label { cursor: pointer; }
+.periodo__label svg { vertical-align: -2px; margin-right: 6px; color: var(--ink-3); }
 .periodo__popover {
   position: absolute; top: calc(100% + 8px); right: 0;
   background: var(--surface);
@@ -2538,6 +2296,7 @@ button.periodo__label { cursor: pointer; }
 }
 .periodo__popover-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .periodo__atajos { display: flex; gap: 6px; flex-wrap: wrap; }
+.periodo__popover .form-actions { margin-top: 0; }
 
 /* ── KPIs ────────────────────────────────────────── */
 .kpi { display: flex; flex-direction: column; gap: 8px; min-height: 118px; }
@@ -2554,6 +2313,8 @@ button.periodo__label { cursor: pointer; }
 .leyenda { display: flex; gap: 14px; font-size: 11.5px; color: var(--ink-3); }
 .leyenda__item { display: inline-flex; align-items: center; gap: 6px; }
 .leyenda__swatch { width: 10px; height: 10px; border-radius: 2px; }
+.leyenda__swatch--viajes { background: var(--ink); }
+.leyenda__swatch--gasto { background: var(--accent); }
 
 .bars--dual .bar__col--viajes { background: var(--ink); width: 38%; min-height: 3px; border-radius: 4px 4px 0 0; }
 .bars--dual .bar__col--gasto { background: var(--accent); width: 38%; min-height: 3px; border-radius: 4px 4px 0 0; }
@@ -2668,6 +2429,9 @@ button.periodo__label { cursor: pointer; }
 .vd__price { font-family: var(--font-display); font-size: 44px; letter-spacing: -0.02em; line-height: 1; margin-top: 4px; }
 .vd__price sup { font-family: var(--font-ui); font-size: 16px; color: var(--ink-3); vertical-align: top; margin-right: 2px; }
 .vd__price-hint { font-size: 12.5px; color: var(--ink-3); margin-top: 6px; }
+.vd__price-block { border-top: 1px solid var(--line); padding-top: 16px; }
+.vd__actions { margin-top: auto; }
+.vd__tags .badge-proximo { margin-left: 0; }
 .vd__grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; align-items: start; }
 .vd__col { display: flex; flex-direction: column; gap: 16px; }
 @media (max-width: 1100px) {
@@ -2698,6 +2462,9 @@ button.periodo__label { cursor: pointer; }
 .fact-row__ruta div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fact-row__ruta div + div { font-size: 12px; color: var(--ink-3); }
 .fact-row__monto { font-family: var(--font-mono); text-align: right; }
+.fact-row__fecha > div:first-child { font-weight: 600; }
+.fact-row__fecha > div + div { font-size: 11.5px; color: var(--ink-3); }
+.fact-row__error { font-size: 12px; color: var(--err); padding: 0 18px 10px; }
 
 /* ── Dropzone de foto ────────────────────────────── */
 .dropzone {
@@ -2723,3 +2490,33 @@ button.periodo__label { cursor: pointer; }
 .veh-card__patente { font-family: var(--font-mono); font-weight: 600; font-size: 13px; letter-spacing: 1.5px; border: 1px solid var(--line-strong); background: var(--surface); border-radius: 5px; padding: 2px 8px; }
 .veh-card__title { font-size: 15px; font-weight: 700; margin-top: 6px; }
 .veh-card__meta { font-size: 12.5px; color: var(--ink-3); }
+.veh-card__body { min-width: 0; }
+.card--form { padding: 22px 26px; }
+.card--form > .card-title { font-size: 16px; margin-bottom: 14px; }
+
+/* ═══════════════════════════════════════════════════
+   Utilidades compartidas — reemplazan estilos inline
+   que se repetían. Van al final para ganar por orden.
+   ═══════════════════════════════════════════════════ */
+.page-narrow { max-width: 560px; }
+.page-medium { max-width: 840px; }
+.page-wide   { max-width: 1000px; }
+
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.stack--tight { gap: 6px; }
+.cluster { display: flex; flex-wrap: wrap; gap: 8px; }
+.cluster--end { justify-content: flex-end; }
+
+.muted { color: var(--ink-4); }
+.error-text { font-size: 12.5px; color: var(--err); }
+.patente { font-family: var(--font-mono); letter-spacing: 1px; }
+
+/* Placeholder de carga de un bloque entero (card, trip card, mes). */
+.skeleton { background: var(--surface-2); }
+.skeleton--row { height: 90px; }
+.trip-card.skeleton { height: 150px; }
+.vd__top > .skeleton { height: 380px; }
+.fact-month.skeleton { height: 220px; }
+/* Líneas de carga dentro de una card de KPI. */
+.skeleton-line { height: 10px; width: 40%; background: var(--surface-3); border-radius: 4px; margin-bottom: 14px; }
+.skeleton-line--valor { height: 32px; width: 55%; margin-bottom: 0; }

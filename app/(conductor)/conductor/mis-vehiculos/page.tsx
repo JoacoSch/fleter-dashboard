@@ -46,7 +46,7 @@ export default function MisVehiculosPage() {
   }
 
   return (
-    <div style={{ maxWidth: 860 }}>
+    <div className="page-medium">
       <div className="section-header">
         <div>
           <h2>Mis vehículos</h2>
@@ -60,15 +60,15 @@ export default function MisVehiculosPage() {
       </div>
 
       {showForm && (
-        <div className="card" style={{ marginBottom: 22, padding: "22px 26px" }}>
-          <p className="card-title" style={{ fontSize: 16, marginBottom: 14 }}>Nuevo vehículo</p>
+        <div className="card card--form" style={{ marginBottom: 22 }}>
+          <p className="card-title">Nuevo vehículo</p>
           <VehiculoForm onGuardado={guardado} onCancelar={() => setShowForm(false)} textoGuardar="Guardar vehículo" />
         </div>
       )}
 
       {listError && <div className="error-banner">{listError}</div>}
 
-      {loadingList && <div className="card" style={{ height: 90, background: "var(--surface-2)" }} />}
+      {loadingList && <div className="card skeleton skeleton--row" />}
 
       {!loadingList && !listError && vehiculos.length === 0 && !showForm && (
         <div className="empty-state">
@@ -79,12 +79,12 @@ export default function MisVehiculosPage() {
         </div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="stack">
         {vehiculos.map((v) => (
           <div key={v.id_vehiculo} className="card veh-card">
             {/* Ícono del tipo y no la foto elegida: la foto todavía no se guarda. */}
             <div className="veh-card__icon"><IconoTipoVehiculo tipo={v.tipo_vehiculo} size={28} /></div>
-            <div style={{ minWidth: 0 }}>
+            <div className="veh-card__body">
               <span className="veh-card__patente">{v.patente.toUpperCase()}</span>
               <p className="veh-card__title">{v.marca} {v.modelo}</p>
               <p className="veh-card__meta">{etiquetaTipoVehiculo(v.tipo_vehiculo)} · {v.anio} · {v.color}</p>
@@ -95,8 +95,7 @@ export default function MisVehiculosPage() {
               )}
             </div>
             <button
-              className="btn btn--ghost"
-              style={{ color: "var(--err)" }}
+              className="btn btn--ghost btn--danger"
               disabled={deletingId === v.id_vehiculo}
               onClick={() => handleDelete(v.id_vehiculo)}
               type="button"

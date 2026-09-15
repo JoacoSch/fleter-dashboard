@@ -29,11 +29,11 @@ export default function AuthShell({
   return (
     <div className="auth-split">
       <aside className="auth-split__aside">
-        <Link href="/" className="auth-brand" style={{ textDecoration: "none", position: "relative", zIndex: 1 }}>
+        <Link href="/" className="auth-brand">
           <div className="brand-mark">F</div>
           <span className="brand-name">Fleter<em>.</em></span>
         </Link>
-        <div style={{ position: "relative", zIndex: 1 }}>
+        <div className="auth-split__intro">
           <h2 className="auth-split__headline">{titular}</h2>
           <p className="auth-split__lead">{bajada}</p>
           <ul className="auth-split__bullets">
@@ -49,7 +49,7 @@ export default function AuthShell({
       </aside>
       <main className="auth-split__main">
         <div className={`auth-split__panel${ancho ? " auth-split__panel--ancho" : ""}`}>
-          <Link href="/" className="auth-brand auth-split__mobile-brand" style={{ textDecoration: "none" }}>
+          <Link href="/" className="auth-brand auth-split__mobile-brand">
             <div className="brand-mark">F</div>
             <span className="brand-name">Fleter<em>.</em></span>
           </Link>

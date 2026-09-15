@@ -7,7 +7,6 @@ export default function Stepper({ pasos, actual }: { pasos: string[]; actual: nu
           key={label}
           className={`stepper__step${i < actual ? " is-done" : ""}${i === actual ? " is-active" : ""}`}
           aria-current={i === actual ? "step" : undefined}
-          style={{ listStyle: "none" }}
         >
           <span className="stepper__bar" />
           <span className="stepper__label">

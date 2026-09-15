@@ -51,7 +51,7 @@ function ViajeListView() {
       <div className="viaje-activo-list">
         <div className="section-header"><h2>Viajes en curso</h2></div>
         {[1, 2].map((i) => (
-          <div key={i} className="card" style={{ height: 90, background: "var(--surface-2)" }} />
+          <div key={i} className="card skeleton skeleton--row" />
         ))}
       </div>
     );
@@ -90,7 +90,7 @@ function ViajeListView() {
         </div>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="stack">
         {viajes.map((v) => {
           const destino = v.paradas.length > 0
             ? v.paradas.reduce((m, p) => p.orden > m.orden ? p : m, v.paradas[0]).direccion
@@ -121,11 +121,11 @@ function ViajeListView() {
               </div>
               <div className="viaje-activo-list__footer">
                 {v.conductor && (
-                  <span style={{ fontSize: 13, color: "var(--ink-3)" }}>
+                  <span>
                     {v.conductor.usuario.nombre} {v.conductor.usuario.apellido}
                   </span>
                 )}
-                <span style={{ fontSize: 13, color: "var(--ink-3)" }}>
+                <span>
                   {formatARS(v.precio_estimado)} est.
                 </span>
               </div>
@@ -178,10 +178,12 @@ function TrackingView({ idViaje }: { idViaje: number }) {
   if (loading) {
     return (
       <div className="viaje-track">
-        <div className="viaje-track__map-placeholder">
-          <div style={{ color: "var(--ink-4)", textAlign: "center" }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>🗺️</div>
-            <p>Cargando viaje...</p>
+        <div className="viaje-track__map">
+          <div className="viaje-track__map-canvas">
+            <div className="viaje-track__map-empty">
+              <div className="viaje-track__map-empty-icon">🗺️</div>
+              <p>Cargando viaje...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -280,13 +282,13 @@ function TrackingView({ idViaje }: { idViaje: number }) {
                 <div className="viaje-track__conductor-avatar">
                   {viaje.conductor.usuario.nombre[0]}{viaje.conductor.usuario.apellido[0]}
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="viaje-track__conductor-info">
                   <p className="viaje-track__conductor-name">
                     {viaje.conductor.usuario.nombre} {viaje.conductor.usuario.apellido}
                   </p>
                   <div className="viaje-track__conductor-meta">
                     <span className="viaje-track__rating">
-                      <Star size={11} fill="currentColor" style={{ color: "#F59E0B" }} />
+                      <Star size={11} fill="currentColor" />
                       {viaje.conductor.calificacion_promedio.toFixed(1)}
                     </span>
                     {viaje.vehiculo && (
@@ -414,7 +416,7 @@ function TrackingView({ idViaje }: { idViaje: number }) {
           {alertas.length > 0 && (
             <div className="viaje-track__section">
               <p className="viaje-track__section-title">Alertas</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div className="stack stack--tight">
                 {alertas.map((a) => (
                   <div key={a.id} className={`viaje-track__alert-item viaje-track__alert-item--${a.tipo}`}>
                     <AlertTriangle size={12} />

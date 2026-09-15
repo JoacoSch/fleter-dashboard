@@ -54,7 +54,7 @@ export default function ConductorShell({
           <span className="brand-name">Fleter<em>.</em></span>
         </div>
 
-        <nav className="sidebar__nav" style={{ flex: 1 }}>
+        <nav className="sidebar__nav sidebar__nav--grow">
           {navItems.map(({ href, label, Icon, tambien }) => (
             <Link
               key={href}
@@ -68,7 +68,7 @@ export default function ConductorShell({
         </nav>
 
         <div className="sidebar__profile-section">
-          <div ref={menuRef} style={{ position: "relative" }}>
+          <div ref={menuRef} className="sidebar__user-anchor">
             {menuOpen && (
               <div className="sidebar__user-menu">
                 <button
@@ -89,7 +89,7 @@ export default function ConductorShell({
               <div className="sidebar__conductor-avatar">
                 {`${nombre[0]}${apellido[0]}`}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="sidebar__user-info">
                 <p className="sidebar__conductor-name">{nombre} {apellido}</p>
                 <p className="sidebar__conductor-role">Conductor</p>
               </div>

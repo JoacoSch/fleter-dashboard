@@ -49,7 +49,7 @@ export default function ViajeConductorPage() {
   }, [id]);
 
   const volver = (
-    <Link href="/conductor/mis-viajes" className="btn btn--ghost" style={{ marginBottom: 14, marginLeft: -10, textDecoration: "none" }}>
+    <Link href="/conductor/mis-viajes" className="btn btn--ghost back-link">
       <ArrowLeft size={14} /> Mis viajes
     </Link>
   );
@@ -61,7 +61,7 @@ export default function ViajeConductorPage() {
         {volver}
         <div className="vd__top">
           <div className="vd__map mapa-ruta--loading" />
-          <div className="card" style={{ height: 380, background: "var(--surface-2)" }} />
+          <div className="card skeleton" />
         </div>
       </div>
     );
@@ -106,7 +106,7 @@ export default function ViajeConductorPage() {
               )}
             </div>
 
-            <div style={{ borderTop: "1px solid var(--line)", paddingTop: 16 }}>
+            <div className="vd__price-block">
               <p className="vd__price-label">{viaje.precio_real != null ? "Precio final" : "Tarifa del viaje"}</p>
               <p className="vd__price"><sup>$</sup>{(viaje.precio_real ?? viaje.precio_estimado).toLocaleString("es-AR")}</p>
               <p className="vd__price-hint">{viaje.precio_real != null ? "Antes de la comisión de Fleter" : TARIFA_NOTA}</p>
@@ -133,7 +133,7 @@ export default function ViajeConductorPage() {
           </div>
           <div className="stat">
             <p className="stat__label">Paradas</p>
-            <p className="stat__value">{entregadas}<span style={{ color: "var(--ink-4)" }}>/{paradas.length}</span></p>
+            <p className="stat__value">{entregadas}<span className="muted">/{paradas.length}</span></p>
             <p className="stat__hint">entregadas</p>
           </div>
           <div className="stat">
@@ -184,7 +184,7 @@ export default function ViajeConductorPage() {
                 </div>
                 <div className="kv">
                   <span>Indicaciones del cliente</span>
-                  <strong style={{ fontWeight: 500 }}>{viaje.descripcion || "—"}</strong>
+                  <strong className="kv__texto">{viaje.descripcion || "—"}</strong>
                 </div>
               </div>
             </div>
@@ -215,7 +215,7 @@ export default function ViajeConductorPage() {
               <p className="card-title">Vehículo asignado</p>
               {viaje.vehiculo ? (
                 <div className="kv-grid">
-                  <div className="kv"><span>Patente</span><strong style={{ fontFamily: "var(--font-mono)", letterSpacing: 1 }}>{viaje.vehiculo.patente}</strong></div>
+                  <div className="kv"><span>Patente</span><strong className="patente">{viaje.vehiculo.patente}</strong></div>
                   <div className="kv"><span>Tipo</span><strong>{etiquetaTipoVehiculo(viaje.vehiculo.tipo_vehiculo)}</strong></div>
                   <div className="kv"><span>Modelo</span><strong>{viaje.vehiculo.marca} {viaje.vehiculo.modelo}</strong></div>
                   <div className="kv"><span>Empresa</span><strong>{viaje.empresa?.nombre ?? "Independiente"}</strong></div>

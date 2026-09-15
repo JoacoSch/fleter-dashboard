@@ -76,7 +76,7 @@ export default function RegistroPage() {
 
   return (
     <AuthShell ancho>
-      <button type="button" className="btn btn--ghost" onClick={() => setPerfil(null)} style={{ marginBottom: 16, marginLeft: -10 }}>
+      <button type="button" className="btn btn--ghost back-link" onClick={() => setPerfil(null)}>
         <ArrowLeft size={14} /> Cambiar perfil
       </button>
       <h1 className="auth-title">Cuenta para tu PyME</h1>
@@ -132,10 +132,10 @@ export default function RegistroPage() {
         {error && <p className="auth-error">{error}</p>}
 
         <div className="form-actions">
-          <p className="auth-footer" style={{ textAlign: "left" }}>
+          <p className="auth-footer">
             ¿Ya tenés cuenta? <Link href="/login" className="auth-link">Iniciá sesión</Link>
           </p>
-          <button type="submit" className="btn btn--primary" disabled={loading} style={{ padding: "11px 22px", fontSize: 14 }}>
+          <button type="submit" className="btn btn--primary btn--lg" disabled={loading}>
             {loading ? "Creando cuenta..." : "Crear cuenta"}
           </button>
         </div>

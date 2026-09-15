@@ -56,7 +56,7 @@ export default function RegistroGerentePage() {
         "Costo en vivo y remito de cada viaje",
       ]}
     >
-      <Link href="/registro" className="btn btn--ghost" style={{ marginBottom: 16, marginLeft: -10, textDecoration: "none" }}>
+      <Link href="/registro" className="btn btn--ghost back-link">
         <ArrowLeft size={14} /> Cambiar perfil
       </Link>
       <h1 className="auth-title">Registrá tu empresa fletera</h1>
@@ -118,10 +118,10 @@ export default function RegistroGerentePage() {
         {error && <p className="auth-error">{error}</p>}
 
         <div className="form-actions">
-          <p className="auth-footer" style={{ textAlign: "left" }}>
+          <p className="auth-footer">
             ¿Ya tenés cuenta? <Link href="/login" className="auth-link">Iniciá sesión</Link>
           </p>
-          <button type="submit" className="btn btn--primary" disabled={loading} style={{ padding: "11px 22px", fontSize: 14 }}>
+          <button type="submit" className="btn btn--primary btn--lg" disabled={loading}>
             {loading ? "Creando cuenta..." : "Crear cuenta"}
           </button>
         </div>

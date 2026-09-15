@@ -31,21 +31,21 @@ export default function RecuperarPage() {
     <AuthShell>
       {sent ? (
         <div>
-          <div className="empty-state__icon" style={{ background: "var(--ok-soft)", color: "var(--ok)" }}>
+          <div className="empty-state__icon empty-state__icon--ok">
             <MailCheck size={24} />
           </div>
           <h1 className="auth-title">Revisá tu casilla</h1>
           <p className="auth-subtitle" style={{ lineHeight: 1.5 }}>
-            Te mandamos un link a <strong style={{ color: "var(--ink)" }}>{email}</strong> para
+            Te mandamos un link a <strong>{email}</strong> para
             restablecer tu contraseña. Si no llega en unos minutos, mirá en spam.
           </p>
-          <Link href="/login" className="btn btn--full" style={{ textDecoration: "none" }}>
+          <Link href="/login" className="btn btn--full">
             Volver al login
           </Link>
         </div>
       ) : (
         <>
-          <Link href="/login" className="btn btn--ghost" style={{ marginBottom: 16, marginLeft: -10, textDecoration: "none" }}>
+          <Link href="/login" className="btn btn--ghost back-link">
             <ArrowLeft size={14} /> Volver al login
           </Link>
           <h1 className="auth-title">Recuperar contraseña</h1>

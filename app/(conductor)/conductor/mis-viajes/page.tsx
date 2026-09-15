@@ -80,7 +80,7 @@ export default function MisViajesPage() {
   const lista = grupos[tab];
 
   return (
-    <div style={{ maxWidth: 980 }}>
+    <div className="page-wide">
       <div className="section-header">
         <div>
           <h2>Mis viajes</h2>
@@ -109,7 +109,7 @@ export default function MisViajesPage() {
 
       <div className="trip-cards">
         {loading && Array.from({ length: 2 }).map((_, i) => (
-          <div key={i} className="trip-card" style={{ height: 150, background: "var(--surface-2)" }} />
+          <div key={i} className="trip-card skeleton" />
         ))}
 
         {!loading && !error && lista.length === 0 && (

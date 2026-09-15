@@ -11,8 +11,8 @@ import type { ResumenCliente, Extremo } from "@/lib/analytics-cliente";
 function SkeletonCard({ span = 3, h = 118 }: { span?: number; h?: number }) {
   return (
     <div className={`card span-${span}`} style={{ minHeight: h }}>
-      <div style={{ height: 10, width: "40%", background: "var(--surface-3)", borderRadius: 4, marginBottom: 14 }} />
-      <div style={{ height: 32, width: "55%", background: "var(--surface-3)", borderRadius: 4 }} />
+      <div className="skeleton-line" />
+      <div className="skeleton-line skeleton-line--valor" />
     </div>
   );
 }
@@ -36,7 +36,7 @@ function Variacion({ pct, vista }: { pct: number | null; vista: string }) {
 }
 
 function Pesos({ n }: { n: number | null }) {
-  if (n == null) return <span style={{ color: "var(--ink-4)" }}>—</span>;
+  if (n == null) return <span className="muted">—</span>;
   return <><sup>$</sup>{n.toLocaleString("es-AR")}</>;
 }
 
@@ -47,8 +47,8 @@ function ExtremoCard({ titulo, e }: { titulo: string; e: Extremo | null }) {
       <p className="metric__value"><Pesos n={e?.monto ?? null} /></p>
       {e ? (
         <div className="extreme">
-          <div style={{ minWidth: 0 }}>
-            <div className="extreme__route" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div className="extreme__text">
+            <div className="extreme__route">
               {e.origen ? separarDireccion(e.origen).calle : "—"} → {e.destino ? separarDireccion(e.destino).calle : "—"}
             </div>
             <div className="extreme__id">VJ-{e.id_viaje}</div>
@@ -101,7 +101,7 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="section-header" style={{ flexWrap: "wrap" }}>
+      <div className="section-header section-header--wrap">
         <div>
           <h2>Analytics</h2>
           <p>Resumen de {etiquetaPeriodo(periodo.mode, periodo.desde, periodo.hasta)}</p>
@@ -141,7 +141,7 @@ export default function DashboardPage() {
             <div className="card span-3 kpi">
               <p className="metric__label">Puntualidad</p>
               <p className="metric__value">
-                {r.puntualidad.porcentaje_a_tiempo != null ? <>{r.puntualidad.porcentaje_a_tiempo}<small>%</small></> : <span style={{ color: "var(--ink-4)" }}>—</span>}
+                {r.puntualidad.porcentaje_a_tiempo != null ? <>{r.puntualidad.porcentaje_a_tiempo}<small>%</small></> : <span className="muted">—</span>}
               </p>
               <p className="kpi__foot">
                 {r.puntualidad.medidos > 0
@@ -160,14 +160,14 @@ export default function DashboardPage() {
         ) : (
           <>
             <div className="card span-8">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+              <div className="card-head">
                 <div>
                   <p className="card-title">Evolución</p>
                   <p className="card-sub">Viajes solicitados y gasto de los finalizados</p>
                 </div>
                 <div className="leyenda">
-                  <span className="leyenda__item"><span className="leyenda__swatch" style={{ background: "var(--ink)" }} />Viajes</span>
-                  <span className="leyenda__item"><span className="leyenda__swatch" style={{ background: "var(--accent)" }} />Gasto</span>
+                  <span className="leyenda__item"><span className="leyenda__swatch leyenda__swatch--viajes" />Viajes</span>
+                  <span className="leyenda__item"><span className="leyenda__swatch leyenda__swatch--gasto" />Gasto</span>
                 </div>
               </div>
               {r.serie.length === 0 ? (

@@ -126,7 +126,7 @@ export default function VehiculoForm({
         <div className="form-grid form-grid--3">
           <div className="field">
             <label htmlFor="vh-patente">Patente</label>
-            <input id="vh-patente" type="text" placeholder="AB123CD" value={form.patente} onChange={set("patente")} required minLength={6} maxLength={8} style={{ textTransform: "uppercase", fontFamily: "var(--font-mono)", letterSpacing: 1 }} />
+            <input id="vh-patente" type="text" placeholder="AB123CD" value={form.patente} onChange={set("patente")} required minLength={6} maxLength={8} className="patente" />
           </div>
           <div className="field">
             <label htmlFor="vh-marca">Marca</label>
@@ -148,8 +148,8 @@ export default function VehiculoForm({
       </section>
 
       <section className="form-section">
-        <p className="form-section__title">Qué carga puede llevar <span className="opt" style={{ textTransform: "none", letterSpacing: 0 }}>(opcional)</span></p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <p className="form-section__title">Qué carga puede llevar <span className="opt">(opcional)</span></p>
+        <div className="cluster">
           {CONDICIONES_CARGA.map((c) => (
             <button
               key={c.value}
@@ -162,7 +162,7 @@ export default function VehiculoForm({
             </button>
           ))}
         </div>
-        <p className="field__hint" style={{ marginTop: 8 }}>
+        <p className="field__hint">
           Sólo te llegan viajes cuyas condiciones cumple tu vehículo. Si no marcás ninguna, ves los viajes sin requisitos.
         </p>
       </section>
@@ -190,7 +190,7 @@ export default function VehiculoForm({
 
       <div className="form-actions form-actions--end">
         {onCancelar && <button type="button" className="btn btn--ghost" onClick={onCancelar}>Cancelar</button>}
-        <button type="submit" className="btn btn--primary" disabled={loading} style={{ padding: "10px 20px", fontSize: 13.5 }}>
+        <button type="submit" className="btn btn--primary btn--lg" disabled={loading}>
           {loading ? "Guardando..." : textoGuardar}
         </button>
       </div>

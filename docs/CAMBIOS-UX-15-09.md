@@ -180,7 +180,25 @@ de empezar; registrar vehículo feo, tipografía distinta, sin foto.
 - Ventana de inicio de 30 min hardcodeada en el texto → si cambia
   `VENTANA_INICIO_MINUTOS`, el texto miente (`VENTANA_INICIO_MIN` en el detalle).
 
-## 7. Documentación tocada
+## 7. Limpieza de estilos (base para el design system)
+
+**Pedido:** pasar a clases los estilos inline que se repiten y borrar el CSS sin uso.
+
+| Qué | Detalle |
+|---|---|
+| Inline → clases | `style={{…}}` de 393 a 298 en total; fuera de las pantallas del gerente, de ~200 a 98. Lo que queda son valores calculados (anchos de barras, alturas de gráficos) y ajustes de espaciado que aparecen una sola vez. |
+| Clases nuevas | Utilidades (`.page-*`, `.stack`, `.cluster`, `.muted`, `.error-text`, `.patente`, `.skeleton*`) y modificadores de componente. Lista completa en `context/design-system.md` → "Limpieza de estilos". |
+| CSS sin uso | ~60 reglas borradas (`.detail*`, `.time-cell*`, `.alerts-strip*`, `.trip-row__ajuste*`, `.selector-periodo*`, `.card--hero`, `.btn--icon`, `.delta--up/--down`…). `globals.css` pasó de 2725 a ~2520 líneas. Se borró sólo lo que no aparece en `app/`, `components/`, `lib/`, `hooks/` ni `__tests__/`, contando las clases que se arman con template strings. |
+| Clase rota | `viaje-track__map-placeholder` se usaba y no existía: el "Cargando viaje…" quedaba arriba a la izquierda. Ahora usa `viaje-track__map-empty`, centrado sobre el fondo del mapa. |
+| Fuera de alcance | Pantallas del gerente, `pedir-viaje`, `perfil`, admin y `AddressInput`: siguen con inline hasta que se rediseñen. |
+
+**Cambios visibles, a propósito:**
+- Anchos máximos de página unificados: 980 → 1000 px (Viajes disponibles, Mis viajes) y 820/860 → 840 px (vehículos).
+- El botón de guardar de `VehiculoForm` usa `.btn--lg` (11×22 px, 14 px) como el resto de los formularios: 2 px más alto.
+- `.btn` y `.auth-brand` ya no subrayan cuando son `<a>`. Arregla "Buscar viajes disponibles" en Mis viajes (estaba subrayado) y un botón-link del panel del gerente.
+- La estrella de calificación en viaje activo pasó de `#F59E0B` (no es de la paleta) a `--warn`.
+
+## 8. Documentación tocada
 
 `OPEN.md` (D3, D4, D6), `CLAUDE.md`, `ESTADO-REAL.md`, `context/tasks/pendiente.md`,
 `context/design-system.md`, `PEDIDO-BACKEND-19-08.md` (sin trackear: corregido E y F,
@@ -202,3 +220,12 @@ agregados H, I, J).
 
 Se encontró y corrigió durante la verificación: "Septiembre De 2026" por
 `text-transform: capitalize` en el selector de período y en Facturación.
+
+### Verificación de la limpieza de estilos (sección 7)
+
+| Chequeo | Resultado |
+|---|---|
+| `tsc --noEmit`, `eslint`, `vitest` | OK (18 tests) |
+| Referencias a las clases borradas en `app/`, `components/`, `lib/`, `hooks/` y `__tests__/` | Cero |
+| Estilos computados antes/después, builds MOCK de producción (CLIENTE y CONDUCTOR) | Se compararon 39 propiedades y el tamaño de cada elemento en `/login`, `/registro` (perfil PyME), `/registro/conductor`, `/registro/gerente`, `/recuperar`, `/panel`, `/viajes`, `/viajes/103`, `/facturacion`, `/viaje-activo`, `/conductor`, `/conductor/mis-viajes`, `/conductor/viajes/205`, `/conductor/mis-vehiculos` (con el formulario abierto) y `/conductor/registro-vehiculo?onboarding=1`. **Sin diferencias** salvo las buscadas: anchos de página, `.btn--lg` en `VehiculoForm`, link subrayado en Mis viajes y color de la estrella en viaje activo. El `list-style` del stepper cambia en el `<ol>` pero no se ve, porque los `<li>` ya lo tenían anulado. |
+| No cubierto | Estados de hover, estados de carga (skeletons), la pantalla "Cargando viaje…" del seguimiento y los mapas (excluidos del diff). Las pantallas del gerente no se compararon: el único cambio que les llega es `text-decoration: none` en `.btn`. |

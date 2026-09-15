@@ -196,7 +196,7 @@ export default function ViajesPage() {
       {/* Toolbar: search + filter chips */}
       <div className="toolbar">
         <div className="search-input">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ color: "var(--ink-3)", flexShrink: 0 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input
@@ -271,7 +271,7 @@ export default function ViajesPage() {
               <div className="trip-row__id">VJ-{v.id_viaje}</div>
               <span className={`zone-tag ${v.zona}`}>{v.zona}</span>
               <span className={`status ${estadoCss}`}>{estadoLabel}</span>
-              <span style={{ fontSize: 12.5, color: v.duracion_real ? "var(--ink)" : "var(--ink-4)" }}>
+              <span className={`trip-row__dur${v.duracion_real ? "" : " trip-row__dur--null"}`}>
                 {formatDuracion(v.duracion_real)}
               </span>
               <span className={`trip-row__price${v.precio_real == null ? " trip-row__price--null" : ""}`}>

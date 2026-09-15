@@ -17,7 +17,7 @@ function RegistroVehiculo() {
   }
 
   return (
-    <div style={{ maxWidth: 820 }}>
+    <div className="page-medium">
       {onboarding && <Stepper pasos={PASOS_REGISTRO_CONDUCTOR} actual={3} />}
 
       <div className="section-header">
@@ -27,7 +27,7 @@ function RegistroVehiculo() {
         </div>
       </div>
 
-      <div className="card" style={{ padding: "22px 26px" }}>
+      <div className="card card--form">
         <VehiculoForm onGuardado={guardado} textoGuardar={onboarding ? "Guardar y ver viajes" : "Registrar vehículo"} />
       </div>
 

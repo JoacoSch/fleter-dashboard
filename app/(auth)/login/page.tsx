@@ -74,9 +74,9 @@ export default function LoginPage() {
         </div>
 
         <div className="field">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <div className="field__label-row">
             <label htmlFor="password">Contraseña</label>
-            <Link href="/recuperar" className="auth-link" style={{ fontSize: 12 }}>¿La olvidaste?</Link>
+            <Link href="/recuperar" className="auth-link">¿La olvidaste?</Link>
           </div>
           <input
             id="password"

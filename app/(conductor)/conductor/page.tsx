@@ -164,9 +164,9 @@ export default function ConductorPage() {
 
   if (asignado) {
     return (
-      <div style={{ maxWidth: 560 }}>
-        <div className="empty-state" style={{ borderStyle: "solid" }}>
-          <div className="empty-state__icon" style={{ background: "var(--ok-soft)", color: "var(--ok)" }}>
+      <div className="page-narrow">
+        <div className="empty-state empty-state--solid">
+          <div className="empty-state__icon empty-state__icon--ok">
             <CheckCircle2 size={26} />
           </div>
           <p className="empty-state__title">¡Viaje aceptado!</p>
@@ -175,7 +175,7 @@ export default function ConductorPage() {
             {asignado.vehiculo ? ` con ${asignado.vehiculo.marca} ${asignado.vehiculo.modelo} (${asignado.vehiculo.patente})` : ""}.
             Lo vas a encontrar en <strong>Mis viajes → Próximos</strong> con el recorrido y la hora de inicio.
           </p>
-          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+          <div className="cluster">
             <button className="btn" type="button" onClick={() => setAsignado(null)}>Seguir buscando</button>
             <Link href={`/conductor/viajes/${asignado.id_viaje}`} className="btn btn--primary">Ver el viaje</Link>
           </div>
@@ -187,7 +187,7 @@ export default function ConductorPage() {
   const sinVehiculos = cantVehiculos === 0;
 
   return (
-    <div style={{ maxWidth: 980 }}>
+    <div className="page-wide">
       <div className="section-header">
         <div>
           <h2>Viajes disponibles</h2>
@@ -216,7 +216,7 @@ export default function ConductorPage() {
       )}
 
       {yaAsignado && (
-        <div className="note note--warn" style={{ marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="note note--warn note--row" style={{ marginBottom: 14 }}>
           <span><strong>Otro conductor llegó primero</strong> al VJ-{yaAsignado}.</span>
           <button type="button" className="btn btn--ghost" onClick={() => setYaAsignado(null)}>Cerrar</button>
         </div>
@@ -224,7 +224,7 @@ export default function ConductorPage() {
 
       <div className="trip-cards">
         {loading && Array.from({ length: 2 }).map((_, i) => (
-          <div key={i} className="trip-card" style={{ height: 150, background: "var(--surface-2)" }} />
+          <div key={i} className="trip-card skeleton" />
         ))}
 
         {!loading && !apiError && viajes.length === 0 && (

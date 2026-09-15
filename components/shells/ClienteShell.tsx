@@ -95,7 +95,7 @@ export default function ClienteShell({
 
         {/* CTA */}
         <Link href="/pedir-viaje" className="sidebar__new">
-          <span style={{ fontSize: 18, lineHeight: 1, marginRight: 2 }}>+</span>
+          <span className="sidebar__new-plus">+</span>
           Solicitar nuevo flete
         </Link>
 
@@ -194,7 +194,7 @@ export default function ClienteShell({
             <div className="sidebar__user-avatar">
               {`${nombre[0]}${apellido[0]}`}
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="sidebar__user-info">
               <p className="sidebar__user-name">{nombre} {apellido}</p>
               {/*
                 El nombre de la empresa sale del perfil de Firebase (cliente),

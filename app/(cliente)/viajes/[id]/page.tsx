@@ -110,7 +110,7 @@ export default function ViajeDetallePage() {
   }, [id]);
 
   const volver = (
-    <button className="btn btn--ghost" onClick={() => router.back()} style={{ marginBottom: 14, marginLeft: -10 }} type="button">
+    <button className="btn btn--ghost back-link" onClick={() => router.back()} type="button">
       <ArrowLeft size={14} /> Volver
     </button>
   );
@@ -121,7 +121,7 @@ export default function ViajeDetallePage() {
         {volver}
         <div className="vd__top">
           <div className="vd__map mapa-ruta--loading" />
-          <div className="card" style={{ height: 380, background: "var(--surface-2)" }} />
+          <div className="card skeleton" />
         </div>
       </div>
     );
@@ -161,7 +161,7 @@ export default function ViajeDetallePage() {
           <div className="card vd__summary">
             <div className="vd__tags">
               <span className={`status ${viaje.estado}`}>{ESTADO_LABEL[viaje.estado as keyof typeof ESTADO_LABEL] ?? viaje.estado}</span>
-              {esProximo(viaje.estado) && <span className="badge-proximo" style={{ marginLeft: 0 }}>Próximo</span>}
+              {esProximo(viaje.estado) && <span className="badge-proximo">Próximo</span>}
               <span className={`zone-tag ${viaje.zona}`}>{viaje.zona}</span>
               <span className="trip-row__id">VJ-{viaje.id_viaje}</span>
             </div>
@@ -183,7 +183,7 @@ export default function ViajeDetallePage() {
               )}
             </div>
 
-            <div style={{ borderTop: "1px solid var(--line)", paddingTop: 16 }}>
+            <div className="vd__price-block">
               <p className="vd__price-label">{viaje.precio_real != null ? "Precio final" : "Precio estimado"}</p>
               <p className="vd__price">
                 <sup>$</sup>{(viaje.precio_real ?? viaje.precio_estimado).toLocaleString("es-AR")}
@@ -197,9 +197,9 @@ export default function ViajeDetallePage() {
               </p>
             </div>
 
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: "auto" }}>
+            <div className="cluster vd__actions">
               {esEnCurso(viaje.estado) && (
-                <Link href={`/viaje-activo?id=${viaje.id_viaje}`} className="btn btn--primary" style={{ textDecoration: "none" }}>
+                <Link href={`/viaje-activo?id=${viaje.id_viaje}`} className="btn btn--primary">
                   <Radio size={14} /> Seguir en vivo
                 </Link>
               )}
@@ -209,7 +209,7 @@ export default function ViajeDetallePage() {
                 </button>
               )}
             </div>
-            {remitoError && <p style={{ fontSize: 12.5, color: "var(--err)" }}>{remitoError}</p>}
+            {remitoError && <p className="error-text">{remitoError}</p>}
           </div>
         </div>
 
@@ -253,7 +253,7 @@ export default function ViajeDetallePage() {
           </div>
           <div className="stat">
             <p className="stat__label">Paradas entregadas</p>
-            <p className="stat__value">{entregadas}<span style={{ color: "var(--ink-4)" }}>/{paradas.length}</span></p>
+            <p className="stat__value">{entregadas}<span className="muted">/{paradas.length}</span></p>
           </div>
         </div>
 
@@ -299,7 +299,7 @@ export default function ViajeDetallePage() {
                 </div>
                 <div className="kv">
                   <span>Indicaciones</span>
-                  <strong style={{ fontWeight: viaje.descripcion ? 500 : 600 }}>{viaje.descripcion || "—"}</strong>
+                  <strong className={viaje.descripcion ? "kv__texto" : undefined}>{viaje.descripcion || "—"}</strong>
                 </div>
               </div>
             </div>
@@ -354,7 +354,7 @@ export default function ViajeDetallePage() {
               <p className="card-title">Vehículo</p>
               {viaje.vehiculo ? (
                 <div className="kv-grid">
-                  <div className="kv"><span>Patente</span><strong style={{ fontFamily: "var(--font-mono)", letterSpacing: 1 }}>{viaje.vehiculo.patente}</strong></div>
+                  <div className="kv"><span>Patente</span><strong className="patente">{viaje.vehiculo.patente}</strong></div>
                   <div className="kv"><span>Tipo</span><strong>{etiquetaTipoVehiculo(viaje.vehiculo.tipo_vehiculo)}</strong></div>
                   <div className="kv"><span>Modelo</span><strong>{viaje.vehiculo.marca} {viaje.vehiculo.modelo}</strong></div>
                   <div className="kv"><span>Año · color</span><strong>{[viaje.vehiculo.anio, viaje.vehiculo.color].filter(Boolean).join(" · ") || "—"}</strong></div>

@@ -130,7 +130,7 @@ export default function TripCard({
           <p className="trip-card__price">{"$" + precio.toLocaleString("es-AR")}</p>
           <p className="trip-card__price-note">{viaje.precio_real != null ? "Precio final · antes de la comisión de Fleter" : TARIFA_NOTA}</p>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+        <div className="cluster cluster--end">
           {onToggleMapa && (
             <button type="button" className="btn" onClick={onToggleMapa}>
               {mapaAbierto ? <ChevronUp size={14} /> : <ChevronDown size={14} />} Recorrido

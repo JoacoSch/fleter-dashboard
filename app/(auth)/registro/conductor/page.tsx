@@ -84,7 +84,7 @@ export default function RegistroConductorPage() {
         "Trabajá independiente o afiliado a una empresa fletera",
       ]}
     >
-      <Link href="/registro" className="btn btn--ghost" style={{ marginBottom: 16, marginLeft: -10, textDecoration: "none" }}>
+      <Link href="/registro" className="btn btn--ghost back-link">
         <ArrowLeft size={14} /> Cambiar perfil
       </Link>
       <h1 className="auth-title">Registrate como conductor</h1>
@@ -163,11 +163,11 @@ export default function RegistroConductorPage() {
               <ArrowLeft size={14} /> Atrás
             </button>
           ) : (
-            <p className="auth-footer" style={{ textAlign: "left" }}>
+            <p className="auth-footer">
               ¿Ya tenés cuenta? <Link href="/login" className="auth-link">Iniciá sesión</Link>
             </p>
           )}
-          <button type="submit" className="btn btn--primary" disabled={loading} style={{ padding: "11px 22px", fontSize: 14 }}>
+          <button type="submit" className="btn btn--primary btn--lg" disabled={loading}>
             {paso < 2 ? "Continuar" : loading ? "Creando cuenta..." : "Crear cuenta y cargar vehículo"}
           </button>
         </div>

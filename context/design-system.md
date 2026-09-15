@@ -423,3 +423,53 @@ const initials = (name: string) =>
   como un valor por defecto que parezca real (p. ej. "Sin alertas").
 - `.page-title` / `.page-subtitle` nunca existieron en el CSS: los encabezados de
   página usan `.section-header`.
+
+---
+
+## Limpieza de estilos (15-09)
+
+Se pasaron a clases los estilos inline que se repetían y se borró el CSS sin uso.
+No toca las pantallas del gerente, `pedir-viaje`, `perfil` ni admin: siguen con
+inline hasta que se rediseñen. **Regla:** inline sólo para valores calculados
+(ancho de una barra, `height` de un gráfico, `minHeight` que llega por prop).
+
+**Utilidades** (al final de `globals.css`):
+
+| Clase | Reemplaza |
+|---|---|
+| `.page-narrow` / `.page-medium` / `.page-wide` | `maxWidth` 560 / 820–860 → **840** / 980–1000 → **1000** |
+| `.stack`, `.stack--tight` | columna flex con `gap` 12 / 6 |
+| `.cluster`, `.cluster--end` | fila flex con wrap y `gap` 8 (botones, chips) |
+| `.muted` | `color: var(--ink-4)` para "—" y partes secundarias de un valor |
+| `.error-text` | texto de error suelto (12,5 px, `--err`) |
+| `.patente` | mono con `letter-spacing` (en `input` dentro de `.field` además va en mayúsculas) |
+| `.skeleton` (+ `--row`, y alturas para `.trip-card`, `.vd__top`, `.fact-month`), `.skeleton-line` (`--valor`) | placeholders de carga armados a mano |
+
+**Modificadores de componente:** `.btn--lg`, `.btn--danger`, `.back-link` (ghost
+corrido −10 px; 16 px de margen dentro del auth), `.card--form`, `.card-head`,
+`.section-header--wrap`, `.empty-state--solid`, `.empty-state__icon--ok`,
+`.note--row`, `.leyenda__swatch--viajes/--gasto`, `.vd__price-block`,
+`.vd__actions`, `.kv__texto`, `.trip-row__dur` (`--null`), `.fact-row__fecha`,
+`.fact-row__error`, `.field__label-row`, `.auth-split__intro`, `.extreme__text`,
+`.veh-card__body`, `.sidebar__nav--grow`, `.sidebar__new-plus`,
+`.sidebar__user-anchor`, `.sidebar__user-info`, `.viaje-track__conductor-info`,
+`.viaje-track__map-empty-icon`. `.btn` y `.auth-brand` ya no subrayan cuando son
+`<a>`.
+
+**Borrado por no tener uso** (estaba en el prototipo o quedó de versiones
+anteriores; algunas secciones de arriba todavía lo describen): `.card--hero`,
+`.btn--icon`, `.delta--up/--down` (la variación va sin color de juicio:
+`.delta--flat`), `.detail*`, `.time-compare`/`.time-cell*`, `.alerts-strip*`,
+`.bar__col`/`.bar__count` (quedan `.bar__col--viajes/--gasto`), `.cred`,
+`.selector-periodo*`, `.date-range*`, `.section-controls`, `.card--col-between`,
+`.chart-axis-label`, `.auth-layout`, `.auth-card`, `.auth-footer--mt*`,
+`.field--error`, `.field__error`, `.trip-row__ajuste*`, `.trip-row__meta`,
+`.trip-row__time`, `.trip-row__route-id/-sep`, `.trip-row__alert-icon`,
+`.pagination__ellipsis`, `.sidebar__user-role`, `.sidebar__conductor-footer`,
+`.viaje-track__call-btn`, `.viaje-track__cost-km`, `.viaje-track__stop-time`,
+`.viaje-track__map-canvas--loading`.
+
+**Colores:** el ámbar `#F59E0B` de la estrella en viaje activo pasó a `--warn`, y
+el fondo del mapa de viaje activo usa `var(--line)` (mismo valor). Quedan escritos
+a mano en el CSS los tonos de hover/borde de los colores soft (`#F8D8C2`,
+`#C9E7C6`, `#BFDDBF`, `#8A5E0B`, `#EEEAE0`…), que no tienen token.
