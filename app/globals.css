@@ -2522,7 +2522,6 @@ html {
   font-size: 13px; font-weight: 700;
   color: var(--ink);
   padding: 0 8px;
-  text-transform: capitalize;
   border: 0; background: transparent; font-family: inherit;
 }
 button.periodo__label { cursor: pointer; }
@@ -2688,7 +2687,7 @@ button.periodo__label { cursor: pointer; }
 /* ── Facturación ─────────────────────────────────── */
 .fact-month { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
 .fact-month__head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; padding: 16px 18px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
-.fact-month__title { font-family: var(--font-display); font-size: 18px; text-transform: capitalize; }
+.fact-month__title { font-family: var(--font-display); font-size: 18px; }
 .fact-month__count { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
 .fact-month__total { text-align: right; }
 .fact-month__total-value { font-family: var(--font-display); font-size: 22px; }

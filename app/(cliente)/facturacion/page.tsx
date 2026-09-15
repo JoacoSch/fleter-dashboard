@@ -72,7 +72,10 @@ export default function FacturacionPage() {
           <header className="fact-month__head">
             <div>
               <p className="fact-month__title">
-                {new Date(m.anio, m.mes, 1).toLocaleDateString("es-AR", { month: "long", year: "numeric" })}
+                {(() => {
+                  const s = new Date(m.anio, m.mes, 1).toLocaleDateString("es-AR", { month: "long", year: "numeric" });
+                  return s.charAt(0).toUpperCase() + s.slice(1);
+                })()}
               </p>
               <p className="fact-month__count">
                 {m.comprobantes.length} viaje{m.comprobantes.length !== 1 ? "s" : ""} finalizado{m.comprobantes.length !== 1 ? "s" : ""}

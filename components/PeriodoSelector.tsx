@@ -16,7 +16,11 @@ function corto(d: Date, conAnio = false): string {
 }
 
 export function etiquetaPeriodo(mode: PeriodoMode, desde: Date, hasta: Date): string {
-  if (mode === "mensual") return desde.toLocaleDateString("es-AR", { month: "long", year: "numeric" });
+  if (mode === "mensual") {
+    // Sólo la inicial: `text-transform: capitalize` dejaba "Septiembre De 2026".
+    const s = desde.toLocaleDateString("es-AR", { month: "long", year: "numeric" });
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
   if (mode === "todo") return "Todo el historial";
   return `${corto(desde)} – ${corto(hasta, true)}`;
 }

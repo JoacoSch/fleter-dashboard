@@ -17,6 +17,8 @@ node_modules/
 # next.js
 /.next/
 /.next-e2e/
+# Builds MOCK para verificación manual por rol (NEXT_DIST_DIR)
+/.next-verify-*/
 /out/
 
 # production
