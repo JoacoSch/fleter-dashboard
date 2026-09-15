@@ -1,153 +1,135 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { CalendarClock, Radio, History } from "lucide-react";
 import { api } from "@/lib/api";
+import { esEnCurso, esProximo } from "@/lib/estados";
+import TripCard, { type TripCardViaje } from "@/components/conductor/TripCard";
 
-interface Parada {
-  orden: number;
-  direccion: string;
-}
-
-interface MiViaje {
-  id_viaje: number;
+/** Forma de `GET /api/viajes/mis-viajes-conductor` (contrato). */
+interface MiViaje extends TripCardViaje {
   estado: string;
-  paradas: Parada[];
-  cliente: { usuario: { nombre: string; apellido: string } };
+  creado_en: string;
+  paradas: { orden: number; direccion: string; estado?: string; fecha_entrega?: string | null }[];
+  cliente: { usuario: { nombre: string; apellido: string; telefono?: string | null } };
 }
 
-function EmptyState() {
-  return (
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "64px 24px",
-      gap: 12,
-      color: "var(--ink-3)",
-    }}>
-      <span style={{ fontSize: 32 }}>📦</span>
-      <p style={{ fontSize: 14, fontWeight: 500, color: "var(--ink-2)" }}>No tenés viajes asignados</p>
-    </div>
-  );
+/** Lo que el listado no trae y sí trae `GET /api/viajes/:id`. */
+interface Extra {
+  ruta_planeada: [number, number][] | null;
+  duracion_estimada: number | null;
 }
 
-function ErrorState() {
-  return (
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "64px 24px",
-      gap: 12,
-    }}>
-      <span style={{ fontSize: 32 }}>🔌</span>
-      <p style={{ fontSize: 14, fontWeight: 500, color: "var(--ink-2)" }}>No se pudieron cargar los viajes</p>
-      <p style={{ fontSize: 12, color: "var(--ink-3)" }}>El servicio no está disponible por el momento</p>
-    </div>
-  );
-}
+type Tab = "proximos" | "en_curso" | "historial";
+
+const TABS: { key: Tab; label: string; Icon: typeof Radio }[] = [
+  { key: "en_curso", label: "En curso", Icon: Radio },
+  { key: "proximos", label: "Próximos", Icon: CalendarClock },
+  { key: "historial", label: "Historial", Icon: History },
+];
+
+const VACIO: Record<Tab, { titulo: string; texto: string }> = {
+  en_curso: { titulo: "Nada en curso", texto: "Cuando inicies un viaje desde la app lo vas a ver acá." },
+  proximos: { titulo: "No tenés viajes por hacer", texto: "Los viajes que aceptes aparecen acá con fecha, hora, recorrido y tarifa." },
+  historial: { titulo: "Todavía no hiciste viajes", texto: "Los viajes finalizados y cancelados quedan guardados acá." },
+};
 
 export default function MisViajesPage() {
   const [viajes, setViajes] = useState<MiViaje[]>([]);
+  const [extras, setExtras] = useState<Record<number, Extra>>({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [tabElegida, setTabElegida] = useState<Tab | null>(null);
 
   useEffect(() => {
     api.get<MiViaje[]>("/api/viajes/mis-viajes-conductor")
-      .then(setViajes)
-      .catch(() => setError(true))
+      .then((data) => {
+        setViajes(data);
+        // Sólo para lo que falta hacer: son pocos y es donde importan km y duración.
+        const pendientes = data.filter((v) => esProximo(v.estado) || esEnCurso(v.estado));
+        return Promise.allSettled(
+          pendientes.map((v) => api.get<Extra>(`/api/viajes/${v.id_viaje}`).then((d) => [v.id_viaje, d] as const)),
+        );
+      })
+      .then((res) => {
+        const mapa: Record<number, Extra> = {};
+        for (const r of res) {
+          if (r.status === "fulfilled") {
+            const [id, d] = r.value;
+            mapa[id] = { ruta_planeada: d.ruta_planeada ?? null, duracion_estimada: d.duracion_estimada ?? null };
+          }
+        }
+        setExtras(mapa);
+      })
+      .catch((e) => setError(e instanceof Error ? e.message : "No se pudieron cargar los viajes"))
       .finally(() => setLoading(false));
   }, []);
 
+  const grupos = useMemo(() => {
+    const porFecha = (a: MiViaje, b: MiViaje) => new Date(a.fecha_programada).getTime() - new Date(b.fecha_programada).getTime();
+    return {
+      en_curso: viajes.filter((v) => esEnCurso(v.estado)).sort(porFecha),
+      proximos: viajes.filter((v) => esProximo(v.estado)).sort(porFecha),
+      historial: viajes.filter((v) => !esEnCurso(v.estado) && !esProximo(v.estado)).sort((a, b) => porFecha(b, a)),
+    };
+  }, [viajes]);
+
+  // Por defecto: lo que está pasando ahora; si no hay, lo que viene.
+  const tab: Tab = tabElegida ?? (grupos.en_curso.length > 0 ? "en_curso" : "proximos");
+  const lista = grupos[tab];
+
   return (
-    <div>
-      <div className="section-header" style={{ marginBottom: 24 }}>
-        <h2>Mis viajes</h2>
+    <div style={{ maxWidth: 980 }}>
+      <div className="section-header">
+        <div>
+          <h2>Mis viajes</h2>
+          <p>Los viajes que aceptaste: cuándo, por dónde y por cuánto</p>
+        </div>
+        <Link href="/conductor" className="btn">Buscar viajes disponibles</Link>
       </div>
 
-      {!loading && error && <ErrorState />}
-      {!loading && !error && viajes.length === 0 && <EmptyState />}
+      <div className="tabs" role="tablist">
+        {TABS.map(({ key, label, Icon }) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={tab === key}
+            className={`tab${tab === key ? " is-active" : ""}`}
+            onClick={() => setTabElegida(key)}
+          >
+            <Icon size={15} /> {label}
+            {!loading && <span className="tab__count">{grupos[key].length}</span>}
+          </button>
+        ))}
+      </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {loading
-          ? Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="card" style={{ height: 100, background: "var(--surface-2)" }} />
-            ))
-          : viajes.map((v) => {
-              const sorted = [...v.paradas].sort((a, b) => a.orden - b.orden);
-              const origen = sorted[0]?.direccion ?? "—";
-              const destino = sorted[sorted.length - 1]?.direccion ?? "—";
-              const intermedias = sorted.length - 2;
-              const cliente = `${v.cliente.usuario.nombre} ${v.cliente.usuario.apellido}`;
+      {error && <div className="error-banner">{error}</div>}
 
-              return (
-                <div key={v.id_viaje} className="card" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div className="trip-cards">
+        {loading && Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="trip-card" style={{ height: 150, background: "var(--surface-2)" }} />
+        ))}
 
-                  {/* Header */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink-3)" }}>
-                      VJ-{v.id_viaje}
-                    </span>
-                    <span className={`status ${v.estado}`}>
-                      {v.estado.replace(/_/g, " ")}
-                    </span>
-                  </div>
+        {!loading && !error && lista.length === 0 && (
+          <div className="empty-state">
+            <p className="empty-state__title">{VACIO[tab].titulo}</p>
+            <p className="empty-state__text">{VACIO[tab].texto}</p>
+          </div>
+        )}
 
-                  {/* Ruta */}
-                  <div style={{ position: "relative", paddingLeft: 28 }}>
-                    <div style={{
-                      position: "absolute",
-                      left: 8,
-                      top: 10,
-                      bottom: 10,
-                      width: 1.5,
-                      background: "var(--line-strong)",
-                    }} />
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{
-                          position: "absolute",
-                          left: 3,
-                          width: 11,
-                          height: 11,
-                          borderRadius: "50%",
-                          background: "var(--accent)",
-                          border: "2px solid var(--surface)",
-                          boxShadow: "0 0 0 1.5px var(--accent)",
-                        }} />
-                        <p style={{ fontSize: 13, color: "var(--ink)" }}>{origen}</p>
-                      </div>
-                      {intermedias > 0 && (
-                        <p style={{ fontSize: 12, color: "var(--ink-3)", paddingLeft: 4 }}>
-                          + {intermedias} parada{intermedias !== 1 ? "s" : ""} intermedia{intermedias !== 1 ? "s" : ""}
-                        </p>
-                      )}
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{
-                          position: "absolute",
-                          left: 3,
-                          width: 11,
-                          height: 11,
-                          borderRadius: 2,
-                          background: "var(--ink)",
-                          border: "2px solid var(--surface)",
-                          boxShadow: "0 0 0 1.5px var(--ink)",
-                        }} />
-                        <p style={{ fontSize: 13, color: "var(--ink)" }}>{destino}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Footer */}
-                  <div style={{ borderTop: "1px solid var(--line)", paddingTop: 12 }}>
-                    <p style={{ fontSize: 12, color: "var(--ink-3)" }}>{cliente}</p>
-                  </div>
-
-                </div>
-              );
-            })}
+        {!loading && lista.map((v) => (
+          <TripCard
+            key={v.id_viaje}
+            viaje={v}
+            href={`/conductor/viajes/${v.id_viaje}`}
+            ruta={extras[v.id_viaje]?.ruta_planeada}
+            duracionEstimada={extras[v.id_viaje]?.duracion_estimada}
+            calcularKm={tab !== "historial"}
+            mostrarEstado
+          />
+        ))}
       </div>
     </div>
   );

@@ -9,9 +9,9 @@ import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
 
 const navItems = [
-  { href: "/conductor",               label: "Viajes disponibles", Icon: Navigation },
-  { href: "/conductor/mis-viajes",    label: "Mis viajes",         Icon: ClipboardList },
-  { href: "/conductor/mis-vehiculos", label: "Mis vehículos",      Icon: Truck },
+  { href: "/conductor",               label: "Viajes disponibles", Icon: Navigation,    tambien: [] as string[] },
+  { href: "/conductor/mis-viajes",    label: "Mis viajes",         Icon: ClipboardList, tambien: ["/conductor/viajes/"] },
+  { href: "/conductor/mis-vehiculos", label: "Mis vehículos",      Icon: Truck,         tambien: ["/conductor/registro-vehiculo"] },
 ];
 
 export default function ConductorShell({
@@ -55,11 +55,11 @@ export default function ConductorShell({
         </div>
 
         <nav className="sidebar__nav" style={{ flex: 1 }}>
-          {navItems.map(({ href, label, Icon }) => (
+          {navItems.map(({ href, label, Icon, tambien }) => (
             <Link
               key={href}
               href={href}
-              className={`nav-item${pathname === href ? " is-active" : ""}`}
+              className={`nav-item${pathname === href || tambien.some((p) => pathname.startsWith(p)) ? " is-active" : ""}`}
             >
               <Icon size={16} className="nav-item__icon" />
               <span className="nav-item__label">{label}</span>
