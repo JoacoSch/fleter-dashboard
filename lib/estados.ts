@@ -45,6 +45,25 @@ export const ESTADOS_EN_CURSO: EstadoViaje[] = [
   "DESCARGANDO",
 ];
 
+/**
+ * Estados de un viaje que ya tiene quién lo haga pero todavía no arrancó. No
+ * son "en curso": un viaje aceptado para el jueves no se sigue en vivo el lunes.
+ */
+export const ESTADOS_PROXIMOS: EstadoViaje[] = [
+  "RESERVADO_POR_EMPRESA",
+  "CONDUCTOR_ASIGNADO",
+];
+
+/** ¿El viaje está físicamente en curso? Única regla para banner, nav y tracking. */
+export function esEnCurso(estado: string | null | undefined): boolean {
+  return ESTADOS_EN_CURSO.includes(estado as EstadoViaje);
+}
+
+/** ¿El viaje está asignado o reservado pero todavía no se inició? */
+export function esProximo(estado: string | null | undefined): boolean {
+  return ESTADOS_PROXIMOS.includes(estado as EstadoViaje);
+}
+
 export function etiquetaEstado(estado: string): string {
   return ESTADO_LABEL[estado as EstadoViaje] ?? estado.replace(/_/g, " ");
 }

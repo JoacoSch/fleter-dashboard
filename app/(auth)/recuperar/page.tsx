@@ -2,7 +2,9 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { ArrowLeft, MailCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import AuthShell from "@/components/AuthShell";
 
 export default function RecuperarPage() {
   const { sendRecovery } = useAuth();
@@ -26,38 +28,26 @@ export default function RecuperarPage() {
   }
 
   return (
-    <div className="auth-card">
-      <div className="auth-brand">
-        <div className="brand-mark">F</div>
-        <span className="brand-name">Fleter<em>.</em></span>
-      </div>
-
+    <AuthShell>
       {sent ? (
-        <div style={{ textAlign: "center" }}>
-          <div style={{
-            width: 48,
-            height: 48,
-            borderRadius: "50%",
-            background: "var(--ok-soft)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 16px",
-            fontSize: 22,
-          }}>
-            ✓
+        <div>
+          <div className="empty-state__icon" style={{ background: "var(--ok-soft)", color: "var(--ok)" }}>
+            <MailCheck size={24} />
           </div>
           <h1 className="auth-title">Revisá tu casilla</h1>
-          <p style={{ color: "var(--ink-3)", fontSize: 13, lineHeight: 1.5 }}>
+          <p className="auth-subtitle" style={{ lineHeight: 1.5 }}>
             Te mandamos un link a <strong style={{ color: "var(--ink)" }}>{email}</strong> para
-            restablecer tu contraseña.
+            restablecer tu contraseña. Si no llega en unos minutos, mirá en spam.
           </p>
-          <Link href="/login" className="auth-link" style={{ display: "inline-block", marginTop: 24, fontSize: 13 }}>
-            ← Volver al login
+          <Link href="/login" className="btn btn--full" style={{ textDecoration: "none" }}>
+            Volver al login
           </Link>
         </div>
       ) : (
         <>
+          <Link href="/login" className="btn btn--ghost" style={{ marginBottom: 16, marginLeft: -10, textDecoration: "none" }}>
+            <ArrowLeft size={14} /> Volver al login
+          </Link>
           <h1 className="auth-title">Recuperar contraseña</h1>
           <p className="auth-subtitle">Te enviamos un link a tu email para restablecerla.</p>
 
@@ -81,12 +71,8 @@ export default function RecuperarPage() {
               {loading ? "Enviando..." : "Enviar link de recuperación"}
             </button>
           </form>
-
-          <p className="auth-footer auth-footer--mt20">
-            <Link href="/login" className="auth-link">← Volver al login</Link>
-          </p>
         </>
       )}
-    </div>
+    </AuthShell>
   );
 }

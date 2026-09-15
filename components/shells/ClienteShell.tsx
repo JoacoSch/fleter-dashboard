@@ -108,7 +108,7 @@ export default function ClienteShell({
         {/* Nav */}
         <nav className="sidebar__nav">
           {[
-            { href: "/",            label: "Analytics",    Icon: BarChart2,     suffix: undefined as string | undefined, disabled: false },
+            { href: "/panel",       label: "Analytics",    Icon: BarChart2,     suffix: undefined as string | undefined, disabled: false },
             { href: "/viajes",      label: "Record",       Icon: ClipboardList, suffix: undefined as string | undefined, disabled: false },
             {
               href: activeViajes.length === 1

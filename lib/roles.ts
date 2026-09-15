@@ -9,5 +9,5 @@ export function homeForRole(role: string): string {
   if (role === "CONDUCTOR") return "/conductor";
   if (role === "GERENTE") return "/gerente";
   if (role === "ADMIN") return "/admin";
-  return "/"; // CLIENTE
+  return "/panel"; // CLIENTE — `/` es la landing pública desde el 15-09
 }
