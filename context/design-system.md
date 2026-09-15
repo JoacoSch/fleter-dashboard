@@ -386,3 +386,40 @@ const initials = (name: string) =>
 - **Estados activos**: clase `is-active` (no `active` ni `selected`)
 - **Fuente de verdad de estado del viaje**: siempre del backend — el frontend solo muestra
 - **No usar Tailwind** — el sistema ya tiene clases utilitarias propias
+
+---
+
+## Componentes y clases agregados el 15-09
+
+> Sección "Feedback UX 15-09" al final de `app/globals.css`. Detalle de por qué en
+> `docs/CAMBIOS-UX-15-09.md`. **Íconos:** el código real usa `lucide-react`, no
+> `FleterIcons` (lo de arriba describe el prototipo).
+
+| Componente / clase | Uso |
+|---|---|
+| `components/AuthShell.tsx` · `.auth-split` | Layout de auth de desktop: panel oscuro de marca + formulario. Prop `ancho` para formularios en secciones. |
+| `components/Stepper.tsx` · `.stepper` | Barra de pasos (registro de conductor). |
+| `.form-section`, `.form-grid`, `.form-grid--3`, `.form-actions` | Formularios largos agrupados por sección. |
+| `.option-cards` / `.option-card.is-selected` | Elegir entre opciones con ícono y descripción (perfil, tipo de vehículo). |
+| `components/PeriodoSelector.tsx` · `.periodo` | Único selector de período (Semana/Mes/Rango/Todo + flechas). |
+| `.kpi`, `.progress`, `.delta--flat`, `.mini-stats` | KPIs con pie de variación. La variación de gasto va **sin color de juicio**. |
+| `.bars--dual`, `.bar__tip`, `.leyenda` | Gráfico de barras doble (cantidad + monto) con tooltip. |
+| `components/MapaRuta.tsx` · `.mapa-ruta` | Mapa de ruta para cualquier viaje. Si cae a línea recta, lo rotula. |
+| `components/ContactoConductor.tsx` · `.contacto` | Teléfono visible + copiar + `tel:` + WhatsApp. No usar `tel:` solo. |
+| `.route-stops` (`--grande`) | Origen/destino en dos líneas (calle / localidad) con `separarDireccion`. |
+| `.vd`, `.vd__top`, `.vd__map`, `.stat-grid` | Detalle de viaje (cliente y conductor). |
+| `components/conductor/TripCard.tsx` · `.trip-card` | Card de viaje del conductor: bloque de fecha/hora, ruta, km/duración, tarifa rotulada. |
+| `.tabs` / `.tab.is-active` | Pestañas con contador. |
+| `.fact-month`, `.fact-row` | Comprobantes por mes. |
+| `components/conductor/VehiculoForm.tsx` · `.dropzone`, `.badge-proximo` | Alta de vehículo. `badge-proximo` marca funciones visibles que todavía no persisten. |
+| `.empty-state`, `.note`, `.note--warn`, `.toast` | Estados vacíos que explican el porqué, notas y confirmaciones. |
+| `.landing` | Placeholder de la landing. |
+
+**Reglas nuevas:**
+- Un monto que no es lo que la persona cobra o paga de verdad **lleva rótulo**
+  ("Tarifa del viaje · antes de la comisión de Fleter", "Informativo · no es una
+  liquidación").
+- Un dato que el backend no manda se muestra como "—" **con la aclaración**, nunca
+  como un valor por defecto que parezca real (p. ej. "Sin alertas").
+- `.page-title` / `.page-subtitle` nunca existieron en el CSS: los encabezados de
+  página usan `.section-header`.
