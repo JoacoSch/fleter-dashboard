@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { usePeriodo } from "@/hooks/usePeriodo";
-import SelectorPeriodo from "@/components/SelectorPeriodo";
+import PeriodoSelector from "@/components/PeriodoSelector";
 import { formatARS, fmtDate, fmtTime, formatDuracion } from "@/lib/utils";
 import { ESTADO_LABEL as ESTADO_LABEL_BASE, esFinalizado } from "@/lib/estados";
 
@@ -187,7 +187,7 @@ export default function ViajesPage() {
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <SelectorPeriodo />
+        <PeriodoSelector conTodo />
       </div>
 
       {/* Toolbar: search + filter chips */}

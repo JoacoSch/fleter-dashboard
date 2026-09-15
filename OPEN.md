@@ -59,6 +59,13 @@ La **liquidación unificada mensual** entra al MVP.
 
 **Falta:** confirmar con clientes.
 
+**15-09 — pantalla de Facturación sin decidir D3.** Se habilitó `/facturacion` como
+**lista de comprobantes por mes**: viajes finalizados, precio final y remito PDF,
+con un **total del mes rotulado "informativo, no es una liquidación ni una
+factura"**. No hay saldo, cuenta corriente, vencimientos ni factura. Cuando D3
+cierre, la liquidación la calcula el backend y esta pantalla la muestra; el total
+informativo se reemplaza por ese número o se saca.
+
 ---
 
 ## D4 — POOL PRIVADO · CERRADA
@@ -105,6 +112,12 @@ asignó directo? En el segundo caso se cae buena parte de lo listado arriba.
 
 **Mientras tanto:** no construir más sobre el mercado abierto. Si una tarea nueva
 toca `viajes-disponibles`, `reservar` o `viaje:aceptar`, parar y preguntar.
+
+**15-09 — se preguntó y se decidió:** la pantalla "Viajes disponibles" del
+conductor (`app/(conductor)/conductor/page.tsx`) se **rediseñó sólo en lo visual**
+(cards, mapa del recorrido, mensaje cuando la lista está vacía). El flujo
+primero-en-aceptar, `GET /api/viajes/disponibles` y `viaje:aceptar` quedaron
+**intactos**: no se agregó comportamiento nuevo sobre el mercado abierto.
 
 ### El contrato del 19-08 profundiza el conflicto
 
@@ -206,3 +219,17 @@ documento con valor comercial (factura, liquidación, comprobante) lo calcula el
 backend y el front lo muestra tal cual.
 
 Hasta que cierre: **no agregar cálculo nuevo en el BFF sin preguntar.**
+
+### Autorización del 15-09 — cálculo de pantalla
+
+Se autorizó explícitamente ampliar el BFF con **cálculo de pantalla** para
+reordenar el Analytics de la PyME: serie del gráfico por día/semana/mes (antes
+metía todos los viajes en una sola barra), período anterior y variación %, tasa
+de cancelación, duración promedio, puntualidad y gasto por zona en pesos. Vive en
+`lib/analytics-cliente.ts` (módulo puro, con tests) y lo expone
+`app/api/analytics/cliente/resumen/route.ts`. El "total del mes" de Facturación
+también es de este tipo y está rotulado como informativo.
+
+**Lo que no cambia:** el límite propuesto sigue en pie. Ningún número que termine
+en un documento con valor comercial (factura, liquidación, comprobante) se calcula
+en el BFF. D6 sigue ABIERTA para eso.

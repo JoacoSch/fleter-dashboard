@@ -1,47 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePeriodo, type PeriodoMode } from "@/hooks/usePeriodo";
-import { formatARS, fmtDate } from "@/lib/utils";
 import Link from "next/link";
+import { usePeriodo } from "@/hooks/usePeriodo";
+import PeriodoSelector, { etiquetaPeriodo } from "@/components/PeriodoSelector";
+import { formatARS, formatDuracion } from "@/lib/utils";
+import { separarDireccion } from "@/lib/viajes";
+import type { ResumenCliente, Extremo } from "@/lib/analytics-cliente";
 
-interface ChartItem {
-  semana: string;
-  viajes: number;
-  gasto: number;
-  isCurrent?: boolean;
-}
-
-interface Resumen {
-  total_gastado: number;
-  costo_promedio: number | null;
-  cantidad_fletes: number;
-  flete_mas_caro: { id_viaje: number; monto: number } | null;
-  flete_mas_barato: { id_viaje: number; monto: number } | null;
-  por_zona: { CABA: number; PROVINCIA: number; MIXTO: number };
-  alertas_count: number;
-  top_destinos: { direccion: string; count: number; zona?: string }[];
-  fletes_por_semana: ChartItem[];
-}
-
-function toInputValue(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-
-function periodoLabel(mode: PeriodoMode, desde: Date, hasta: Date): string {
-  if (mode === "mensual") {
-    return desde.toLocaleDateString("es-AR", { month: "long", year: "numeric" });
-  }
-  if (mode === "semanal") {
-    return `Semana del ${fmtDate(desde.toISOString())}`;
-  }
-  if (mode === "personalizado") {
-    return `${fmtDate(desde.toISOString())} — ${fmtDate(hasta.toISOString())}`;
-  }
-  return "Todo el período";
-}
-
-function SkeletonCard({ span = 4, h = 90 }: { span?: number; h?: number }) {
+function SkeletonCard({ span = 3, h = 118 }: { span?: number; h?: number }) {
   return (
     <div className={`card span-${span}`} style={{ minHeight: h }}>
       <div style={{ height: 10, width: "40%", background: "var(--surface-3)", borderRadius: 4, marginBottom: 14 }} />
@@ -50,15 +17,54 @@ function SkeletonCard({ span = 4, h = 90 }: { span?: number; h?: number }) {
   );
 }
 
-const PERIOD_TABS: { key: PeriodoMode; label: string }[] = [
-  { key: "semanal", label: "Semanal" },
-  { key: "mensual", label: "Mensual" },
-  { key: "personalizado", label: "Personalizado" },
-];
+const COMPARACION: Record<string, string> = {
+  semanal: "vs. semana anterior",
+  mensual: "vs. mes anterior",
+  personalizado: "vs. período anterior",
+};
+
+/** Variación sin juicio de color: gastar más no es "malo" por sí solo. */
+function Variacion({ pct, vista }: { pct: number | null; vista: string }) {
+  if (pct == null || vista === "todo") return null;
+  const flecha = pct > 0 ? "↑" : pct < 0 ? "↓" : "=";
+  return (
+    <>
+      <span className="delta delta--flat">{flecha} {Math.abs(pct)} %</span>
+      <span>{COMPARACION[vista]}</span>
+    </>
+  );
+}
+
+function Pesos({ n }: { n: number | null }) {
+  if (n == null) return <span style={{ color: "var(--ink-4)" }}>—</span>;
+  return <><sup>$</sup>{n.toLocaleString("es-AR")}</>;
+}
+
+function ExtremoCard({ titulo, e }: { titulo: string; e: Extremo | null }) {
+  return (
+    <div className="card span-4 kpi">
+      <p className="metric__label">{titulo}</p>
+      <p className="metric__value"><Pesos n={e?.monto ?? null} /></p>
+      {e ? (
+        <div className="extreme">
+          <div style={{ minWidth: 0 }}>
+            <div className="extreme__route" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {e.origen ? separarDireccion(e.origen).calle : "—"} → {e.destino ? separarDireccion(e.destino).calle : "—"}
+            </div>
+            <div className="extreme__id">VJ-{e.id_viaje}</div>
+          </div>
+          <Link href={`/viajes/${e.id_viaje}`} className="extreme__btn">Ver detalle →</Link>
+        </div>
+      ) : (
+        <p className="kpi__foot">Sin viajes finalizados en el período</p>
+      )}
+    </div>
+  );
+}
 
 export default function DashboardPage() {
-  const { periodo, queryParams, setMensual, setSemanal, setPersonalizado } = usePeriodo();
-  const [resumen, setResumen] = useState<Resumen | null>(null);
+  const { periodo, queryParams } = usePeriodo();
+  const [resumen, setResumen] = useState<ResumenCliente | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,286 +84,183 @@ export default function DashboardPage() {
       params.set("desde", queryParams.desde);
       params.set("hasta", queryParams.hasta);
     }
-    // Tell the API which chart layout to use
-    if (periodo.mode === "semanal" || periodo.mode === "mensual") {
-      params.set("view", periodo.mode);
-    }
-    const qs = params.toString() ? `?${params}` : "";
-    fetch(`/api/analytics/cliente/resumen${qs}`)
-      .then((r) => { if (!r.ok) throw new Error(`Error ${r.status}`); return r.json() as Promise<Resumen>; })
+    params.set("vista", periodo.mode);
+    params.set("tz", String(new Date().getTimezoneOffset()));
+    fetch(`/api/analytics/cliente/resumen?${params}`)
+      .then((r) => { if (!r.ok) throw new Error(`Error ${r.status}`); return r.json() as Promise<ResumenCliente>; })
       .then(setResumen)
       .catch((e: unknown) => setError(e instanceof Error ? e.message : "Error"))
       .finally(() => setLoading(false));
   }, [queryParams, periodo.mode]);
 
-  function handlePeriodoTab(key: PeriodoMode) {
-    if (key === "mensual") setMensual();
-    else if (key === "semanal") setSemanal();
-    else setPersonalizado(periodo.desde, periodo.hasta);
-  }
-
-  function handleDesde(e: React.ChangeEvent<HTMLInputElement>) {
-    setPersonalizado(new Date(e.target.value + "T00:00:00"), periodo.hasta);
-  }
-  function handleHasta(e: React.ChangeEvent<HTMLInputElement>) {
-    setPersonalizado(periodo.desde, new Date(e.target.value + "T23:59:59"));
-  }
-
-  const isMensualChart = periodo.mode === "mensual";
-  const maxBar = resumen?.fletes_por_semana?.length
-    ? Math.max(...resumen.fletes_por_semana.map((s) => s.viajes), 1)
-    : 1;
-  const totalZona = resumen
-    ? resumen.por_zona.CABA + resumen.por_zona.PROVINCIA + resumen.por_zona.MIXTO || 1
-    : 1;
+  const r = resumen;
+  const maxViajes = r ? Math.max(1, ...r.serie.map((b) => b.solicitados)) : 1;
+  const maxGasto = r ? Math.max(1, ...r.serie.map((b) => b.gasto)) : 1;
+  const totalZonaGasto = r ? (r.gasto_por_zona.CABA + r.gasto_por_zona.PROVINCIA + r.gasto_por_zona.MIXTO) || 1 : 1;
+  const pctFinalizados = r && r.cantidad_fletes > 0 ? Math.round((r.finalizados / r.cantidad_fletes) * 100) : 0;
 
   return (
     <div>
-      {/* Header */}
-      <div className="section-header">
+      <div className="section-header" style={{ flexWrap: "wrap" }}>
         <div>
           <h2>Analytics</h2>
-          <p>Resumen del período · {periodoLabel(periodo.mode, periodo.desde, periodo.hasta)}</p>
+          <p>Resumen de {etiquetaPeriodo(periodo.mode, periodo.desde, periodo.hasta)}</p>
         </div>
-        <div className="section-controls">
-          <div className="period-tabs">
-            {PERIOD_TABS.map(({ key, label }) => (
-              <button
-                key={key}
-                className={`period-tab${periodo.mode === key ? " is-active" : ""}`}
-                onClick={() => handlePeriodoTab(key)}
-                type="button"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          {periodo.mode === "personalizado" && (
-            <div className="date-range">
-              <input
-                type="date"
-                aria-label="Fecha desde"
-                value={toInputValue(periodo.desde)}
-                max={toInputValue(periodo.hasta)}
-                onChange={handleDesde}
-              />
-              <span className="date-range__sep">→</span>
-              <input
-                type="date"
-                aria-label="Fecha hasta"
-                value={toInputValue(periodo.hasta)}
-                min={toInputValue(periodo.desde)}
-                max={toInputValue(new Date())}
-                onChange={handleHasta}
-              />
-            </div>
-          )}
-        </div>
+        <PeriodoSelector conTodo />
       </div>
 
       {error && <div className="error-banner">{error}</div>}
 
-      {/* Fila 1: métricas top */}
+      {/* Fila 1 — lo que más se mira: cuánto, cuántos, a qué precio, con qué servicio */}
       <div className="grid-12 grid-row">
-        {loading ? (
-          <><SkeletonCard span={4} /><SkeletonCard span={4} /><SkeletonCard span={4} /></>
-        ) : resumen ? (
+        {loading || !r ? (
+          <><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></>
+        ) : (
           <>
-            <div className="card span-4 card--ink">
+            <div className="card span-3 card--ink kpi">
               <p className="metric__label">Total gastado</p>
+              <p className="metric__value"><Pesos n={r.total_gastado} /></p>
+              <p className="kpi__foot"><Variacion pct={r.variacion.total_gastado} vista={r.vista} /></p>
+            </div>
+            <div className="card span-3 kpi">
+              <p className="metric__label">Fletes finalizados</p>
               <p className="metric__value">
-                <sup>$</sup>{resumen.total_gastado > 0 ? resumen.total_gastado.toLocaleString("es-AR") : "0"}
+                {r.finalizados}
+                <small>de {r.cantidad_fletes} solicitados</small>
+              </p>
+              <div className="progress" aria-hidden="true"><div className="progress__fill" style={{ width: `${pctFinalizados}%` }} /></div>
+              <p className="kpi__foot">
+                {r.cancelados > 0 ? `${r.cancelados} cancelado${r.cancelados !== 1 ? "s" : ""}` : "Sin cancelaciones"}
               </p>
             </div>
-            <div className="card span-4">
-              <p className="metric__label">Fletes solicitados</p>
-              <p className="metric__value">{resumen.cantidad_fletes}</p>
-            </div>
-            <div className="card span-4">
+            <div className="card span-3 kpi">
               <p className="metric__label">Costo promedio</p>
+              <p className="metric__value"><Pesos n={r.costo_promedio} /></p>
+              <p className="kpi__foot"><Variacion pct={r.variacion.costo_promedio} vista={r.vista} /></p>
+            </div>
+            <div className="card span-3 kpi">
+              <p className="metric__label">Puntualidad</p>
               <p className="metric__value">
-                {resumen.costo_promedio != null
-                  ? <><sup>$</sup>{resumen.costo_promedio.toLocaleString("es-AR")}</>
-                  : <span style={{ fontSize: 18, color: "var(--ink-4)" }}>—</span>}
+                {r.puntualidad.porcentaje_a_tiempo != null ? <>{r.puntualidad.porcentaje_a_tiempo}<small>%</small></> : <span style={{ color: "var(--ink-4)" }}>—</span>}
+              </p>
+              <p className="kpi__foot">
+                {r.puntualidad.medidos > 0
+                  ? `${r.puntualidad.a_tiempo} de ${r.puntualidad.medidos} arrancaron a tiempo`
+                  : "Sin viajes iniciados en el período"}
               </p>
             </div>
           </>
-        ) : null}
+        )}
       </div>
 
-      {/* Fila 2: bar chart + zona */}
+      {/* Fila 2 — evolución y dónde se va la plata */}
       <div className="grid-12 grid-row">
-        {loading ? (
-          <><SkeletonCard span={7} h={220} /><SkeletonCard span={5} h={220} /></>
-        ) : resumen ? (
+        {loading || !r ? (
+          <><SkeletonCard span={8} h={260} /><SkeletonCard span={4} h={260} /></>
+        ) : (
           <>
-            {/* Bar chart */}
-            <div className="card span-7">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+            <div className="card span-8">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
                 <div>
-                  <p className="card-title">
-                    {isMensualChart ? "Fletes por mes" : "Fletes por semana"}
-                  </p>
-                  <p className="card-sub">
-                    {isMensualChart
-                      ? "Cantidad de viajes — últimos 6 meses"
-                      : `Semanas del mes · ${periodo.desde.toLocaleDateString("es-AR", { month: "long", year: "numeric" })}`}
-                  </p>
+                  <p className="card-title">Evolución</p>
+                  <p className="card-sub">Viajes solicitados y gasto de los finalizados</p>
                 </div>
-                <p className="chart-axis-label">↑ Cant. viajes</p>
+                <div className="leyenda">
+                  <span className="leyenda__item"><span className="leyenda__swatch" style={{ background: "var(--ink)" }} />Viajes</span>
+                  <span className="leyenda__item"><span className="leyenda__swatch" style={{ background: "var(--accent)" }} />Gasto</span>
+                </div>
               </div>
-              <div
-                className="bars"
-                style={{ gridTemplateColumns: `repeat(${resumen.fletes_por_semana.length}, 1fr)` }}
-              >
-                {resumen.fletes_por_semana.map((s) => {
-                  const isEmpty = s.viajes === 0;
-                  const isCurrentMonth = isMensualChart && s.isCurrent;
-                  const isPastMonth = isMensualChart && !s.isCurrent;
-                  const barColor = isPastMonth
-                    ? "var(--ink-2)"
-                    : "var(--accent)";
-                  return (
-                    <div className="bar" key={s.semana}>
-                      {!isEmpty ? (
-                        <div
-                          className="bar__col"
-                          style={{
-                            height: `${(s.viajes / maxBar) * 100}%`,
-                            background: barColor,
-                            borderRadius: isCurrentMonth ? "6px 6px 0 0" : "4px 4px 0 0",
-                          }}
-                          data-amount={s.gasto > 0 ? formatARS(s.gasto) : undefined}
-                        >
-                          <span className="bar__count" style={{ color: isPastMonth ? "rgba(255,255,255,.85)" : "#fff" }}>
-                            {s.viajes}
-                          </span>
-                        </div>
-                      ) : (
-                        <div style={{ width: "100%", height: 3, background: "var(--line)", borderRadius: 2, alignSelf: "flex-end" }} />
-                      )}
-                      <span className="bar__label" style={{ color: isCurrentMonth ? "var(--accent)" : "var(--ink-3)", fontWeight: isCurrentMonth ? 700 : 600 }}>
-                        {s.semana}
-                      </span>
+              {r.serie.length === 0 ? (
+                <div className="empty">Sin datos para graficar</div>
+              ) : (
+                <div className="bars bars--dual" style={{ gridTemplateColumns: `repeat(${r.serie.length}, 1fr)`, gap: r.serie.length > 10 ? 6 : 14 }}>
+                  {r.serie.map((b) => (
+                    <div className="bar" key={b.desde}>
+                      <span className="bar__tip">{b.solicitados} viaje{b.solicitados !== 1 ? "s" : ""} · {formatARS(b.gasto)}</span>
+                      <div className="bar__pair">
+                        <div className="bar__col--viajes" style={{ height: `${(b.solicitados / maxViajes) * 100}%` }} />
+                        <div className="bar__col--gasto" style={{ height: `${(b.gasto / maxGasto) * 100}%` }} />
+                      </div>
+                      <span className="bar__label">{b.label}</span>
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Zone breakdown */}
-            <div className="card span-5">
-              <p className="card-title">Desglose por zona</p>
-              <p className="card-sub">Cantidad de viajes según tipo</p>
-              {[
-                { zone: "CABA",      val: resumen.por_zona.CABA,      cls: "" },
-                { zone: "PROVINCIA", val: resumen.por_zona.PROVINCIA,  cls: "zone-fill--prov" },
-                { zone: "MIXTO",     val: resumen.por_zona.MIXTO,      cls: "zone-fill--mixto" },
-              ].map((z) => (
-                <div className="zone-row" key={z.zone}>
-                  <span className="zone-name">{z.zone}</span>
+            <div className="card span-4">
+              <p className="card-title">Gasto por zona</p>
+              <p className="card-sub">Pesos de los finalizados · cantidad de viajes</p>
+              {([
+                { zone: "CABA", cls: "" },
+                { zone: "PROVINCIA", cls: "zone-fill--prov" },
+                { zone: "MIXTO", cls: "zone-fill--mixto" },
+              ] as const).map((z) => (
+                <div className="zone-row zone-row--rich" key={z.zone}>
+                  <span className="zone-name">{z.zone === "PROVINCIA" ? "Provincia" : z.zone === "MIXTO" ? "Mixto" : "CABA"}</span>
                   <div className="zone-track">
-                    <div className={`zone-fill ${z.cls}`} style={{ width: `${(z.val / totalZona) * 100}%` }} />
+                    <div className={`zone-fill ${z.cls}`} style={{ width: `${(r.gasto_por_zona[z.zone] / totalZonaGasto) * 100}%` }} />
                   </div>
-                  <span className="zone-amount">{z.val} viajes</span>
+                  <span className="zone-amount">
+                    {formatARS(r.gasto_por_zona[z.zone])}
+                    <small>{r.por_zona[z.zone]} viaje{r.por_zona[z.zone] !== 1 ? "s" : ""}</small>
+                  </span>
                 </div>
               ))}
             </div>
           </>
-        ) : null}
+        )}
       </div>
 
-      {/* Fila 3: extremos + alertas */}
+      {/* Fila 3 — extremos y calidad del servicio */}
       <div className="grid-12 grid-row">
-        {loading ? (
+        {loading || !r ? (
           <><SkeletonCard span={4} /><SkeletonCard span={4} /><SkeletonCard span={4} /></>
-        ) : resumen ? (
+        ) : (
           <>
-            {/* Flete más caro */}
-            <div className="card span-4">
-              <p className="metric__label">Flete más caro</p>
-              {resumen.flete_mas_caro ? (
-                <>
-                  <p className="metric__value" style={{ color: "var(--accent)" }}>
-                    <sup>$</sup>{resumen.flete_mas_caro.monto.toLocaleString("es-AR")}
-                  </p>
-                  <div className="extreme">
-                    <div>
-                      <div className="extreme__id">VJ-{resumen.flete_mas_caro.id_viaje}</div>
-                    </div>
-                    <Link href={`/viajes/${resumen.flete_mas_caro.id_viaje}`} className="extreme__btn">
-                      Ver detalle →
-                    </Link>
-                  </div>
-                </>
-              ) : (
-                <p className="metric__value" style={{ color: "var(--ink-4)", fontSize: 18 }}>—</p>
-              )}
-            </div>
-
-            {/* Flete más barato */}
-            <div className="card span-4">
-              <p className="metric__label">Flete más barato</p>
-              {resumen.flete_mas_barato ? (
-                <>
-                  <p className="metric__value">
-                    <sup>$</sup>{resumen.flete_mas_barato.monto.toLocaleString("es-AR")}
-                  </p>
-                  <div className="extreme">
-                    <div>
-                      <div className="extreme__id">VJ-{resumen.flete_mas_barato.id_viaje}</div>
-                    </div>
-                    <Link href={`/viajes/${resumen.flete_mas_barato.id_viaje}`} className="extreme__btn">
-                      Ver detalle →
-                    </Link>
-                  </div>
-                </>
-              ) : (
-                <p className="metric__value" style={{ color: "var(--ink-4)", fontSize: 18 }}>—</p>
-              )}
-            </div>
-
-            {/* Alertas */}
-            <div className="card span-4 card--col-between">
-              <p className="metric__label">Alertas recibidas</p>
-              <div className="alerts-strip">
-                <span className={`alerts-strip__num${resumen.alertas_count === 0 ? " zero" : ""}`}>
-                  {resumen.alertas_count}
-                </span>
-                <div className="alerts-strip__text">
-                  <strong>{resumen.alertas_count === 0 ? "Sin alertas" : "alertas detectadas"}</strong>
-                  {resumen.alertas_count > 0
-                    ? "detectadas automáticamente sobre los viajes del período"
-                    : "viajes sin desvíos ni paradas sospechosas"}
+            <ExtremoCard titulo="Flete más caro" e={r.flete_mas_caro} />
+            <ExtremoCard titulo="Flete más barato" e={r.flete_mas_barato} />
+            <div className="card span-4 kpi">
+              <p className="metric__label">Servicio</p>
+              <div className="mini-stats">
+                <div>
+                  <p className="mini-stat__label">Cancelación</p>
+                  <p className="mini-stat__value">{r.tasa_cancelacion != null ? `${r.tasa_cancelacion} %` : "—"}</p>
+                </div>
+                <div>
+                  <p className="mini-stat__label">Duración prom.</p>
+                  <p className="mini-stat__value">{formatDuracion(r.duracion_promedio)}</p>
                 </div>
               </div>
+              <p className="kpi__foot">
+                {r.alertas_disponible
+                  ? `${r.alertas_count} alerta${r.alertas_count !== 1 ? "s" : ""} de desvío o parada`
+                  : "Alertas: el backend todavía no informa el conteo por viaje"}
+              </p>
             </div>
           </>
-        ) : null}
+        )}
       </div>
 
-      {/* Fila 4: top destinos */}
-      {!loading && resumen && resumen.top_destinos.length > 0 && (
+      {/* Fila 4 — destinos */}
+      {!loading && r && r.top_destinos.length > 0 && (
         <div className="grid-12">
           <div className="card span-12">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <div>
-                <p className="card-title">Top 5 destinos frecuentes</p>
-                <p className="card-sub">Direcciones a las que más viajes solicitaste en el período</p>
-              </div>
-            </div>
-            <div>
-              {resumen.top_destinos.map((d, i) => (
-                <div className="dest-row" key={i}>
+            <p className="card-title">Destinos frecuentes</p>
+            <p className="card-sub">Direcciones a las que más viajes pediste en el período</p>
+            {r.top_destinos.map((d, i) => {
+              const { calle, localidad } = separarDireccion(d.direccion);
+              return (
+                <div className="dest-row" key={d.direccion}>
                   <div className="dest-rank">{String(i + 1).padStart(2, "0")}</div>
                   <div>
-                    <div className="dest-addr">{d.direccion}</div>
-                    {d.zona && <div className="dest-zone">{d.zona}</div>}
+                    <div className="dest-addr">{calle}</div>
+                    <div className="dest-zone">{[localidad, d.zona].filter(Boolean).join(" · ")}</div>
                   </div>
                   <div className="dest-count">{d.count}<small>viajes</small></div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
       )}
