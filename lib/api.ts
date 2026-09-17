@@ -266,42 +266,85 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       condiciones: [],
     },
   ],
+  // Forma del contrato (`GET /api/viajes/mis-viajes-conductor`). Hasta el 15-09
+  // el fixture no traía fecha, precio ni zona, así que "Mis viajes" no podía
+  // mostrarlos ni en MOCK.
   "/api/viajes/mis-viajes-conductor": [
     {
       id_viaje: 201,
-      estado: "FINALIZADO",
+      zona: "PROVINCIA",
+      precio_estimado: 38500,
+      precio_real: null,
+      estado: "CONDUCTOR_ASIGNADO",
+      fecha_programada: new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString(),
+      descripcion: "12 pallets. Portón azul, avisar 10 min antes.",
+      creado_en: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
       paradas: [
-        { orden: 1, direccion: "Av. Corrientes 1234, CABA" },
-        { orden: 2, direccion: "Palermo Soho, CABA" },
+        { orden: 1, direccion: "Av. Warnes 1840, CABA", estado: "PENDIENTE", fecha_entrega: null },
+        { orden: 2, direccion: "Av. Crovara 4250, La Tablada", estado: "PENDIENTE", fecha_entrega: null },
       ],
-      cliente: { usuario: { nombre: "Juan", apellido: "Pérez" } },
+      cliente: { usuario: { nombre: "Mariana", apellido: "Vázquez", telefono: "+5491155554444" } },
     },
     {
-      id_viaje: 202,
-      estado: "FINALIZADO",
+      id_viaje: 205,
+      zona: "MIXTO",
+      precio_estimado: 52000,
+      precio_real: null,
+      estado: "CONDUCTOR_ASIGNADO",
+      fecha_programada: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+      descripcion: null,
+      creado_en: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
       paradas: [
-        { orden: 1, direccion: "Microcentro, CABA" },
-        { orden: 2, direccion: "La Plata, Buenos Aires" },
+        { orden: 1, direccion: "Av. Corrientes 1234, CABA", estado: "PENDIENTE", fecha_entrega: null },
+        { orden: 2, direccion: "Mercado Central, Tapiales", estado: "PENDIENTE", fecha_entrega: null },
+        { orden: 3, direccion: "Parque Industrial Pilar", estado: "PENDIENTE", fecha_entrega: null },
       ],
-      cliente: { usuario: { nombre: "María", apellido: "García" } },
+      cliente: { usuario: { nombre: "Juan", apellido: "Pérez", telefono: "+5491112345678" } },
     },
     {
       id_viaje: 203,
+      zona: "MIXTO",
+      precio_estimado: 27000,
+      precio_real: null,
       estado: "EN_RUTA",
+      fecha_programada: new Date(Date.now() - 40 * 60 * 1000).toISOString(),
+      descripcion: null,
+      creado_en: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
       paradas: [
-        { orden: 1, direccion: "Retiro, CABA" },
-        { orden: 2, direccion: "Tigre, Buenos Aires" },
+        { orden: 1, direccion: "Retiro, CABA", estado: "ENTREGADO", fecha_entrega: new Date(Date.now() - 25 * 60 * 1000).toISOString() },
+        { orden: 2, direccion: "Tigre, Buenos Aires", estado: "PENDIENTE", fecha_entrega: null },
       ],
-      cliente: { usuario: { nombre: "Roberto", apellido: "Sanz" } },
+      cliente: { usuario: { nombre: "Roberto", apellido: "Sanz", telefono: "+5491199887766" } },
+    },
+    {
+      id_viaje: 202,
+      zona: "PROVINCIA",
+      precio_estimado: 45000,
+      precio_real: 47800,
+      estado: "FINALIZADO",
+      fecha_programada: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+      descripcion: null,
+      creado_en: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+      paradas: [
+        { orden: 1, direccion: "Microcentro, CABA", estado: "ENTREGADO", fecha_entrega: null },
+        { orden: 2, direccion: "La Plata, Buenos Aires", estado: "ENTREGADO", fecha_entrega: null },
+      ],
+      cliente: { usuario: { nombre: "María", apellido: "García", telefono: "+5491187654321" } },
     },
     {
       id_viaje: 204,
-      estado: "FINALIZADO",
+      zona: "CABA",
+      precio_estimado: 16000,
+      precio_real: null,
+      estado: "CANCELADO",
+      fecha_programada: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
+      descripcion: null,
+      creado_en: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
       paradas: [
-        { orden: 1, direccion: "Once, CABA" },
-        { orden: 2, direccion: "Morón, Buenos Aires" },
+        { orden: 1, direccion: "Once, CABA", estado: "PENDIENTE", fecha_entrega: null },
+        { orden: 2, direccion: "Palermo Soho, CABA", estado: "PENDIENTE", fecha_entrega: null },
       ],
-      cliente: { usuario: { nombre: "Laura", apellido: "Méndez" } },
+      cliente: { usuario: { nombre: "Laura", apellido: "Méndez", telefono: null } },
     },
   ],
   "/api/viajes/103/detalle": {
@@ -714,10 +757,27 @@ async function apiFetch<T>(
         await new Promise((r) => setTimeout(r, 300));
         return detailed as T;
       }
-      const list = MOCK_FIXTURES["/api/viajes/mis-viajes"] as { id_viaje: number }[];
-      const found = list?.find((v) => v.id_viaje === id);
+      // El detalle cae a los listados del cliente y del conductor. El del
+      // conductor no trae coordenadas ni `ruta_planeada`: sirve para probar el
+      // fallback de Google Directions del mapa.
+      const listas = [
+        MOCK_FIXTURES["/api/viajes/mis-viajes"],
+        MOCK_FIXTURES["/api/viajes/mis-viajes-conductor"],
+      ] as { id_viaje: number }[][];
+      const found = listas.flat().find((v) => v.id_viaje === id);
       await new Promise((r) => setTimeout(r, 300));
-      if (found) return found as T;
+      if (found) {
+        return {
+          condiciones_req: [],
+          ruta_planeada: null,
+          duracion_estimada: null,
+          fecha_inicio: null,
+          puntualidad_inicio: null,
+          vehiculo: null,
+          empresa: null,
+          ...found,
+        } as T;
+      }
       throw new Error("Viaje no encontrado");
     }
     if (MOCK_FIXTURES[path] !== undefined) {

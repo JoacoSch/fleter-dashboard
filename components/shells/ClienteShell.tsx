@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { formatARS, fmtDate } from "@/lib/utils";
-import { ESTADO_LABEL_ACTIVO } from "@/lib/estados";
+import { ESTADO_LABEL_ACTIVO, esEnCurso } from "@/lib/estados";
 import { BarChart2, ClipboardList, Truck, FileText, User, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
@@ -20,14 +20,6 @@ interface RecentViaje {
   estado: string;
   paradas: { orden: number; direccion: string }[];
 }
-
-const ACTIVE_ESTADOS = new Set([
-  "CONDUCTOR_ASIGNADO",
-  "EN_CAMINO_A_ORIGEN",
-  "EN_RUTA",
-  "CARGANDO",
-  "DESCARGANDO",
-]);
 
 const ACTIVE_ESTADO_LABELS: Record<string, string> = {
   ...ESTADO_LABEL_ACTIVO,
@@ -73,7 +65,9 @@ export default function ClienteShell({
     api.get<RecentViaje[]>("/api/viajes/mis-viajes")
       .then((data) => {
         setTotalViajes(data.length);
-        const active = data.filter((v) => ACTIVE_ESTADOS.has(v.estado));
+        // "En curso" = físicamente arrancado. Un viaje aceptado para otro día
+        // no es un viaje en curso (antes CONDUCTOR_ASIGNADO prendía el banner).
+        const active = data.filter((v) => esEnCurso(v.estado));
         setActiveViajes(active);
         const sorted = [...data].sort((a, b) => {
           const da = new Date(a.fecha_programada ?? a.creado_en).getTime();
@@ -101,27 +95,27 @@ export default function ClienteShell({
 
         {/* CTA */}
         <Link href="/pedir-viaje" className="sidebar__new">
-          <span style={{ fontSize: 18, lineHeight: 1, marginRight: 2 }}>+</span>
+          <span className="sidebar__new-plus">+</span>
           Solicitar nuevo flete
         </Link>
 
         {/* Nav */}
         <nav className="sidebar__nav">
           {[
-            { href: "/",            label: "Analytics",    Icon: BarChart2,     suffix: undefined as string | undefined, disabled: false },
+            { href: "/panel",       label: "Analytics",    Icon: BarChart2,     suffix: undefined as string | undefined, disabled: false },
             { href: "/viajes",      label: "Record",       Icon: ClipboardList, suffix: undefined as string | undefined, disabled: false },
             {
               href: activeViajes.length === 1
                 ? `/viaje-activo?id=${activeViajes[0].id_viaje}`
                 : "/viaje-activo",
-              label: "Viaje activo",
+              label: "En curso",
               Icon: Truck,
-              suffix: activeViajes.length === 0 ? "Próx." as string | undefined : undefined,
+              suffix: activeViajes.length === 0 ? "Ninguno" as string | undefined : undefined,
               disabled: activeViajes.length === 0,
             },
-            { href: "/facturacion", label: "Facturación",  Icon: FileText,      suffix: "Próx." as string | undefined,   disabled: true },
+            { href: "/facturacion", label: "Facturación",  Icon: FileText,      suffix: undefined as string | undefined, disabled: false },
           ].map(({ href, label, Icon, suffix, disabled }) => {
-            const isActive = pathname === href || (label === "Viaje activo" && pathname === "/viaje-activo");
+            const isActive = pathname === href || (label === "En curso" && pathname === "/viaje-activo");
             const showBadge = href === "/viajes" && totalViajes > 0;
             if (disabled) {
               return (
@@ -137,7 +131,7 @@ export default function ClienteShell({
                 <Icon size={16} className="nav-item__icon" />
                 <span className="nav-item__label">{label}</span>
                 {showBadge && <span className="nav-item__badge">{totalViajes}</span>}
-                {label === "Viaje activo" && activeViajes.length > 0 && (
+                {label === "En curso" && activeViajes.length > 0 && (
                   <span className="nav-item__live-dot" />
                 )}
                 {suffix && !showBadge && <span className="nav-item__suffix">{suffix}</span>}
@@ -200,7 +194,7 @@ export default function ClienteShell({
             <div className="sidebar__user-avatar">
               {`${nombre[0]}${apellido[0]}`}
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="sidebar__user-info">
               <p className="sidebar__user-name">{nombre} {apellido}</p>
               {/*
                 El nombre de la empresa sale del perfil de Firebase (cliente),

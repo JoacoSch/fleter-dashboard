@@ -3,26 +3,14 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import { useViajeActivo } from "@/hooks/useViajeActivo";
 import type { ViajeFinalizadoPayload } from "@/hooks/useViajeActivo";
 import { api } from "@/lib/api";
 import { formatARS } from "@/lib/utils";
-import { ESTADO_LABEL_ACTIVO } from "@/lib/estados";
-import { ChevronLeft, Phone, Star, Truck, AlertTriangle, Package } from "lucide-react";
-
-const MapaViajeActivo = dynamic(
-  () => import("@/components/MapaViajeActivo").then((m) => m.MapaViajeActivo),
-  { ssr: false, loading: () => <div className="viaje-track__map-canvas viaje-track__map-canvas--loading" /> }
-);
-
-const ACTIVE_ESTADOS = new Set([
-  "CONDUCTOR_ASIGNADO",
-  "EN_CAMINO_A_ORIGEN",
-  "EN_RUTA",
-  "CARGANDO",
-  "DESCARGANDO",
-]);
+import { ESTADO_LABEL_ACTIVO, esEnCurso } from "@/lib/estados";
+import { ChevronLeft, Star, Truck, AlertTriangle, Package } from "lucide-react";
+import MapaRuta from "@/components/MapaRuta";
+import ContactoConductor from "@/components/ContactoConductor";
 
 const ESTADO_LABELS: Record<string, string> = ESTADO_LABEL_ACTIVO;
 
@@ -46,7 +34,7 @@ function ViajeListView() {
 
   useEffect(() => {
     api.get<ViajeListItem[]>("/api/viajes/mis-viajes")
-      .then((data) => setViajes(data.filter((v) => ACTIVE_ESTADOS.has(v.estado))))
+      .then((data) => setViajes(data.filter((v) => esEnCurso(v.estado))))
       .finally(() => setLoading(false));
   }, []);
 
@@ -63,7 +51,7 @@ function ViajeListView() {
       <div className="viaje-activo-list">
         <div className="section-header"><h2>Viajes en curso</h2></div>
         {[1, 2].map((i) => (
-          <div key={i} className="card" style={{ height: 90, background: "var(--surface-2)" }} />
+          <div key={i} className="card skeleton skeleton--row" />
         ))}
       </div>
     );
@@ -73,13 +61,17 @@ function ViajeListView() {
     return (
       <div className="viaje-activo-list">
         <div className="section-header"><h2>Viajes en curso</h2></div>
-        <div className="card" style={{ textAlign: "center", padding: "48px 24px", color: "var(--ink-4)" }}>
-          <Truck size={36} style={{ marginBottom: 12, opacity: 0.4 }} />
-          <p style={{ fontWeight: 600, fontSize: 15 }}>No tenés viajes activos</p>
-          <p style={{ fontSize: 13, marginTop: 4 }}>Cuando solicites un flete vas a poder seguirlo desde acá</p>
-          <Link href="/pedir-viaje" className="btn" style={{ display: "inline-block", marginTop: 20 }}>
-            Solicitar flete
-          </Link>
+        <div className="card va-empty">
+          <Truck size={36} className="va-empty__icon" />
+          <p className="va-empty__title">No tenés viajes en curso</p>
+          <p className="va-empty__text">
+            Un viaje aparece acá cuando el conductor lo inicia. Los que ya tienen conductor pero
+            todavía no arrancaron figuran como <strong>Próximo</strong> en Record, con su mapa y detalle.
+          </p>
+          <div className="va-empty__actions">
+            <Link href="/viajes" className="btn">Ver Record</Link>
+            <Link href="/pedir-viaje" className="btn btn--primary">Solicitar flete</Link>
+          </div>
         </div>
       </div>
     );
@@ -89,16 +81,16 @@ function ViajeListView() {
 
   return (
     <div className="viaje-activo-list">
-      <div className="section-header" style={{ marginBottom: 20 }}>
+      <div className="section-header mb-20">
         <div>
           <h2>Viajes en curso</h2>
-          <p style={{ color: "var(--ink-3)", fontSize: 14, marginTop: 4 }}>
+          <p className="section-header__sub">
             {viajes.length} viajes activos — seleccioná uno para seguirlo
           </p>
         </div>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="stack">
         {viajes.map((v) => {
           const destino = v.paradas.length > 0
             ? v.paradas.reduce((m, p) => p.orden > m.orden ? p : m, v.paradas[0]).direccion
@@ -129,11 +121,11 @@ function ViajeListView() {
               </div>
               <div className="viaje-activo-list__footer">
                 {v.conductor && (
-                  <span style={{ fontSize: 13, color: "var(--ink-3)" }}>
+                  <span>
                     {v.conductor.usuario.nombre} {v.conductor.usuario.apellido}
                   </span>
                 )}
-                <span style={{ fontSize: 13, color: "var(--ink-3)" }}>
+                <span>
                   {formatARS(v.precio_estimado)} est.
                 </span>
               </div>
@@ -165,11 +157,11 @@ function FinalizadoOverlay({ data }: { data: ViajeFinalizadoPayload }) {
           )}
         </div>
         {data.remito_url && (
-          <a href={data.remito_url} target="_blank" rel="noreferrer" className="btn" style={{ display: "block", marginBottom: 10 }}>
+          <a href={data.remito_url} target="_blank" rel="noreferrer" className="btn btn--block mb-10">
             Descargar remito
           </a>
         )}
-        <Link href="/viajes" className="btn btn--ghost" style={{ display: "block" }}>
+        <Link href="/viajes" className="btn btn--ghost btn--block">
           Ver mis viajes
         </Link>
       </div>
@@ -186,10 +178,12 @@ function TrackingView({ idViaje }: { idViaje: number }) {
   if (loading) {
     return (
       <div className="viaje-track">
-        <div className="viaje-track__map-placeholder">
-          <div style={{ color: "var(--ink-4)", textAlign: "center" }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>🗺️</div>
-            <p>Cargando viaje...</p>
+        <div className="viaje-track__map">
+          <div className="viaje-track__map-canvas">
+            <div className="viaje-track__map-empty">
+              <div className="viaje-track__map-empty-icon">🗺️</div>
+              <p>Cargando viaje...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -197,7 +191,7 @@ function TrackingView({ idViaje }: { idViaje: number }) {
   }
 
   if (error) {
-    return <div className="error-banner" style={{ margin: 32 }}>{error}</div>;
+    return <div className="error-banner error-banner--page">{error}</div>;
   }
 
   if (!viaje) return null;
@@ -205,6 +199,24 @@ function TrackingView({ idViaje }: { idViaje: number }) {
   const paradas = [...viaje.paradas].sort((a, b) => a.orden - b.orden);
   const paradasEntregadas = paradas.filter((p) => p.estado === "ENTREGADO").length;
   const estadoActual = estado ?? viaje.estado;
+
+  // Un link viejo (o el banner de antes) puede traer un viaje que todavía no
+  // arrancó. No hay nada que seguir en vivo: se manda al detalle, que tiene mapa.
+  if (!finalizado && !esEnCurso(estadoActual)) {
+    return (
+      <div className="viaje-activo-list viaje-activo-list--padded">
+        <div className="empty-state">
+          <div className="empty-state__icon"><Truck size={24} /></div>
+          <p className="empty-state__title">VJ-{viaje.id_viaje} no está en curso</p>
+          <p className="empty-state__text">
+            Estado: {ESTADO_LABELS[estadoActual] ?? estadoActual}. El seguimiento en vivo empieza cuando el
+            conductor inicia el viaje; mientras tanto podés ver el recorrido y los datos en el detalle.
+          </p>
+          <Link href={`/viajes/${viaje.id_viaje}`} className="btn btn--primary">Ver detalle del viaje</Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="viaje-track">
@@ -220,13 +232,13 @@ function TrackingView({ idViaje }: { idViaje: number }) {
           </Link>
           <div className="viaje-track__map-id">VJ-{viaje.id_viaje}</div>
           <div className="viaje-track__estado-badge">
-            <span className="nav-item__live-dot" style={{ width: 7, height: 7 }} />
+            <span className="nav-item__live-dot" />
             {ESTADO_LABELS[estadoActual] ?? estadoActual.replace(/_/g, " ")}
           </div>
         </div>
 
         <div className="viaje-track__map-canvas">
-          <MapaViajeActivo paradas={viaje.paradas} ultimaPos={ultimaPos} ruta={ruta} />
+          <MapaRuta paradas={viaje.paradas} ultimaPos={ultimaPos} ruta={ruta} seguirConductor />
         </div>
 
         {/* Floating bottom: ETA pill (el acumulado no se muestra por diseño) */}
@@ -270,13 +282,13 @@ function TrackingView({ idViaje }: { idViaje: number }) {
                 <div className="viaje-track__conductor-avatar">
                   {viaje.conductor.usuario.nombre[0]}{viaje.conductor.usuario.apellido[0]}
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="viaje-track__conductor-info">
                   <p className="viaje-track__conductor-name">
                     {viaje.conductor.usuario.nombre} {viaje.conductor.usuario.apellido}
                   </p>
                   <div className="viaje-track__conductor-meta">
                     <span className="viaje-track__rating">
-                      <Star size={11} fill="currentColor" style={{ color: "#F59E0B" }} />
+                      <Star size={11} fill="currentColor" />
                       {viaje.conductor.calificacion_promedio.toFixed(1)}
                     </span>
                     {viaje.vehiculo && (
@@ -290,14 +302,9 @@ function TrackingView({ idViaje }: { idViaje: number }) {
                     </div>
                   )}
                 </div>
-                <a
-                  href={`tel:${viaje.conductor.usuario.telefono}`}
-                  className="viaje-track__call-btn"
-                  title="Llamar al conductor"
-                >
-                  <Phone size={15} />
-                </a>
               </div>
+              {/* Antes era un `tel:` pelado: en desktop no hacía nada. */}
+              <ContactoConductor telefono={viaje.conductor.usuario.telefono} compacto />
             </div>
           )}
 
@@ -330,7 +337,7 @@ function TrackingView({ idViaje }: { idViaje: number }) {
                     <div className="viaje-track__stop-info">
                       <p className={`viaje-track__stop-addr${isDone ? " is-done" : ""}`}>{p.direccion}</p>
                       <p className={`viaje-track__stop-status viaje-track__stop-status--${statusVariant}`}>
-                        {isDone && <Package size={9} style={{ marginRight: 3, verticalAlign: "middle" }} />}
+                        {isDone && <Package size={9} className="viaje-track__stop-status-icon" />}
                         {statusLabel}
                       </p>
                     </div>
@@ -409,7 +416,7 @@ function TrackingView({ idViaje }: { idViaje: number }) {
           {alertas.length > 0 && (
             <div className="viaje-track__section">
               <p className="viaje-track__section-title">Alertas</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div className="stack stack--tight">
                 {alertas.map((a) => (
                   <div key={a.id} className={`viaje-track__alert-item viaje-track__alert-item--${a.tipo}`}>
                     <AlertTriangle size={12} />

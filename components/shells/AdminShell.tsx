@@ -60,7 +60,7 @@ export default function AdminShell({
           <span className="admin-badge">ADMIN</span>
         </div>
 
-        <nav className="sidebar__nav" style={{ flex: 1 }}>
+        <nav className="sidebar__nav sidebar__nav--grow">
           {navItems.map(({ href, label, Icon }) => (
             <Link
               key={href}
@@ -74,7 +74,7 @@ export default function AdminShell({
         </nav>
 
         <div className="sidebar__profile-section">
-          <div ref={menuRef} style={{ position: "relative" }}>
+          <div ref={menuRef} className="sidebar__user-anchor">
             {menuOpen && (
               <div className="sidebar__user-menu">
                 <button
@@ -95,7 +95,7 @@ export default function AdminShell({
               <div className="sidebar__conductor-avatar">
                 {`${nombre[0]}${apellido[0]}`}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="sidebar__user-info">
                 <p className="sidebar__conductor-name">{nombre} {apellido}</p>
                 <p className="sidebar__conductor-role">Administrador</p>
               </div>
@@ -106,7 +106,7 @@ export default function AdminShell({
 
       <div className="main">
         <header className="topbar">
-          <p style={{ fontFamily: "var(--font-display)", fontSize: 15, color: "var(--ink)" }}>
+          <p className="topbar__company">
             Panel de administración
           </p>
         </header>

@@ -36,6 +36,27 @@ Tres tandas de trabajo, todas sobre el árbol sucio:
 **Nada de esto está verificado contra el backend real.** Sigue sin haber una sola
 evidencia en el repo de una corrida end-to-end contra Railway.
 
+## Qué cambió el 15-09 (branch `feat/feedback-ux-15-09`)
+
+Rediseño a partir de un recorrido de la app. Detalle completo, con archivos y
+contratos de los BFF: **`docs/CAMBIOS-UX-15-09.md`**. Lo que cambia esta auditoría:
+
+| Feature | Archivos | Estado |
+|---|---|---|
+| Landing placeholder en `/`; panel PyME movido a `/panel` | `app/page.tsx`, `lib/roles.ts`, `proxy.ts` | FUNCIONA-PROBADO en MOCK (e2e `__tests__/e2e/auth.spec.ts`) |
+| Auth con layout partido, registro por perfil, conductor en 4 pasos | `components/AuthShell.tsx`, `app/(auth)/**` | EXISTE-SIN-PROBAR contra Firebase real |
+| Analytics: serie por día/semana/mes, período anterior, cancelación, puntualidad, gasto por zona en $ | `lib/analytics-cliente.ts`, `app/api/analytics/cliente/resumen/route.ts`, `app/(cliente)/panel/page.tsx` | Cálculo FUNCIONA-PROBADO (unit); pantalla EXISTE-SIN-PROBAR contra backend |
+| Detalle de viaje con mapa para cualquier estado | `app/(cliente)/viajes/[id]/page.tsx`, `components/MapaRuta*.tsx` | EXISTE-SIN-PROBAR. El fallback de ruta requiere **Directions API** habilitada en la key |
+| "En curso" = sólo estados físicamente en curso | `lib/estados.ts` (`esEnCurso`), `ClienteShell`, `viaje-activo` | EXISTE-SIN-PROBAR |
+| Facturación: comprobantes por mes + total informativo | `app/(cliente)/facturacion/page.tsx`, `lib/facturacion-cliente.ts`, `app/api/facturacion/cliente/route.ts` | Agrupado FUNCIONA-PROBADO (unit); pantalla EXISTE-SIN-PROBAR |
+| Conductor: disponibles rediseñado, mis viajes por pestañas, detalle nuevo, alta de vehículo compartida | `app/(conductor)/**`, `components/conductor/**` | EXISTE-SIN-PROBAR |
+| Conductor: escucha `error` y `viaje:reservado` del socket (bugs) | `app/(conductor)/conductor/page.tsx` | EXISTE-SIN-PROBAR contra backend |
+
+Correcciones a filas de abajo: la fila "Remito PDF" apunta a un archivo que cambió
+de forma; la de "Dashboard web analítico" ya no usa `MOCK_RESUMEN_BASE` (los KPIs
+MOCK ahora se mueven con el período). La afirmación de la sección 5 "Al mover el
+selector de período los KPIs no se mueven" dejó de ser cierta.
+
 ---
 
 ## 1. Qué corre de verdad

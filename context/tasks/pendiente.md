@@ -123,25 +123,18 @@ falta, dónde se nota en el front y qué habría que agregar.
 
 ## Analytics
 
-### Métricas con delta (% vs período anterior)
-- **Qué falta:** El endpoint de resumen no devuelve datos del período anterior para calcular variación.
-- **Dónde:** Cards de "Total gastado", "Fletes solicitados", "Costo promedio" — el `.metric__hint` con badge verde/rojo.
-- **Solución futura:** Agregar `periodo_anterior: { total_gastado, cantidad_fletes, costo_promedio }` al response del resumen.
+> **15-09:** `/api/analytics/cliente/resumen` es **nuestro BFF**, no un endpoint del
+> backend (este archivo lo trataba como pedido al backend). Con la autorización de
+> cálculo de pantalla (`OPEN.md` → D6) se resolvieron en el front: período anterior
+> y variación, ruta de los extremos y gasto por zona en pesos
+> (`lib/analytics-cliente.ts`). Queda un único hueco que sí es del backend:
 
-### Ruta en "Flete más caro / más barato"
-- **Qué falta:** El endpoint solo devuelve `{ id_viaje, monto }`, sin la ruta formateada (origen → destino).
-- **Dónde:** Cards `.extreme` debajo del precio — campo `.extreme__route`.
-- **Solución futura:** Agregar `ruta: string` al objeto `flete_mas_caro` y `flete_mas_barato` en el response.
-
-### Desglose de alertas (X desvíos · Y paradas sospechosas)
-- **Qué falta:** El endpoint solo devuelve el count total de alertas, sin desglose por tipo.
-- **Dónde:** Card "Alertas recibidas" — texto descriptivo debajo del número.
-- **Solución futura:** Agregar `alertas_por_tipo: { DESVIO: number, PARADA_SOSPECHOSA: number }` al resumen.
-
-### Botón "Revisar último alertado"
-- **Qué falta:** No tenemos el ID del último viaje con alerta en el response del resumen.
-- **Dónde:** Card "Alertas recibidas" — botón de acción.
-- **Solución futura:** Agregar `ultimo_viaje_alertado: number | null` al resumen.
+### Alertas por viaje
+- **Qué falta:** `alertas_count` y `alertas_por_tipo` en cada viaje de `mis-viajes`
+  (ver "Creación de viaje" más abajo).
+- **Dónde:** card "Servicio" del Analytics (hoy dice que el backend no informa el
+  conteo) y filtro "Con alertas" del Record. "Revisar último alertado" se deriva de
+  esto cuando llegue.
 
 ---
 
@@ -229,7 +222,42 @@ falta, dónde se nota en el front y qué habría que agregar.
 
 ---
 
+## Conductor y vehículos (15-09)
+
+> Salen del feedback del 15-09. Pedidos en `PEDIDO-BACKEND-19-08.md` → H, I.
+
+### Foto del vehículo
+- **Qué falta:** campo de imagen y subida en `mis-vehiculos` (no existe en el contrato).
+- **Dónde:** `components/conductor/VehiculoForm.tsx` tiene el selector con preview,
+  marcado "Próximamente" y **sin enviar**. Las cards de `mis-vehiculos` muestran un
+  ícono genérico, no la foto elegida.
+- **Solución futura:** subida a R2 + `foto_url` en `mis-vehiculos` y en el `vehiculo`
+  del detalle del viaje.
+
+### Distancia planificada
+- **Qué falta:** `distancia_estimada_km` en los GET de viaje. Hoy sólo viene al crear
+  el viaje (`POST /api/viajes` → `desglose_estimado.distancia_km`).
+- **Dónde:** km en las cards y el detalle del conductor y en el detalle del cliente.
+- **Placeholder actual:** se mide la ruta dibujada con Google
+  (`components/MapaRutaCanvas.tsx`). Puede diferir de la que usó el backend.
+
+### Ganancia neta del conductor
+- **Qué falta:** ganancia o fee aplicado por viaje en `disponibles` y
+  `mis-viajes-conductor`.
+- **Placeholder actual:** se muestra `precio_estimado`/`precio_real` rotulado
+  "Tarifa del viaje · antes de la comisión de Fleter". **No es la ganancia real**;
+  cuando llegue el dato, el número baja.
+
+---
+
 ## Detail (viaje individual)
+
+### Km recorridos y alertas (15-09)
+- **Qué falta:** `km_reales` y `alertas[]` en `GET /api/viajes/:id`. La página los lee
+  desde antes pero **no están en el contrato**: contra el backend real siempre
+  mostraba "—" y "Sin alertas", que es peor que no mostrar nada.
+- **Estado actual:** el detalle muestra "El backend todavía no los informa" en lugar de
+  un falso "Sin alertas". Pedido en `PEDIDO-BACKEND-19-08.md` → J.
 
 ### ~~Duración estimada~~ — RESUELTO (19-08)
 - `GET /api/viajes/:id` devuelve `duracion_estimada` en **minutos enteros** y
@@ -266,7 +294,6 @@ falta, dónde se nota en el front y qué habría que agregar.
 
 ## General
 
-### Zona en `por_zona` como montos ARS
-- **Estado actual:** `por_zona: { CABA, PROVINCIA, MIXTO }` devuelve **cantidad de viajes**, no gasto en pesos.
-- **Dónde:** Card "Desglose por zona" en Analytics — actualmente muestra cantidad.
-- **Solución futura:** El backend debería agregar `gasto_por_zona` con totales en ARS para mostrar el breakdown correcto.
+### ~~Zona en `por_zona` como montos ARS~~ — RESUELTO en el BFF (15-09)
+- El resumen devuelve `gasto_por_zona` en pesos (finalizados) además de `por_zona`
+  (cantidad). La card "Gasto por zona" muestra las dos cosas rotuladas.

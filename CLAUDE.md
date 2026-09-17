@@ -40,6 +40,11 @@ Fue una decisión tomada a propósito, por lo específicos que son esos cálculo
 Queda **ABIERTA** igual: falta definir el límite, sobre todo de cara a la liquidación
 de D3. **No agregar cálculo nuevo en el BFF sin preguntar.**
 
+**15-09:** se autorizó cálculo *de pantalla* para el Analytics y el total
+informativo de Facturación. El cálculo se movió a módulos puros con tests
+(`lib/analytics-cliente.ts`, `lib/facturacion-cliente.ts`); los Route Handlers sólo
+hacen fetch. Nada con valor comercial pasa por ahí.
+
 ## Orden de desarrollo
 | Fase | Qué es | Estado |
 |---|---|---|
@@ -49,6 +54,10 @@ de D3. **No agregar cálculo nuevo en el BFF sin preguntar.**
 | F4-gerente-stats | Estadísticas históricas del gerente | No empezado |
 
 Estado detallado y verificado archivo por archivo: **`ESTADO-REAL.md`**.
+
+**Rutas (desde el 15-09):** `/` es la landing pública (placeholder); el dashboard de
+la PyME está en **`/panel`** (`homeForRole`). Rediseño de auth, PyME y conductor a
+partir del feedback del 15-09: **`docs/CAMBIOS-UX-15-09.md`**.
 
 ## Archivos de contexto (rutas reales)
 - `context/context.md` → decisiones técnicas (el doc lo llama "stack/context.md"; no existe esa carpeta)
