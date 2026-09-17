@@ -469,6 +469,12 @@ anteriores; algunas secciones de arriba todavía lo describen): `.card--hero`,
 `.viaje-track__call-btn`, `.viaje-track__cost-km`, `.viaje-track__stop-time`,
 `.viaje-track__map-canvas--loading`.
 
+**17-09:** se pasaron a clases los inline estáticos que quedaban en auth, PyME y
+conductor (márgenes `.mt-*`/`.mb-*`, `.btn--block`, `.va-empty*`, `.mapa-fill`,
+`.skeleton-card--alto`, entre otras; ver el final de `globals.css`). En esas
+pantallas sólo queda inline lo calculado del panel (barras, zonas, progreso).
+Gerente, `pedir-viaje`, `perfil` y admin siguen igual.
+
 **Colores:** el ámbar `#F59E0B` de la estrella en viaje activo pasó a `--warn`, y
 el fondo del mapa de viaje activo usa `var(--line)` (mismo valor). Quedan escritos
 a mano en el CSS los tonos de hover/borde de los colores soft (`#F8D8C2`,

@@ -189,7 +189,7 @@ export default function ViajesPage() {
         </div>
       </div>
 
-      <div style={{ marginBottom: 12 }}>
+      <div className="mb-12">
         <PeriodoSelector conTodo />
       </div>
 

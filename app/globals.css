@@ -2300,7 +2300,6 @@ button.periodo__label { cursor: pointer; }
 
 /* ── KPIs ────────────────────────────────────────── */
 .kpi { display: flex; flex-direction: column; gap: 8px; min-height: 118px; }
-.kpi__top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .kpi__foot { font-size: 12px; color: var(--ink-3); margin-top: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .card--ink .kpi__foot { color: rgba(255,255,255,.6); }
 .delta--flat { color: var(--ink-3); background: var(--surface-2); }
@@ -2520,3 +2519,39 @@ button.periodo__label { cursor: pointer; }
 /* Líneas de carga dentro de una card de KPI. */
 .skeleton-line { height: 10px; width: 40%; background: var(--surface-3); border-radius: 4px; margin-bottom: 14px; }
 .skeleton-line--valor { height: 32px; width: 55%; margin-bottom: 0; }
+
+/* Márgenes sueltos (valores que ya se usaban inline). */
+.mt-16 { margin-top: 16px; }
+.mt-28 { margin-top: 28px; }
+.mt-32 { margin-top: 32px; }
+.mb-10 { margin-bottom: 10px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-14 { margin-bottom: 14px; }
+.mb-18 { margin-bottom: 18px; }
+.mb-20 { margin-bottom: 20px; }
+.mb-22 { margin-bottom: 22px; }
+
+.btn--block { display: block; }
+.divider--spaced { margin: 22px 0; }
+.auth-subtitle--lh { line-height: 1.5; }
+.error-banner--page { margin: 32px; }
+.section-header__sub { color: var(--ink-3); font-size: 14px; margin-top: 4px; }
+.empty--sm { padding: 14px; }
+.empty--inline { padding: 12px 0; font-size: 12px; }
+.rating--lg { font-size: 16px; }
+.calificacion__comentario { font-size: 13px; color: var(--ink-2); margin-top: 6px; }
+.vd__persona { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.contacto__btn--fit { width: fit-content; }
+/* <Map className>: con className la librería no aplica su estilo por defecto. */
+.mapa-fill { width: 100%; height: 100%; position: relative; z-index: 0; }
+.skeleton-card { min-height: 118px; }
+.skeleton-card--alto { min-height: 260px; }
+
+/* Viaje activo sin viajes en curso. */
+.va-empty { text-align: center; padding: 48px 24px; color: var(--ink-4); }
+.va-empty__icon { margin-bottom: 12px; opacity: 0.4; }
+.va-empty__title { font-weight: 600; font-size: 15px; }
+.va-empty__text { font-size: 13px; margin-top: 4px; }
+.va-empty__actions { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
+.viaje-activo-list--padded { padding: 28px; }
+.viaje-track__stop-status-icon { margin-right: 3px; vertical-align: middle; }

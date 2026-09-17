@@ -8,9 +8,9 @@ import { formatARS, formatDuracion } from "@/lib/utils";
 import { separarDireccion } from "@/lib/viajes";
 import type { ResumenCliente, Extremo } from "@/lib/analytics-cliente";
 
-function SkeletonCard({ span = 3, h = 118 }: { span?: number; h?: number }) {
+function SkeletonCard({ span = 3, alto = false }: { span?: number; alto?: boolean }) {
   return (
-    <div className={`card span-${span}`} style={{ minHeight: h }}>
+    <div className={`card span-${span} skeleton-card${alto ? " skeleton-card--alto" : ""}`}>
       <div className="skeleton-line" />
       <div className="skeleton-line skeleton-line--valor" />
     </div>
@@ -156,7 +156,7 @@ export default function DashboardPage() {
       {/* Fila 2 — evolución y dónde se va la plata */}
       <div className="grid-12 grid-row">
         {loading || !r ? (
-          <><SkeletonCard span={8} h={260} /><SkeletonCard span={4} h={260} /></>
+          <><SkeletonCard span={8} alto /><SkeletonCard span={4} alto /></>
         ) : (
           <>
             <div className="card span-8">

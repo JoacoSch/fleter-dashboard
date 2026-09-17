@@ -61,14 +61,14 @@ function ViajeListView() {
     return (
       <div className="viaje-activo-list">
         <div className="section-header"><h2>Viajes en curso</h2></div>
-        <div className="card" style={{ textAlign: "center", padding: "48px 24px", color: "var(--ink-4)" }}>
-          <Truck size={36} style={{ marginBottom: 12, opacity: 0.4 }} />
-          <p style={{ fontWeight: 600, fontSize: 15 }}>No tenés viajes en curso</p>
-          <p style={{ fontSize: 13, marginTop: 4 }}>
+        <div className="card va-empty">
+          <Truck size={36} className="va-empty__icon" />
+          <p className="va-empty__title">No tenés viajes en curso</p>
+          <p className="va-empty__text">
             Un viaje aparece acá cuando el conductor lo inicia. Los que ya tienen conductor pero
             todavía no arrancaron figuran como <strong>Próximo</strong> en Record, con su mapa y detalle.
           </p>
-          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 20 }}>
+          <div className="va-empty__actions">
             <Link href="/viajes" className="btn">Ver Record</Link>
             <Link href="/pedir-viaje" className="btn btn--primary">Solicitar flete</Link>
           </div>
@@ -81,10 +81,10 @@ function ViajeListView() {
 
   return (
     <div className="viaje-activo-list">
-      <div className="section-header" style={{ marginBottom: 20 }}>
+      <div className="section-header mb-20">
         <div>
           <h2>Viajes en curso</h2>
-          <p style={{ color: "var(--ink-3)", fontSize: 14, marginTop: 4 }}>
+          <p className="section-header__sub">
             {viajes.length} viajes activos — seleccioná uno para seguirlo
           </p>
         </div>
@@ -157,11 +157,11 @@ function FinalizadoOverlay({ data }: { data: ViajeFinalizadoPayload }) {
           )}
         </div>
         {data.remito_url && (
-          <a href={data.remito_url} target="_blank" rel="noreferrer" className="btn" style={{ display: "block", marginBottom: 10 }}>
+          <a href={data.remito_url} target="_blank" rel="noreferrer" className="btn btn--block mb-10">
             Descargar remito
           </a>
         )}
-        <Link href="/viajes" className="btn btn--ghost" style={{ display: "block" }}>
+        <Link href="/viajes" className="btn btn--ghost btn--block">
           Ver mis viajes
         </Link>
       </div>
@@ -191,7 +191,7 @@ function TrackingView({ idViaje }: { idViaje: number }) {
   }
 
   if (error) {
-    return <div className="error-banner" style={{ margin: 32 }}>{error}</div>;
+    return <div className="error-banner error-banner--page">{error}</div>;
   }
 
   if (!viaje) return null;
@@ -204,7 +204,7 @@ function TrackingView({ idViaje }: { idViaje: number }) {
   // arrancó. No hay nada que seguir en vivo: se manda al detalle, que tiene mapa.
   if (!finalizado && !esEnCurso(estadoActual)) {
     return (
-      <div className="viaje-activo-list" style={{ padding: 28 }}>
+      <div className="viaje-activo-list viaje-activo-list--padded">
         <div className="empty-state">
           <div className="empty-state__icon"><Truck size={24} /></div>
           <p className="empty-state__title">VJ-{viaje.id_viaje} no está en curso</p>
@@ -232,7 +232,7 @@ function TrackingView({ idViaje }: { idViaje: number }) {
           </Link>
           <div className="viaje-track__map-id">VJ-{viaje.id_viaje}</div>
           <div className="viaje-track__estado-badge">
-            <span className="nav-item__live-dot" style={{ width: 7, height: 7 }} />
+            <span className="nav-item__live-dot" />
             {ESTADO_LABELS[estadoActual] ?? estadoActual.replace(/_/g, " ")}
           </div>
         </div>
@@ -337,7 +337,7 @@ function TrackingView({ idViaje }: { idViaje: number }) {
                     <div className="viaje-track__stop-info">
                       <p className={`viaje-track__stop-addr${isDone ? " is-done" : ""}`}>{p.direccion}</p>
                       <p className={`viaje-track__stop-status viaje-track__stop-status--${statusVariant}`}>
-                        {isDone && <Package size={9} style={{ marginRight: 3, verticalAlign: "middle" }} />}
+                        {isDone && <Package size={9} className="viaje-track__stop-status-icon" />}
                         {statusLabel}
                       </p>
                     </div>

@@ -60,7 +60,7 @@ export default function MisVehiculosPage() {
       </div>
 
       {showForm && (
-        <div className="card card--form" style={{ marginBottom: 22 }}>
+        <div className="card card--form mb-22">
           <p className="card-title">Nuevo vehículo</p>
           <VehiculoForm onGuardado={guardado} onCancelar={() => setShowForm(false)} textoGuardar="Guardar vehículo" />
         </div>

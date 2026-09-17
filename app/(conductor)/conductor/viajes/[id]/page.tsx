@@ -195,13 +195,13 @@ export default function ViajeConductorPage() {
               <p className="card-title">Cliente</p>
               {viaje.cliente ? (
                 <>
-                  <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>
+                  <p className="vd__persona">
                     {viaje.cliente.usuario.nombre} {viaje.cliente.usuario.apellido}
                   </p>
                   {viaje.cliente.usuario.telefono ? (
                     <ContactoConductor telefono={viaje.cliente.usuario.telefono} />
                   ) : viaje.cliente.usuario.email ? (
-                    <a href={`mailto:${viaje.cliente.usuario.email}`} className="contacto__btn" style={{ width: "fit-content" }}>
+                    <a href={`mailto:${viaje.cliente.usuario.email}`} className="contacto__btn contacto__btn--fit">
                       <Mail size={14} /> {viaje.cliente.usuario.email}
                     </a>
                   ) : (

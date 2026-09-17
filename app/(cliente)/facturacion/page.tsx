@@ -48,7 +48,7 @@ export default function FacturacionPage() {
         </div>
       </div>
 
-      <p className="note" style={{ marginBottom: 18 }}>
+      <p className="note mb-18">
         Todavía no emitimos facturas ni liquidaciones mensuales. Acá tenés el remito de cada viaje y un
         total del mes para orientarte: es informativo y puede no coincidir con lo que se facture.
       </p>

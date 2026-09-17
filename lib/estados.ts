@@ -64,10 +64,6 @@ export function esProximo(estado: string | null | undefined): boolean {
   return ESTADOS_PROXIMOS.includes(estado as EstadoViaje);
 }
 
-export function etiquetaEstado(estado: string): string {
-  return ESTADO_LABEL[estado as EstadoViaje] ?? estado.replace(/_/g, " ");
-}
-
 /**
  * ¿El viaje terminó con entrega? El estado del VIAJE es `FINALIZADO`.
  * `ENTREGADO` es el estado de una PARADA — no confundirlos: durante un tiempo

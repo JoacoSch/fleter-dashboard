@@ -57,7 +57,7 @@ export default function LoginPage() {
         Continuar con Google
       </button>
 
-      <div className="divider" style={{ margin: "22px 0" }}>o con tu email</div>
+      <div className="divider divider--spaced">o con tu email</div>
 
       <form onSubmit={handleSubmit} className="auth-form">
         <div className="field">
@@ -96,7 +96,7 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <p className="auth-footer" style={{ marginTop: 28 }}>
+      <p className="auth-footer mt-28">
         ¿No tenés cuenta?{" "}
         <Link href="/registro" className="auth-link">Creá una</Link>
       </p>

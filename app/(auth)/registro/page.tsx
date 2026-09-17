@@ -66,7 +66,7 @@ export default function RegistroPage() {
           </Link>
         </div>
 
-        <p className="auth-footer" style={{ marginTop: 32 }}>
+        <p className="auth-footer mt-32">
           ¿Ya tenés cuenta?{" "}
           <Link href="/login" className="auth-link">Iniciá sesión</Link>
         </p>

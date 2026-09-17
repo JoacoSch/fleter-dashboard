@@ -174,7 +174,7 @@ export default function MapaRutaCanvas({ paradas, ruta, ultimaPos, seguirConduct
         disableDefaultUI
         zoomControl
         gestureHandling="cooperative"
-        style={{ width: "100%", height: "100%" }}
+        className="mapa-fill"
       >
         <RutaLayer paradas={paradas} ruta={ruta} onDistancia={onDistancia} onFuente={setFuente} onPins={setPins} />
         {pins.map(({ orden, pos }) => {

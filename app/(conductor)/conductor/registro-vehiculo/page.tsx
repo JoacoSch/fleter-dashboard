@@ -32,7 +32,7 @@ function RegistroVehiculo() {
       </div>
 
       {onboarding && (
-        <p className="note note--warn" style={{ marginTop: 16 }}>
+        <p className="note note--warn mt-16">
           Podés <Link href="/conductor" className="auth-link">omitirlo por ahora</Link>, pero hasta que cargues un vehículo la
           lista de viajes disponibles va a estar vacía.
         </p>

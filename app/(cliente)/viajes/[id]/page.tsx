@@ -333,7 +333,7 @@ export default function ViajeDetallePage() {
               <p className="card-title">Conductor</p>
               {viaje.conductor && conductorNombre ? (
                 <>
-                  <div className="driver-card" style={{ marginBottom: 12 }}>
+                  <div className="driver-card mb-12">
                     <div className="driver-avatar">{initials(viaje.conductor.usuario.nombre, viaje.conductor.usuario.apellido)}</div>
                     <div className="driver-info">
                       <strong>{conductorNombre}</strong>
@@ -346,7 +346,7 @@ export default function ViajeDetallePage() {
                   <ContactoConductor telefono={viaje.conductor.usuario.telefono} />
                 </>
               ) : (
-                <div className="empty" style={{ padding: 14 }}>Todavía no hay conductor asignado</div>
+                <div className="empty empty--sm">Todavía no hay conductor asignado</div>
               )}
             </div>
 
@@ -360,7 +360,7 @@ export default function ViajeDetallePage() {
                   <div className="kv"><span>Año · color</span><strong>{[viaje.vehiculo.anio, viaje.vehiculo.color].filter(Boolean).join(" · ") || "—"}</strong></div>
                 </div>
               ) : (
-                <div className="empty" style={{ padding: "12px 0", fontSize: 12 }}>Se asigna junto con el conductor</div>
+                <div className="empty empty--inline">Se asigna junto con el conductor</div>
               )}
             </div>
 
@@ -400,8 +400,8 @@ export default function ViajeDetallePage() {
             {viaje.calificacion && (
               <div className="card">
                 <p className="card-title">Tu calificación</p>
-                <p className="rating" style={{ fontSize: 16 }}><Star size={16} fill="currentColor" /> {viaje.calificacion.puntaje} / 5</p>
-                {viaje.calificacion.comentario && <p style={{ fontSize: 13, color: "var(--ink-2)", marginTop: 6 }}>{viaje.calificacion.comentario}</p>}
+                <p className="rating rating--lg"><Star size={16} fill="currentColor" /> {viaje.calificacion.puntaje} / 5</p>
+                {viaje.calificacion.comentario && <p className="calificacion__comentario">{viaje.calificacion.comentario}</p>}
               </div>
             )}
           </div>

@@ -35,7 +35,7 @@ export default function RecuperarPage() {
             <MailCheck size={24} />
           </div>
           <h1 className="auth-title">Revisá tu casilla</h1>
-          <p className="auth-subtitle" style={{ lineHeight: 1.5 }}>
+          <p className="auth-subtitle auth-subtitle--lh">
             Te mandamos un link a <strong>{email}</strong> para
             restablecer tu contraseña. Si no llega en unos minutos, mirá en spam.
           </p>

@@ -12,14 +12,6 @@ export function ordenarParadas<P extends ParadaBase>(paradas: P[]): P[] {
   return [...paradas].sort((a, b) => a.orden - b.orden);
 }
 
-export function origenYDestino<P extends ParadaBase>(paradas: P[]): { origen: P | null; destino: P | null } {
-  const ordenadas = ordenarParadas(paradas);
-  return {
-    origen: ordenadas[0] ?? null,
-    destino: ordenadas.length > 1 ? ordenadas[ordenadas.length - 1] : null,
-  };
-}
-
 /**
  * Parte una dirección de Google Places ("Av. Corrientes 1234, C1043 CABA,
  * Argentina") en calle y localidad, para mostrarla en dos líneas en vez de un

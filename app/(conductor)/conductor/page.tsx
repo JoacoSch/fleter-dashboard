@@ -216,7 +216,7 @@ export default function ConductorPage() {
       )}
 
       {yaAsignado && (
-        <div className="note note--warn note--row" style={{ marginBottom: 14 }}>
+        <div className="note note--warn note--row mb-14">
           <span><strong>Otro conductor llegó primero</strong> al VJ-{yaAsignado}.</span>
           <button type="button" className="btn btn--ghost" onClick={() => setYaAsignado(null)}>Cerrar</button>
         </div>
