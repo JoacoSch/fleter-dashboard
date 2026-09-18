@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { formatARS, fmtDate } from "@/lib/utils";
 import { ESTADO_LABEL_ACTIVO, esEnCurso } from "@/lib/estados";
 import { BarChart2, ClipboardList, Truck, FileText, User, LogOut } from "lucide-react";
+import TemaToggle from "@/components/TemaToggle";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
 import AppShell from "@/components/shells/AppShell";
@@ -176,6 +177,8 @@ export default function ClienteShell({
                 <User size={14} />
                 Mi perfil
               </Link>
+              <div className="sidebar__user-menu-sep" />
+              <TemaToggle />
               <div className="sidebar__user-menu-sep" />
               <button
                 type="button"

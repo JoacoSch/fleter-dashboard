@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigation, ClipboardList, Truck, LogOut } from "lucide-react";
+import TemaToggle from "@/components/TemaToggle";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
 import AppShell from "@/components/shells/AppShell";
@@ -72,6 +73,8 @@ export default function ConductorShell({
           <div ref={menuRef} className="sidebar__user-anchor">
             {menuOpen && (
               <div className="sidebar__user-menu">
+                <TemaToggle />
+                <div className="sidebar__user-menu-sep" />
                 <button
                   type="button"
                   className="sidebar__user-menu-item sidebar__user-menu-item--danger"

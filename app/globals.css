@@ -14,7 +14,10 @@ html {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-ui);
+  /* Barras de scroll y controles nativos acompañan al tema. */
+  color-scheme: light;
 }
+html[data-theme="dark"] { color-scheme: dark; }
 
   /* Layout */
   .app {
@@ -325,12 +328,12 @@ html {
   }
   .card--ink {
     background: var(--ink);
-    color: #fff;
+    color: var(--on-ink);
     border-color: var(--ink);
   }
   .card--ink .metric__label,
-  .card--ink .metric__hint { color: rgba(255,255,255,.6); }
-  .card--ink .metric__value { color: #fff; }
+  .card--ink .metric__hint { color: color-mix(in srgb, var(--on-ink) 60%, transparent); }
+  .card--ink .metric__value { color: var(--on-ink); }
 
   /* Métricas */
   .metric__label {
@@ -835,7 +838,7 @@ html {
   font-family: var(--font-ui);
 }
 .period-tab:hover { color: var(--ink); }
-.period-tab.is-active { background: var(--ink); color: #fff; }
+.period-tab.is-active { background: var(--ink); color: var(--on-ink); }
 
 /* ── Card headers ────────────────────────────────── */
 .card-title {
@@ -1006,7 +1009,7 @@ html {
   white-space: nowrap;
 }
 .chip:hover { background: var(--surface-3); }
-.chip.is-active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.chip.is-active { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
 
 /* ── Timeline (paradas) ──────────────────────────── */
 .timeline { display: flex; flex-direction: column; }
@@ -1071,7 +1074,7 @@ html {
   height: 44px;
   border-radius: 50%;
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
   display: grid;
   place-items: center;
   font-family: var(--font-display);
@@ -1109,7 +1112,7 @@ html {
 
 /* ── Credentials ─────────────────────────────────── */
 .cred-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.cond { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: var(--ink); color: #fff; letter-spacing: 0.04em; }
+.cond { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: var(--ink); color: var(--on-ink); letter-spacing: 0.04em; }
 
 /* ── Empty state ─────────────────────────────────── */
 .empty { padding: 28px; text-align: center; color: var(--ink-3); font-size: 13px; }
@@ -1236,6 +1239,10 @@ html {
 .sidebar__user-menu-item--danger { color: var(--err); }
 .sidebar__user-menu-item--danger:hover { background: var(--err-soft); color: var(--err); }
 .sidebar__user-menu-sep { height: 1px; background: var(--line); margin: 2px 0; }
+.tema-toggle > span { display: flex; align-items: center; gap: 10px; }
+.tema-toggle__a-claro { display: none; }
+[data-theme="dark"] .tema-toggle__a-oscuro { display: none; }
+[data-theme="dark"] .tema-toggle__a-claro { display: flex; }
 .sidebar__user--btn {
   cursor: pointer;
   border: 1px solid transparent;
@@ -1434,7 +1441,7 @@ html {
   gap: 12px;
   padding: 12px 20px;
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
   border-radius: 999px;
   box-shadow: var(--shadow-pop);
   z-index: 10;
@@ -1739,6 +1746,10 @@ html {
 }
 
 /* ── Mapa pins ───────────────────────────────────── */
+/* Los pines NO siguen al tema: se dibujan sobre el mapa de Google, que sigue
+   siendo claro en tema oscuro. Con var(--ink) el pin se volvía casi blanco,
+   con borde blanco, sobre un mapa claro: invisible. */
+:root { --pin-ink: #1B1A17; --pin-on-ink: #FFFFFF; }
 .mapa-pin {
   width: 28px; height: 28px;
   border-radius: 50%;
@@ -1752,7 +1763,7 @@ html {
 .mapa-pin--pending { background: var(--accent); color: var(--on-accent); }
 .mapa-pin--conductor {
   width: 16px; height: 16px;
-  background: var(--ink);
+  background: var(--pin-ink);
   border: 2.5px solid white;
   animation: live-pulse 2s ease-in-out infinite;
 }
@@ -2042,7 +2053,7 @@ html {
 }
 .auth-split__aside {
   background: var(--ink);
-  color: #fff;
+  color: var(--on-ink);
   padding: 48px 48px;
   display: flex;
   flex-direction: column;
@@ -2059,7 +2070,7 @@ html {
   background: radial-gradient(circle, rgba(232,93,42,.35), rgba(232,93,42,0) 70%);
   pointer-events: none;
 }
-.auth-split__aside .brand-name { color: #fff; }
+.auth-split__aside .brand-name { color: var(--on-ink); }
 .auth-split__headline {
   font-family: var(--font-display);
   font-size: clamp(28px, 3vw, 40px);
@@ -2069,11 +2080,11 @@ html {
   max-width: 460px;
 }
 .auth-split__headline em { color: var(--accent); font-style: normal; }
-.auth-split__lead { font-size: 15px; color: rgba(255,255,255,.7); max-width: 440px; line-height: 1.5; }
+.auth-split__lead { font-size: 15px; color: color-mix(in srgb, var(--on-ink) 70%, transparent); max-width: 440px; line-height: 1.5; }
 .auth-split__bullets { list-style: none; display: flex; flex-direction: column; gap: 16px; margin-top: 32px; }
-.auth-split__bullets li { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; color: rgba(255,255,255,.85); line-height: 1.4; }
+.auth-split__bullets li { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; color: color-mix(in srgb, var(--on-ink) 85%, transparent); line-height: 1.4; }
 .auth-split__bullets svg { color: var(--accent); flex-shrink: 0; margin-top: 1px; }
-.auth-split__foot { font-size: 12px; color: rgba(255,255,255,.4); position: relative; z-index: 1; }
+.auth-split__foot { font-size: 12px; color: color-mix(in srgb, var(--on-ink) 40%, transparent); position: relative; z-index: 1; }
 .auth-split__aside .auth-brand,
 .auth-split__intro { position: relative; z-index: 1; }
 .auth-split__panel .back-link { margin-bottom: 16px; }
@@ -2197,7 +2208,7 @@ html {
   border-radius: 6px;
   box-shadow: var(--shadow-card);
 }
-.mapa-pin--fin { background: var(--ink); color: #fff; }
+.mapa-pin--fin { background: var(--pin-ink); color: var(--pin-on-ink); }
 
 /* ── Empty state ─────────────────────────────────── */
 .empty-state {
@@ -2229,7 +2240,7 @@ html {
 
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  background: var(--ink); color: #fff;
+  background: var(--ink); color: var(--on-ink);
   padding: 12px 20px; border-radius: 999px;
   font-size: 13px; font-weight: 600;
   box-shadow: var(--shadow-pop);
@@ -2269,9 +2280,12 @@ button.periodo__label { cursor: pointer; }
 /* ── KPIs ────────────────────────────────────────── */
 .kpi { display: flex; flex-direction: column; gap: 8px; min-height: 118px; }
 .kpi__foot { font-size: 12px; color: var(--ink-3); margin-top: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.card--ink .kpi__foot { color: rgba(255,255,255,.6); }
+.card--ink .kpi__foot { color: color-mix(in srgb, var(--on-ink) 60%, transparent); }
 .delta--flat { color: var(--ink-3); background: var(--surface-2); }
-.card--ink .delta--flat { color: rgba(255,255,255,.7); background: rgba(255,255,255,.1); }
+.card--ink .delta--flat {
+  color: color-mix(in srgb, var(--on-ink) 70%, transparent);
+  background: color-mix(in srgb, var(--on-ink) 10%, transparent);
+}
 .metric__value small { font-family: var(--font-ui); font-size: 14px; color: var(--ink-3); font-weight: 600; margin-left: 4px; letter-spacing: 0; }
 
 .progress { height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
@@ -2288,7 +2302,7 @@ button.periodo__label { cursor: pointer; }
 .bars--dual .bar__pair { display: flex; align-items: flex-end; justify-content: center; gap: 4px; width: 100%; height: 100%; }
 .bar__tip {
   position: absolute; top: -4px; left: 50%; transform: translate(-50%, -100%);
-  background: var(--ink); color: #fff; font-size: 11px; font-weight: 600;
+  background: var(--ink); color: var(--on-ink); font-size: 11px; font-weight: 600;
   padding: 4px 8px; border-radius: 5px; white-space: nowrap;
   opacity: 0; pointer-events: none; transition: opacity .1s; z-index: 5;
 }
