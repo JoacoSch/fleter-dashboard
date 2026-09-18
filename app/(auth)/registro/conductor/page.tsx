@@ -7,8 +7,10 @@ import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AuthShell from "@/components/AuthShell";
 import Stepper, { PASOS_REGISTRO_CONDUCTOR } from "@/components/Stepper";
+import { FechaPicker, hoyISO } from "@/components/SelectorFecha";
 
-const HOY = new Date().toISOString().slice(0, 10);
+const HOY = hoyISO();
+const ANIO = new Date().getFullYear();
 
 /**
  * Registro del conductor en pasos. Los tres primeros son este formulario; el
@@ -128,7 +130,17 @@ export default function RegistroConductorPage() {
               </div>
               <div className="field">
                 <label htmlFor="licencia_vencimiento">Vencimiento</label>
-                <input id="licencia_vencimiento" type="date" min={HOY} value={form.licencia_vencimiento} onChange={set("licencia_vencimiento")} required />
+                <FechaPicker
+                  id="licencia_vencimiento"
+                  value={form.licencia_vencimiento}
+                  min={HOY}
+                  // Una licencia vence dentro de los próximos años: sin esto el
+                  // desplegable de años arranca cinco atrás, todos inválidos.
+                  anios={[ANIO, ANIO + 10]}
+                  placeholder="Elegí la fecha"
+                  required
+                  onChange={(fecha) => setForm((prev) => ({ ...prev, licencia_vencimiento: fecha }))}
+                />
                 <span className="field__hint">Tiene que estar vigente.</span>
               </div>
             </div>

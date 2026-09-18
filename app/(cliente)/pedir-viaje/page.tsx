@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import AddressInput from "@/components/AddressInput";
+import { FechaPicker } from "@/components/SelectorFecha";
 
 type Condicion = "FRAGIL" | "REFRIGERADO" | "CARGA_PESADA" | "PELIGROSO" | "VOLUMINOSO";
 
@@ -48,29 +49,14 @@ const ANTICIPACION_MINIMA_MINUTOS = Number(
   process.env.NEXT_PUBLIC_ANTICIPACION_MINIMA_MINUTOS ?? 60,
 );
 
-/**
- * Mínimo del `<input type="datetime-local">`, que espera **hora local**.
- *
- * No usar `toISOString()`: devuelve UTC, y en UTC-3 eso corría el mínimo tres
- * horas hacia adelante — el cliente no podía elegir un horario que el backend
- * sí aceptaba.
- */
-function getMinFecha() {
-  const d = new Date();
-  d.setMinutes(d.getMinutes() + ANTICIPACION_MINIMA_MINUTOS);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  // "YYYY-MM-DDTHH:MM" en hora local
-  return (
-    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
-    `T${pad(d.getHours())}:${pad(d.getMinutes())}`
-  );
-}
-
 export default function PedirViajePage() {
   const router = useRouter();
   const nextIdRef = useRef(3);
 
+  // Día y hora van por separado, como en el sistema de diseño: el día se elige
+  // en el calendario y la hora en su propia lista de franjas.
   const [fecha, setFecha] = useState("");
+  const [hora, setHora] = useState("");
   const [paradas, setParadas] = useState<Parada[]>([
     { id: 1, direccion: "", lat: null, lng: null },
     { id: 2, direccion: "", lat: null, lng: null },
@@ -115,7 +101,7 @@ export default function PedirViajePage() {
     e.preventDefault();
     setError(null);
 
-    if (!fecha) {
+    if (!fecha || !hora) {
       setError("Seleccioná la fecha y hora del viaje.");
       return;
     }
@@ -136,7 +122,9 @@ export default function PedirViajePage() {
       // (polígono oficial de CABA). El campo se sigue aceptando en el body por
       // compatibilidad, pero su valor se descarta — mandarlo sólo confundiría.
       const payload = {
-        fecha_programada: new Date(fecha).toISOString(),
+        // `new Date("2026-09-17T14:30")` sin zona se lee como hora local, que es
+        // justo lo que eligió el cliente; el backend la quiere en UTC.
+        fecha_programada: new Date(`${fecha}T${hora}`).toISOString(),
         paradas: paradas.map((p) => ({ lat: p.lat!, lng: p.lng!, direccion: p.direccion.trim() })),
         condiciones_requeridas: Array.from(condiciones),
       };
@@ -215,14 +203,22 @@ export default function PedirViajePage() {
           {/* Fecha programada */}
           <div>
             <label className="metric__label" htmlFor="fecha">Fecha y hora</label>
-            <input
+            <FechaPicker
               id="fecha"
-              type="datetime-local"
-              min={getMinFecha()}
               value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
+              hora={hora}
+              conHora
+              anticipacionMinutos={ANTICIPACION_MINIMA_MINUTOS}
+              hint={
+                ANTICIPACION_MINIMA_MINUTOS > 0
+                  ? `Anticipación mínima: ${ANTICIPACION_MINIMA_MINUTOS} min`
+                  : undefined
+              }
               required
-              className="input"
+              onChange={(d, h) => {
+                setFecha(d);
+                setHora(h);
+              }}
             />
           </div>
 

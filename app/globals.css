@@ -1884,6 +1884,9 @@ html {
   min-width: 160px;
 }
 .admin-input { width: 100%; box-sizing: border-box; margin: 8px 0; }
+/* El ancho mínimo de arriba sólo alcanza a select e input; el filtro de
+   período es un RangoPicker y necesita el suyo. */
+.admin-filter .rango { min-width: 220px; }
 .admin-filter select:focus,
 .admin-filter input:focus,
 .admin-input:focus { outline: none; border-color: var(--accent); }
@@ -2260,20 +2263,8 @@ html {
 }
 button.periodo__label { cursor: pointer; }
 .periodo__label svg { vertical-align: -2px; margin-right: 8px; color: var(--ink-3); }
-.periodo__popover {
-  position: absolute; top: calc(100% + 8px); right: 0;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-pop);
-  padding: 16px;
-  z-index: 50;
-  display: flex; flex-direction: column; gap: 12px;
-  min-width: 300px;
-}
-.periodo__popover-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.periodo__atajos { display: flex; gap: 8px; flex-wrap: wrap; }
-.periodo__popover .form-actions { margin-top: 0; }
+/* El rango personalizado lo dibuja RangoPicker, no un popover propio. */
+.periodo .rango { min-width: 220px; }
 
 /* ── KPIs ────────────────────────────────────────── */
 .kpi { display: flex; flex-direction: column; gap: 8px; min-height: 118px; }
@@ -2597,6 +2588,268 @@ a.card-row, a.card { text-decoration: none; color: var(--ink); }
 .card--form { padding: 24px 28px; }
 .card--form > .card-title { font-size: 16px; margin-bottom: 16px; }
 
+/* ── Selector de fecha ───────────────────────────── */
+/* Portado de docs/design-system-v2.html (sección 06); el componente es
+   components/SelectorFecha.tsx. Reemplaza a los <input type="date"> y
+   <input type="datetime-local"> nativos, que no respetan ningún token. */
+@keyframes fl-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.btn--sm { height: var(--control-h-sm); padding: 0 10px; font-size: 12px; border-radius: 6px; }
+
+.fecha, .rango { position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+/* El documento no la declara: como ahí los popovers se muestran estáticos, el
+   defecto no se nota. Sin esto, el desplegable de hora se posiciona contra
+   .fecha y cae debajo del campo de fecha en vez del de hora. */
+.hora { position: relative; min-width: 0; }
+.fecha__row { display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: 10px; }
+/* Espejo del valor para la validación nativa (ver SelectorFecha.tsx). No puede
+   ser display:none ni hidden: el navegador excluye esos campos de la
+   validación, que es justo lo que acá se necesita que ocurra. */
+.fecha__nativo {
+  position: absolute;
+  bottom: 0;
+  left: 12px;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fecha__trigger,
+.hora__trigger,
+.rango__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--control-h);
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.fecha__trigger:hover, .hora__trigger:hover, .rango__trigger:hover { border-color: var(--ink-3); }
+.fecha__trigger.is-open, .hora__trigger.is-open, .rango__trigger.is-open {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.fecha__trigger.is-invalid, .hora__trigger.is-invalid { border-color: var(--err); }
+.fecha__trigger svg, .hora__trigger svg, .rango__trigger svg { color: var(--ink-3); flex: none; }
+.fecha__value, .rango__value { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hora__value { flex: 1; font-family: var(--font-mono); font-size: 13.5px; }
+.fecha__value.is-placeholder,
+.hora__value.is-placeholder,
+.rango__value.is-placeholder { color: var(--ink-3); }
+.fecha--lg .fecha__trigger, .fecha--lg .hora__trigger { height: var(--control-h-lg); }
+
+.fecha__pop, .hora__pop, .rango__pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-pop);
+  padding: 14px;
+  animation: fl-rise var(--dur) var(--ease);
+}
+.fecha__pop { width: 300px; }
+.hora__pop { width: 100%; min-width: 120px; max-height: 232px; overflow: auto; padding: 6px; }
+.hora__pop--right { left: auto; right: 0; }
+.rango__pop { display: flex; gap: 16px; }
+.rango__pop--right { left: auto; right: 0; }
+
+.hora__slot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+.hora__slot:hover { background: var(--surface-3); }
+.hora__slot.is-selected { background: var(--ink); color: var(--on-ink); }
+.hora__slot:disabled { color: var(--ink-4); cursor: not-allowed; background: none; }
+
+/* Calendario — lo comparten FechaPicker y RangoPicker. */
+.cal { display: flex; flex-direction: column; gap: 8px; width: 270px; }
+.cal__head { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+.cal__title { display: flex; align-items: center; gap: 2px; }
+.cal__title-btn {
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.cal__title-btn:hover, .cal__title-btn.is-open { background: var(--surface-3); }
+.cal__title-btn:disabled { color: var(--ink-3); cursor: default; }
+.cal__nav {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.cal__nav:hover:not(:disabled) { background: var(--surface-3); }
+.cal__nav:disabled { color: var(--ink-4); cursor: default; }
+.cal__grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px 0; }
+.cal__dow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-align: center;
+  padding: 4px 0 6px;
+}
+.cal__day {
+  position: relative;
+  height: 36px;
+  width: 100%;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.cal__day:hover { background: var(--surface-3); }
+.cal__day.is-outside { color: var(--ink-4); }
+.cal__day.is-today::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.cal__day.is-in-range { background: var(--accent-soft); color: var(--accent-ink); border-radius: 0; }
+.cal__day.is-in-range.is-today::after { background: var(--accent-ink); }
+.cal__day.is-selected,
+.cal__day.is-range-start,
+.cal__day.is-range-end { background: var(--ink); color: var(--on-ink); }
+.cal__day.is-range-start { border-radius: 6px 0 0 6px; }
+.cal__day.is-range-end { border-radius: 0 6px 6px 0; }
+.cal__day.is-range-start.is-range-end { border-radius: 6px; }
+.cal__day.is-selected.is-today::after,
+.cal__day.is-range-start.is-today::after,
+.cal__day.is-range-end.is-today::after { background: var(--accent); }
+.cal__day:disabled { color: var(--ink-4); cursor: not-allowed; background: none; }
+.cal__day:disabled.is-today::after { background: var(--ink-4); }
+.cal__years {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  max-height: 196px;
+  overflow: auto;
+  padding: 2px;
+}
+.cal__year {
+  height: 36px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.cal__year:hover { background: var(--surface-3); }
+.cal__year.is-selected { background: var(--ink); color: var(--on-ink); }
+
+.fecha__foot, .rango__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  margin-top: 4px;
+}
+.fecha__hint { font-size: 11px; color: var(--ink-3); line-height: 1.4; flex: 1; min-width: 0; }
+.fecha__hint--err { color: var(--err); }
+
+.rango__side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 150px;
+  border-right: 1px solid var(--line);
+  padding-right: 14px;
+}
+.rango__atajo {
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+.rango__atajo:hover { background: var(--surface-3); color: var(--ink); }
+.rango__atajo.is-active { background: var(--ink); color: var(--on-ink); }
+.rango__main { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.rango__cals { display: flex; gap: 16px; }
+.rango__fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.rango__field { display: flex; flex-direction: column; gap: 4px; }
+.rango__field span {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.rango__field strong {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface-2);
+}
+.rango__field.is-active strong { border-color: var(--accent); background: var(--surface); }
+
 /* ═══════════════════════════════════════════════════
    Utilidades compartidas — reemplazan estilos inline
    que se repetían. Van al final para ganar por orden.
@@ -2688,6 +2941,9 @@ a.card-row, a.card { text-decoration: none; color: var(--ink); }
   .trip-row--header,
   .skeleton-row { min-width: 760px; }
 
+  /* Un solo mes en el rango: dos no entran sin desbordar el popover. */
+  .rango__cals .cal:last-child { display: none; }
+
   .auth-split { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
   .auth-split__aside { padding: 28px; }
   .auth-split__headline { font-size: 28px; }
@@ -2744,6 +3000,24 @@ a.card-row, a.card { text-decoration: none; color: var(--ink); }
   .fact-row { grid-template-columns: 1fr auto; row-gap: 8px; }
   .veh-card { grid-template-columns: 1fr; }
   .card-row { flex-wrap: wrap; }
+  /* El popover no se vuelve hoja inferior como en el documento: eso pide un
+     backdrop y una capa nueva. Se limita al ancho de pantalla y se apila. */
+  .fecha__pop { width: min(300px, calc(100vw - 32px)); }
+  .fecha__row { grid-template-columns: minmax(0, 1fr) 108px; }
+  .hora__pop { max-height: 200px; }
+  .rango__pop { flex-direction: column; gap: 12px; }
+  .rango__side {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 0 0 12px;
+    min-width: 0;
+  }
+  .rango__atajo { height: 30px; }
+  .cal { width: 100%; }
+  .cal__day { height: 44px; }
+
   .auth-split { grid-template-columns: minmax(0, 1fr); }
   .auth-split__aside { display: none; }
   .auth-split__mobile-brand { display: flex; }
