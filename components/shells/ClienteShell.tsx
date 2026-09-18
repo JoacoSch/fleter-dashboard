@@ -10,6 +10,7 @@ import { ESTADO_LABEL_ACTIVO, esEnCurso } from "@/lib/estados";
 import { BarChart2, ClipboardList, Truck, FileText, User, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
+import AppShell from "@/components/shells/AppShell";
 
 interface RecentViaje {
   id_viaje: number;
@@ -85,7 +86,7 @@ export default function ClienteShell({
   }
 
   return (
-    <div className="app">
+    <AppShell>
       <aside className="sidebar">
         {/* Brand */}
         <div className="brand-header">
@@ -245,6 +246,6 @@ export default function ClienteShell({
           {children}
         </main>
       </div>
-    </div>
+    </AppShell>
   );
 }

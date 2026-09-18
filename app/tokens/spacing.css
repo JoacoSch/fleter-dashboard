@@ -40,6 +40,9 @@
      mobile < 720 · tablet 720–1079 · desktop ≥ 1080 */
   --bp-tablet: 720px;
   --bp-desktop: 1080px;
+  /* Debajo de esto la sidebar pasa a riel de íconos. Elegido en 900 y no en el
+     1080 del documento para que una laptop de 1024 conserve los textos. */
+  --bp-riel: 900px;
 
   /* Movimiento */
   --ease: cubic-bezier(.2,.7,.2,1);

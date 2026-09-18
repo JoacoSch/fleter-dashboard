@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigation, ClipboardList, Truck, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
+import AppShell from "@/components/shells/AppShell";
 
 const navItems = [
   { href: "/conductor",               label: "Viajes disponibles", Icon: Navigation,    tambien: [] as string[] },
@@ -47,7 +48,7 @@ export default function ConductorShell({
   }
 
   return (
-    <div className="app">
+    <AppShell>
       <aside className="sidebar">
         <div className="brand-header">
           <div className="brand-mark">F</div>
@@ -104,6 +105,6 @@ export default function ConductorShell({
           {children}
         </main>
       </div>
-    </div>
+    </AppShell>
   );
 }

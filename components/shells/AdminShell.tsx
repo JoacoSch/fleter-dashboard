@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { BarChart2, Users, ClipboardList, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
+import AppShell from "@/components/shells/AppShell";
 
 const navItems = [
   { href: "/admin",          label: "Estadísticas", Icon: BarChart2 },
@@ -52,7 +53,7 @@ export default function AdminShell({
   }
 
   return (
-    <div className="app">
+    <AppShell>
       <aside className="sidebar">
         <div className="brand-header">
           <div className="brand-mark">F</div>
@@ -114,6 +115,6 @@ export default function AdminShell({
           {children}
         </main>
       </div>
-    </div>
+    </AppShell>
   );
 }

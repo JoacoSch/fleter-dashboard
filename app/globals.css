@@ -19,20 +19,44 @@ html {
   /* Layout */
   .app {
     display: grid;
-    grid-template-columns: 248px 1fr;
+    /* El ancho lo fija AppShell en esta misma variable al arrastrar la manija.
+       Todo lo demás se deriva de acá. */
+    grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
     height: 100vh;
     overflow: hidden;
+    position: relative;
   }
   .main {
     display: flex;
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
+    /* Sin esto, una tabla ancha estira la columna y aparece scroll horizontal
+       de página en vez de quedarse dentro de su caja. */
+    min-width: 0;
   }
+  /* Manija de ancho, sobre el borde de la sidebar. */
+  .sidebar-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--sidebar-w) - 3px);
+    width: 6px;
+    cursor: col-resize;
+    z-index: 30;
+    background: transparent;
+    transition: background var(--dur-fast) var(--ease);
+  }
+  .sidebar-handle:hover,
+  .sidebar-handle:focus-visible,
+  .app--arrastrando .sidebar-handle { background: var(--accent); outline: none; }
+  /* Mientras se arrastra no se selecciona texto ni se pelea el cursor. */
+  .app--arrastrando { cursor: col-resize; user-select: none; }
   .content {
     flex: 1;
     overflow: auto;
-    padding: 24px 28px 48px;
+    padding: var(--content-pad);
+    min-width: 0;
   }
   .content:has(.viaje-track) {
     padding: 0;
@@ -2067,12 +2091,7 @@ html {
 .auth-split__panel .field select { padding: 12px 12px; font-size: 14.5px; }
 .auth-split__panel .btn--full { padding: 12px; font-size: 14px; border-radius: var(--radius); }
 .auth-split__mobile-brand { display: none; }
-@media (max-width: 900px) {
-  .auth-split { grid-template-columns: 1fr; }
-  .auth-split__aside { display: none; }
-  .auth-split__mobile-brand { display: flex; }
-  .auth-split__main { padding: 32px 20px; }
-}
+/* Los cortes viven todos juntos al final del archivo. */
 
 /* ── Formularios por secciones ───────────────────── */
 .form-section { padding: 20px 0; border-top: 1px solid var(--line); }
@@ -2094,9 +2113,7 @@ html {
 .field label .opt { color: var(--ink-4); font-weight: 500; }
 .form-section__title .opt { text-transform: none; letter-spacing: 0; }
 .cluster + .field__hint { margin-top: 8px; }
-@media (max-width: 640px) {
-  .form-grid, .form-grid--3 { grid-template-columns: 1fr; }
-}
+
 
 /* ── Stepper ─────────────────────────────────────── */
 .stepper { display: flex; gap: 8px; margin-bottom: 28px; list-style: none; }
@@ -2367,10 +2384,7 @@ button.periodo__label { cursor: pointer; }
 .trip-card__price { font-family: var(--font-display); font-size: 26px; line-height: 1; text-align: right; }
 .trip-card__price-note { font-size: 11px; color: var(--ink-3); text-align: right; margin-top: 4px; max-width: 160px; }
 .trip-card__map { grid-column: 1 / -1; height: 260px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); }
-@media (max-width: 760px) {
-  .trip-card { grid-template-columns: 72px 1fr; }
-  .trip-card__side { grid-column: 1 / -1; flex-direction: row; align-items: center; }
-}
+
 
 .live-dot-text { font-size: 11.5px; display: inline-flex; align-items: center; gap: 8px; color: var(--ink-3); }
 .live-dot-text::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ink-4); }
@@ -2393,9 +2407,7 @@ button.periodo__label { cursor: pointer; }
 .vd__tags .badge-proximo { margin-left: 0; }
 .vd__grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; align-items: start; }
 .vd__col { display: flex; flex-direction: column; gap: 16px; }
-@media (max-width: 1100px) {
-  .vd__top, .vd__grid { grid-template-columns: 1fr; }
-}
+
 
 .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
 .stat { background: var(--surface); padding: 16px 16px; }
@@ -2405,7 +2417,7 @@ button.periodo__label { cursor: pointer; }
 .stat__value--err { color: var(--err); }
 .stat__value--ok { color: var(--ok); }
 .stat__hint { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; }
-@media (max-width: 900px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
+
 
 /* ── Facturación ─────────────────────────────────── */
 .fact-month { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
@@ -2648,3 +2660,93 @@ a.card-row, a.card { text-decoration: none; color: var(--ink); }
 .va-empty__actions { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
 .viaje-activo-list--padded { padding: 28px; }
 .viaje-track__stop-status-icon { margin-right: 3px; vertical-align: middle; }
+
+/* ═══════════════════════════════════════════════════
+   Responsive — cortes del sistema de diseño v2
+   desktop ≥ 1080 · tablet 720–1079 · abajo de 720 sólo
+   se garantiza que nada desborde (no hay navegación
+   mobile todavía).
+   ═══════════════════════════════════════════════════ */
+
+/* ── Tablet y menos ───────────────────────────────── */
+@media (max-width: 1079px) {
+  .content { padding: var(--content-pad-tablet); }
+
+  /* De dos columnas a una: el detalle del viaje y su grilla inferior. */
+  .vd__top,
+  .vd__grid { grid-template-columns: minmax(0, 1fr); }
+
+  /* La grilla de 12: los cuartos pasan a mitades y lo ancho ocupa todo. */
+  .span-3, .span-4 { grid-column: span 6; }
+  .span-5, .span-7, .span-8 { grid-column: span 12; }
+
+  /* El Record sigue siendo tabla (decisión de producto): en vez de
+     reacomodarla, se desplaza dentro de su propia caja para que la página
+     nunca tenga scroll horizontal. */
+  .trips-table { overflow-x: auto; }
+  .trip-row,
+  .trip-row--header,
+  .skeleton-row { min-width: 760px; }
+
+  .auth-split { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+  .auth-split__aside { padding: 28px; }
+  .auth-split__headline { font-size: 28px; }
+}
+
+@media (max-width: 999px) {
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .trip-card { grid-template-columns: 72px 1fr; }
+  .trip-card__side { grid-column: 1 / -1; flex-direction: row; align-items: center; }
+}
+
+/* ── Riel de íconos ───────────────────────────────── */
+@media (max-width: 899px) {
+  /* El ancho manual no aplica: acá el ancho lo fija el sistema. */
+  .app { grid-template-columns: var(--sidebar-rail-w) minmax(0, 1fr); }
+  .sidebar-handle { display: none; }
+  .sidebar { padding: 16px 8px; align-items: center; gap: 12px; }
+  .brand-header { padding: 0; margin-bottom: 16px; justify-content: center; }
+  .brand-name,
+  .admin-badge,
+  .sidebar__new-plus,
+  .nav-item__label,
+  .nav-item__badge,
+  .nav-item__suffix,
+  .sidebar__recent,
+  .sidebar__user-info,
+  .topbar__empresa-label { display: none; }
+  .sidebar__nav { align-items: center; }
+  .sidebar__new,
+  .nav-item {
+    width: var(--tap-min);
+    height: var(--tap-min);
+    justify-content: center;
+    padding: 0;
+    margin-bottom: 0;
+  }
+  .sidebar__profile-section { margin-left: 0; margin-right: 0; }
+  .sidebar__user,
+  .sidebar__conductor-user { padding: 8px; justify-content: center; }
+  /* El menú de usuario no entra en 64 px: se despliega hacia el contenido. */
+  .sidebar__user-menu { left: 0; right: auto; width: 200px; }
+}
+
+/* ── Abajo de tablet: que nada desborde ───────────── */
+@media (max-width: 719px) {
+  .content { padding: var(--content-pad-mobile); }
+  .grid-12 { gap: 12px; }
+  .span-3, .span-4, .span-5, .span-6, .span-7, .span-8 { grid-column: span 12; }
+  .kpi { min-height: 0; }
+  .form-grid, .form-grid--3 { grid-template-columns: minmax(0, 1fr); }
+  .datos-grid { grid-template-columns: minmax(0, 1fr); }
+  .option-cards { grid-template-columns: 1fr 1fr; }
+  .section-header h2 { font-size: 24px; }
+  .fact-row { grid-template-columns: 1fr auto; row-gap: 8px; }
+  .veh-card { grid-template-columns: 1fr; }
+  .card-row { flex-wrap: wrap; }
+  .auth-split { grid-template-columns: minmax(0, 1fr); }
+  .auth-split__aside { display: none; }
+  .auth-split__mobile-brand { display: flex; }
+  .auth-split__main { padding: 32px 20px; }
+  .empty-state { padding: 28px 20px; }
+}

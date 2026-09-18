@@ -8,6 +8,7 @@ import { useEmpresa } from "@/hooks/useEmpresa";
 import { Navigation, ClipboardList, Users, Truck, Building2, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
+import AppShell from "@/components/shells/AppShell";
 
 const navItems = [
   { href: "/gerente",             label: "Viajes disponibles", Icon: Navigation },
@@ -51,7 +52,7 @@ export default function GerenteShell({
   }
 
   return (
-    <div className="app">
+    <AppShell>
       <aside className="sidebar">
         <div className="brand-header">
           <div className="brand-mark">F</div>
@@ -133,6 +134,6 @@ export default function GerenteShell({
           {children}
         </main>
       </div>
-    </div>
+    </AppShell>
   );
 }
