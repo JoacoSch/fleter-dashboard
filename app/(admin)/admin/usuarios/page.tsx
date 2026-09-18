@@ -60,7 +60,7 @@ export default function AdminUsuariosPage() {
         </div>
         {!data && !error ? (
           [0, 1, 2, 3, 4].map((i) => (
-            <div key={i} className="admin-table__row admin-skeleton" style={{ height: 44 }} />
+            <div key={i} className="admin-table__row skeleton" style={{ height: 44 }} />
           ))
         ) : data && data.usuarios.length > 0 ? (
           data.usuarios.map((u) => (

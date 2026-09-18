@@ -473,9 +473,46 @@ anteriores; algunas secciones de arriba todavía lo describen): `.card--hero`,
 conductor (márgenes `.mt-*`/`.mb-*`, `.btn--block`, `.va-empty*`, `.mapa-fill`,
 `.skeleton-card--alto`, entre otras; ver el final de `globals.css`). En esas
 pantallas sólo queda inline lo calculado del panel (barras, zonas, progreso).
-Gerente, `pedir-viaje`, `perfil` y admin siguen igual.
+Gerente, `pedir-viaje`, `perfil` y admin entraron después, con la adopción del v2
+(ver la sección siguiente).
 
 **Colores:** el ámbar `#F59E0B` de la estrella en viaje activo pasó a `--warn`, y
 el fondo del mapa de viaje activo usa `var(--line)` (mismo valor). Quedan escritos
 a mano en el CSS los tonos de hover/borde de los colores soft (`#F8D8C2`,
 `#C9E7C6`, `#BFDDBF`, `#8A5E0B`, `#EEEAE0`…), que no tienen token.
+
+---
+
+## Adopción del design system v2 (17-09)
+
+Fuente: **`docs/design-system-v2.html`**. Los tokens viven en `app/tokens/*.css` y
+se importan desde `app/globals.css`; el CSS de componentes del v2 está extraído en
+`app/components-v2.css` pero **todavía no se importa**: se adopta por partes.
+
+**Regla de espaciado y tipografía:** el espaciado usa la escala base 4
+(`--sp-1..12`); 1, 2 y 3 px siguen permitidos para bordes y micro-ajustes. Ningún
+texto baja de 11 px. Los tokens `--text-*` están disponibles para lo nuevo; los
+tamaños viejos que no están en la escala se dejaron como estaban.
+
+**Clases agregadas al pasar gerente, admin, pedir-viaje y perfil a clases:**
+
+| Clase | Uso |
+|---|---|
+| `.input` (`--sm`, `--mono`, `select.input`, `:disabled`) | Campo fuera de `.field`. El gerente usaba `.input` desde siempre y **no existía**. La versión del v2 (alto fijo de 36 px) llega con los componentes. |
+| `.stack--lg` (16) · `.stack--xs` (4) | Se suman a `.stack` (12) y `.stack--tight` (8). El espacio entre bloques sale del padre, no de un margen por hijo. |
+| `.card-row` · `.card-foot` · `.bloque` · `.datos-grid` | Fila de card, pie con borde, separación entre secciones, ficha de datos. |
+| `.error-banner--warn` | Mismo bloque de aviso en clave naranja. `.error-banner strong` mantiene el dato principal en tinta y 14 px. |
+| `.reserva-timer` (`--urgente`) | Cuenta regresiva de la reserva del gerente. |
+| `.texto-meta` · `.titulo-mono` · `.dato-valor` (`--mono`) | Texto secundario, título que es un identificador, valor de ficha. |
+| `.status--ok` / `--err` | Estado que no es de viaje (empresa activa/inactiva). |
+| `.card--destacada` · `.codigo-afiliacion` | Card del dato que la pantalla vino a mostrar. |
+| `.recorrido*` | Recorrido **editable** de pedir viaje. La línea vertical es un `::before`, no un `<div>`. |
+| `.autocomplete*` | Sugerencias de dirección. El hover lo hacía JavaScript. |
+| `.topbar__empresa*` | Selector de empresa del gerente. |
+
+**Cambios de comportamiento:** `.cluster` ahora centra verticalmente; `.admin-page`
+apila con `gap` y por eso desaparecieron sus `marginTop: 16`. Se borró
+`.admin-skeleton` con su animación: los placeholders usan `.skeleton`.
+
+**Estilos inline:** de 298 a **23**, y los 23 son alturas de placeholder,
+porcentajes calculados de barras y el color de cada serie del gráfico.

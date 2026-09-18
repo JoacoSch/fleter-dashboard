@@ -448,6 +448,14 @@ html {
     justify-content: space-between;
     gap: 12px;
   }
+  /* Mismo bloque, en clave de aviso: algo que no salió mal pero hay que saber. */
+  .error-banner--warn {
+    color: var(--warn-ink);
+    background: var(--warn-soft);
+    border-left-color: var(--warn);
+  }
+  /* El dato principal del aviso (un nombre, un VJ) no pierde peso ni tinta. */
+  .error-banner strong { color: var(--ink); font-weight: 600; font-size: 14px; }
 
   /* Dashboard layout helpers */
 
@@ -1937,20 +1945,6 @@ html {
 .admin-cancel-box__hint { font-size: 12.5px; color: var(--ink-3); }
 .admin-cancel-box__actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 4px; }
 
-/* Skeleton */
-.admin-skeleton {
-  position: relative;
-  overflow: hidden;
-  background: var(--surface-2);
-}
-.admin-skeleton::after {
-  content: "";
-  position: absolute; inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.04), transparent);
-  animation: admin-shimmer 1.2s infinite;
-}
-@keyframes admin-shimmer { 100% { transform: translateX(100%); } }
-
 /* Gráficos nativos */
 .admin-chart { margin-top: 12px; }
 .admin-chart__svg { width: 100%; display: block; }
@@ -2210,7 +2204,7 @@ html {
   padding: 8px 12px;
   line-height: 1.45;
 }
-.note--warn { background: var(--warn-soft); color: #8A5E0B; }
+.note--warn { background: var(--warn-soft); color: var(--warn-ink); }
 .note--row { display: flex; justify-content: space-between; align-items: center; }
 
 .toast {
@@ -2456,6 +2450,138 @@ button.periodo__label { cursor: pointer; }
 .veh-card__title { font-size: 15px; font-weight: 700; margin-top: 8px; }
 .veh-card__meta { font-size: 12.5px; color: var(--ink-3); }
 .veh-card__body { min-width: 0; }
+
+/* ── Campo suelto, fuera de .field ────────────────── */
+.input {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  font-size: 14px;
+  font-family: var(--font-ui);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.1s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.input:focus { border-color: var(--accent); }
+.input:disabled { opacity: 0.6; cursor: not-allowed; }
+select.input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23665F50' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  cursor: pointer;
+}
+.input--sm { font-size: 12.5px; padding: 4px 8px; width: auto; }
+
+/* Pie de card con borde: fecha a la izquierda, acción a la derecha. */
+.card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.card-foot p { font-size: 12px; color: var(--ink-3); }
+
+/* Selector de empresa del gerente, en la topbar. */
+.topbar__empresa { display: flex; align-items: center; gap: 8px; }
+.topbar__empresa-label { font-size: 11.5px; color: var(--ink-3); }
+.topbar__empresa-nombre { font-size: 13px; font-weight: 600; color: var(--ink); }
+
+/* Título que es un identificador (VJ-2419). */
+.titulo-mono { font-family: var(--font-mono); }
+
+/* Fila de card: contenido a la izquierda, monto o acción a la derecha. */
+.card-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+a.card-row, a.card { text-decoration: none; color: var(--ink); }
+.stack--xs { gap: 4px; }
+.texto-meta { font-size: 12px; color: var(--ink-3); }
+/* Cuenta regresiva de la reserva del gerente. */
+.reserva-timer { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--warn-ink); }
+.reserva-timer--urgente { color: var(--err-ink); }
+/* Subtítulo de bloque dentro de una pantalla. */
+.bloque { margin-bottom: 28px; }
+
+/* ── Ficha de datos (empresa) ─────────────────────── */
+.datos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; }
+.dato-valor { font-size: 15px; font-weight: 600; color: var(--ink); margin-top: 4px; }
+.dato-valor--mono { font-family: var(--font-mono); }
+.status--ok { background: var(--ok-soft); color: var(--ok-ink); }
+.status--err { background: var(--err-soft); color: var(--err-ink); }
+/* Card que sostiene el dato que la pantalla vino a mostrar. */
+.card--destacada { background: linear-gradient(180deg, var(--surface) 65%, var(--accent-softer) 100%); }
+.codigo-afiliacion {
+  font-family: var(--font-mono);
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+.input--mono { font-family: var(--font-mono); }
+
+/* ── Recorrido editable (pedir viaje) ─────────────── */
+.recorrido { position: relative; }
+.recorrido::before {
+  content: "";
+  position: absolute;
+  left: 12px; top: 20px; bottom: 20px;
+  width: 1.5px;
+  background: var(--line-strong);
+}
+.recorrido__fila { display: flex; align-items: center; gap: 12px; position: relative; }
+.recorrido__dot {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--marcador-parada);
+  border: 2.5px solid var(--surface);
+  box-shadow: 0 0 0 1.5px var(--marcador-parada);
+  flex-shrink: 0;
+}
+.recorrido__dot--origen { background: var(--marcador-origen); box-shadow: 0 0 0 1.5px var(--marcador-origen); }
+.recorrido__dot--destino { border-radius: 3px; background: var(--marcador-destino); box-shadow: 0 0 0 1.5px var(--marcador-destino); }
+.recorrido__borrar {
+  width: 24px; height: 24px;
+  border: none; background: none;
+  color: var(--ink-3);
+  cursor: pointer;
+  font-size: 16px;
+  display: grid; place-items: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+.recorrido__borrar:hover { color: var(--ink); }
+
+/* ── Autocompletado de direcciones ────────────────── */
+.autocomplete { position: relative; flex: 1; }
+.autocomplete__lista {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-pop);
+  z-index: 50;
+  list-style: none;
+  overflow: hidden;
+}
+.autocomplete__item {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.autocomplete__item:hover { background: var(--surface-2); }
+
+/* Admin apila sus bloques: el espacio sale del padre, no de cada hijo. */
+.admin-page { gap: 16px; }
+.admin-page > .section-header { margin-bottom: 0; }
+.metric__label + .admin-table { margin-top: 8px; }
 .card--form { padding: 24px 28px; }
 .card--form > .card-title { font-size: 16px; margin-bottom: 16px; }
 
@@ -2469,7 +2595,8 @@ button.periodo__label { cursor: pointer; }
 
 .stack { display: flex; flex-direction: column; gap: 12px; }
 .stack--tight { gap: 8px; }
-.cluster { display: flex; flex-wrap: wrap; gap: 8px; }
+.stack--lg { gap: 16px; }
+.cluster { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .cluster--end { justify-content: flex-end; }
 
 .muted { color: var(--ink-4); }

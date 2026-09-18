@@ -43,7 +43,7 @@ export default function AdminViajeDetallePage() {
   }
 
   if (error) return <p className="admin-error">{error}</p>;
-  if (!v) return <div className="admin-page"><div className="card admin-skeleton" style={{ height: 200 }} /></div>;
+  if (!v) return <div className="admin-page"><div className="card skeleton" style={{ height: 200 }} /></div>;
 
   const puedeCancelar = !TERMINALES.has(v.estado);
 
@@ -124,9 +124,9 @@ export default function AdminViajeDetallePage() {
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: 16 }}>
+      <div className="card">
         <p className="metric__label">Paradas</p>
-        <div className="admin-table" style={{ marginTop: 8 }}>
+        <div className="admin-table">
           <div className="admin-table__row admin-table__row--head admin-table__row--parada">
             <span>#</span><span>Dirección</span><span>Estado</span><span>Entrega</span>
           </div>
@@ -142,7 +142,7 @@ export default function AdminViajeDetallePage() {
       </div>
 
       {(v.remito_url || v.calificacion || v.motivo_cancelacion) && (
-        <div className="grid-12" style={{ marginTop: 16 }}>
+        <div className="grid-12">
           {v.remito_url && (
             <div className="card span-4">
               <p className="metric__label">Remito</p>
@@ -152,7 +152,7 @@ export default function AdminViajeDetallePage() {
           {v.calificacion && (
             <div className="card span-4">
               <p className="metric__label">Calificación</p>
-              <p className="metric__value" style={{ fontSize: 22 }}>{v.calificacion.puntaje} ★</p>
+              <p className="stat__value">{v.calificacion.puntaje} ★</p>
               {v.calificacion.comentario && <p className="admin-table__muted">{v.calificacion.comentario}</p>}
             </div>
           )}

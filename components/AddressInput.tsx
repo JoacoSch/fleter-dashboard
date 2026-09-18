@@ -11,19 +11,6 @@ interface AddressInputProps {
   onClear: () => void;
 }
 
-const inputStyle: React.CSSProperties = {
-  flex: 1,
-  padding: "8px 10px",
-  borderRadius: "var(--radius-sm)",
-  border: "1px solid var(--line-strong)",
-  background: "var(--surface)",
-  color: "var(--ink)",
-  fontSize: 13,
-  fontFamily: "var(--font-ui)",
-  width: "100%",
-  boxSizing: "border-box",
-};
-
 export default function AddressInput({ placeholder, value, onChange, onSelect, onClear }: AddressInputProps) {
   const placesLib = useMapsLibrary("places");
   const ready = placesLib !== null;
@@ -103,54 +90,26 @@ export default function AddressInput({ placeholder, value, onChange, onSelect, o
   }, []);
 
   return (
-    <div ref={containerRef} style={{ position: "relative", flex: 1 }}>
+    <div ref={containerRef} className="autocomplete">
       <input
         type="text"
+        className="input"
         placeholder={placeholder}
         value={inputValue}
         onChange={handleInput}
         disabled={!ready}
-        style={inputStyle}
         autoComplete="off"
       />
       {suggestions.length > 0 && (
-        <ul
-          style={{
-            position: "absolute",
-            top: "calc(100% + 4px)",
-            left: 0,
-            right: 0,
-            background: "var(--surface)",
-            border: "1px solid var(--line-strong)",
-            borderRadius: "var(--radius-sm)",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-            zIndex: 50,
-            listStyle: "none",
-            margin: 0,
-            padding: 0,
-            overflow: "hidden",
-          }}
-        >
+        <ul className="autocomplete__lista">
           {suggestions.map((prediction) => {
             const key = prediction.placeId;
             const label = prediction.text.toString();
             return (
               <li
                 key={key}
+                className="autocomplete__item"
                 onMouseDown={() => handleSelect(prediction)}
-                style={{
-                  padding: "8px 12px",
-                  fontSize: 13,
-                  fontFamily: "var(--font-ui)",
-                  color: "var(--ink)",
-                  cursor: "pointer",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "var(--surface-2, #f5f5f5)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "";
-                }}
               >
                 {label}
               </li>
