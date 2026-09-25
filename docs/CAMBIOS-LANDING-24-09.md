@@ -94,6 +94,12 @@ estaba en `PUBLIC_PATHS` de `proxy.ts`: los tres botones "Empezar" caían en el
 login. En MOCK no se notó. Corregido en `130b08b` y redeployado. Lección: probar
 las rutas públicas contra el build de producción, no sólo en MOCK.
 
+## Marca y proxy (mismo día, más tarde)
+
+- **Logo real** (isotipo «Carga» + «Fleter.») en el sidebar de los cuatro paneles, el auth, la landing (navbar, footer, cierre animado y `/contacto`), favicon, ícono de iOS e imagen para compartir. Componente `components/Isotipo.tsx`; reglas y archivos en `context/design-system.md` → «Marca: isotipo».
+- **Bug de tema oscuro:** el aside del auth se vuelve crema y la caja de la punta quedaba invisible; ahora sigue el fondo real.
+- **Incidente 2:** tras el deploy, `/icon.svg`, `/apple-icon.png`, la imagen Open Graph y `/logo/*.svg` devolvían 307 al login (el matcher de `proxy.ts` sólo exceptuaba `favicon.ico`). Se extendió el matcher a extensiones de imagen; las rutas de la app siguen detrás del proxy. Lección: al agregar archivos públicos, probarlos con `curl` sin cookie.
+
 ## Pendiente
 
 - Página `/contacto` con formulario (hoy placeholder) y flujo de la entrevista.
