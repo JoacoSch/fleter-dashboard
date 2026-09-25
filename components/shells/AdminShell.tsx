@@ -9,6 +9,7 @@ import TemaToggle from "@/components/TemaToggle";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
 import AppShell from "@/components/shells/AppShell";
+import Isotipo from "@/components/Isotipo";
 
 const navItems = [
   { href: "/admin",          label: "Estadísticas", Icon: BarChart2 },
@@ -57,7 +58,7 @@ export default function AdminShell({
     <AppShell>
       <aside className="sidebar">
         <div className="brand-header">
-          <div className="brand-mark">F</div>
+          <Isotipo />
           <span className="brand-name">Fleter<em>.</em></span>
           <span className="admin-badge">ADMIN</span>
         </div>

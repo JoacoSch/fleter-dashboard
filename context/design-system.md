@@ -551,3 +551,29 @@ pierden los `pointermove` que llegan antes del re-render.
 
 **Admin quedó fuera del responsive**: es herramienta interna y se mira en
 desktop.
+
+## Marca: isotipo y dónde va (24-09)
+
+El logo es el isotipo «Carga» (seis cajas en una F; la oscura, en la punta del brazo
+largo, es la carga que se sigue) más el nombre «Fleter.» en Archivo Black con el punto
+naranja. Se usa el componente **`components/Isotipo.tsx`** (SVG inline), nunca un
+cuadrado con una "F" de texto.
+
+| Dónde | Cómo |
+|---|---|
+| Sidebar de los cuatro paneles (`components/shells/*Shell.tsx`) | `<Isotipo />` + `.brand-name` |
+| Auth: aside y versión mobile (`components/AuthShell.tsx`) | Igual. El aside es oscuro en tema claro y crema en tema oscuro: la caja sigue su fondo |
+| Landing: navbar, footer e isotipo animado del cierre (`components/landing/**`) | Las seis cajas se estiban al entrar en pantalla |
+| Pestaña del navegador y iOS | `app/icon.svg` (ícono de app), `app/favicon.ico`, `app/apple-icon.png` (cuadrado, sin esquinas transparentes) |
+| Imagen al compartir | `app/(marketing)/opengraph-image.png` y `twitter-image.png` (1200×630) |
+| Otros usos (mails, documentos) | `public/logo/*.svg` (isotipo, `-dark`, `-mono`, `app-icon`, `app-icon-dark`) |
+
+**Reglas:** el naranja no cambia nunca; la caja oscura pasa a `#F4F0E7` sobre fondos
+oscuros (`.isotipo__k`); mínimo 16 px; sin rotar, sin sombra, sin degradado. El
+eslogan («Tu logística, de punta a punta.») va en auth y landing, no en el sidebar ni
+dentro del producto.
+
+**Fuente:** `~/Developer/fleter-mobile/assets/logo/`. Los SVG originales traen un bloque
+`<metadata>` con credenciales C2PA (~8 KB); se lo sacó al copiarlos. No existen todavía
+`logo-horizontal.svg` ni `app-icon-orange.svg` (los que lista `docs/design-system-v2.html`):
+el lockup horizontal se arma con `<Isotipo />` + `.brand-name`.

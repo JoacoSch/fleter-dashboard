@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { CheckCircle2 } from "lucide-react";
+import Isotipo from "@/components/Isotipo";
 
 const BULLETS_DEFAULT = [
   "Coordiná tus fleteros y los que te falten desde un solo lugar",
@@ -30,7 +31,7 @@ export default function AuthShell({
     <div className="auth-split">
       <aside className="auth-split__aside">
         <Link href="/" className="auth-brand">
-          <div className="brand-mark">F</div>
+          <Isotipo />
           <span className="brand-name">Fleter<em>.</em></span>
         </Link>
         <div className="auth-split__intro">
@@ -50,7 +51,7 @@ export default function AuthShell({
       <main className="auth-split__main">
         <div className={`auth-split__panel${ancho ? " auth-split__panel--ancho" : ""}`}>
           <Link href="/" className="auth-brand auth-split__mobile-brand">
-            <div className="brand-mark">F</div>
+            <Isotipo />
             <span className="brand-name">Fleter<em>.</em></span>
           </Link>
           {children}

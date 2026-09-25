@@ -118,8 +118,9 @@ body:has(.lp) { background: #0b0a08; }
   border-bottom: 1px solid transparent;
 }
 .lp-nav.is-solid { background: rgba(11, 10, 8, 0.72); backdrop-filter: blur(14px) saturate(1.2); border-color: var(--lp-line); }
-.lp-mark { font-family: var(--font-display); font-size: 26px; letter-spacing: -0.02em; line-height: 1; }
-.lp-mark b { color: var(--lp-orange); font-weight: 400; }
+.lp-mark { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 24px; letter-spacing: -0.02em; line-height: 1; }
+.lp-mark .isotipo { width: 30px; height: 30px; }
+.lp-mark em { color: var(--lp-orange); font-style: normal; }
 .lp-nav__links { display: flex; gap: 30px; font-size: 14px; font-weight: 600; color: var(--lp-fg-2); }
 .lp-nav__links a { position: relative; padding: 6px 0; transition: color 160ms ease; }
 .lp-nav__links a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--lp-orange); transform: scaleX(0); transform-origin: left; transition: transform 260ms var(--ease-out); }

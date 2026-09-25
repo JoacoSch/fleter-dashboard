@@ -167,3 +167,9 @@
 .lp-close__inner { display: grid; gap: 28px; justify-items: start; }
 .lp-close__h { max-width: 13ch; }
 .lp-close__cta { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; margin-top: 8px; }
+
+/* Isotipo del cierre: las seis cajas se estiban una a una (la oscura, al final) */
+.lp-stack .isotipo { width: clamp(64px, 8vw, 96px); height: auto; aspect-ratio: 1; overflow: visible; }
+.lp-stack .isotipo rect { opacity: 0; transform-box: fill-box; transform-origin: center; transform: translateY(-22px); }
+.lp-stack.is-in .isotipo rect { animation: lp-box 640ms var(--ease-out) both; animation-delay: calc(var(--i) * 110ms + 150ms); }
+@keyframes lp-box { from { opacity: 0; transform: translateY(-22px); } to { opacity: 1; transform: none; } }

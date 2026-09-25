@@ -10,6 +10,7 @@ import TemaToggle from "@/components/TemaToggle";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
 import AppShell from "@/components/shells/AppShell";
+import Isotipo from "@/components/Isotipo";
 
 const navItems = [
   { href: "/gerente",             label: "Viajes disponibles", Icon: Navigation },
@@ -56,7 +57,7 @@ export default function GerenteShell({
     <AppShell>
       <aside className="sidebar">
         <div className="brand-header">
-          <div className="brand-mark">F</div>
+          <Isotipo />
           <span className="brand-name">Fleter<em>.</em></span>
         </div>
 

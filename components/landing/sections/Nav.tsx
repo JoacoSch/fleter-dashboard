@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Isotipo from "@/components/Isotipo";
 import EmpezarButton from "../ui/EmpezarButton";
 
 const LINKS = [
@@ -14,7 +15,10 @@ const LINKS = [
 export function Wordmark() {
   return (
     <span className="lp-mark" aria-label="Fleter">
-      <b>F</b>leter
+      <Isotipo />
+      <span aria-hidden="true">
+        Fleter<em>.</em>
+      </span>
     </span>
   );
 }
