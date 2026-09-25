@@ -44,6 +44,7 @@ contratos de los BFF: **`docs/CAMBIOS-UX-15-09.md`**. Lo que cambia esta auditor
 | Feature | Archivos | Estado |
 |---|---|---|
 | Landing placeholder en `/`; panel PyME movido a `/panel` | `app/page.tsx`, `lib/roles.ts`, `proxy.ts` | FUNCIONA-PROBADO en MOCK (e2e `__tests__/e2e/auth.spec.ts`) |
+| Landing real en `/` (hero WebGL, 10 secciones, un solo CTA "Empezar"); `/contacto` placeholder público | `app/(marketing)/**`, `components/landing/**`, `styles/landing/**`, `proxy.ts` | Build, tipos y lint OK; en producción `/` y `/contacto` responden 200. **e2e sin correr, sin medir FPS en móvil, copy del FAQ inferido.** Ver `docs/CAMBIOS-LANDING-24-09.md` |
 | Auth con layout partido, registro por perfil, conductor en 4 pasos | `components/AuthShell.tsx`, `app/(auth)/**` | EXISTE-SIN-PROBAR contra Firebase real |
 | Analytics: serie por día/semana/mes, período anterior, cancelación, puntualidad, gasto por zona en $ | `lib/analytics-cliente.ts`, `app/api/analytics/cliente/resumen/route.ts`, `app/(cliente)/panel/page.tsx` | Cálculo FUNCIONA-PROBADO (unit); pantalla EXISTE-SIN-PROBAR contra backend |
 | Detalle de viaje con mapa para cualquier estado | `app/(cliente)/viajes/[id]/page.tsx`, `components/MapaRuta*.tsx` | EXISTE-SIN-PROBAR. El fallback de ruta requiere **Directions API** habilitada en la key |

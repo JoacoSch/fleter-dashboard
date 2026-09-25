@@ -52,10 +52,11 @@ hacen fetch. Nada con valor comercial pasa por ahí.
 | F2-cliente | Viaje activo en tiempo real (banner + mapa) | Implementado, sin verificar contra backend real |
 | F3-gerente | Panel del gerente: reservar y distribuir viajes | Implementado contra `lib/mocks-gerente.ts` |
 | F4-gerente-stats | Estadísticas históricas del gerente | No empezado |
+| F5-landing | Landing pública en `/` (WebGL + scroll, 10 secciones) | Implementada y desplegada el 24-09; ver `docs/CAMBIOS-LANDING-24-09.md` |
 
 Estado detallado y verificado archivo por archivo: **`ESTADO-REAL.md`**.
 
-**Rutas (desde el 15-09):** `/` es la landing pública (placeholder); el dashboard de
+**Rutas (desde el 15-09):** `/` es la landing pública (real desde el 24-09, ver `docs/CAMBIOS-LANDING-24-09.md`; `/contacto` es placeholder); el dashboard de
 la PyME está en **`/panel`** (`homeForRole`). Rediseño de auth, PyME y conductor a
 partir del feedback del 15-09: **`docs/CAMBIOS-UX-15-09.md`**.
 
