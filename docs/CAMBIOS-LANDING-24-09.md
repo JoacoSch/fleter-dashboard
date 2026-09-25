@@ -54,15 +54,39 @@ Se borró `app/page.tsx` y el bloque `.landing` de `app/globals.css`.
 
 ## Skills usadas
 
-Se investigaron e instalaron **sólo en el worktree** (sin hooks, `~/.claude` intacto):
+Se investigaron (web) y se instalaron **sólo en el worktree** de la landing, a nivel
+proyecto y sin hooks (`~/.claude` intacto). Ese worktree se borró al limpiar las ramas,
+así que **ya no están instaladas**; los comandos para reinstalarlas van abajo.
 
-| Skill | Veredicto | Uso |
-|---|---|---|
-| Emil Kowalski (`animate`, `review-animations`, …) | Aplica | Criterio de motion: ease-out exponencial, hover sólo con `(hover: hover)`, reduced-motion. |
-| Impeccable | Aplica | "Craft floor": sacó los eyebrows numerados, las entradas idénticas por sección y limitó el display a 6rem. Su detector offline quedó en **0 hallazgos** (había 1: `max-height` animado). |
-| Taste (`design-taste-frontend`) | Parcial | Sólo como referencia; sus supuestos de stack se ignoraron. |
+| Skill | Origen | Veredicto | Qué se hizo con ella |
+|---|---|---|---|
+| **Emil Kowalski** — `animate`, `review-animations`, `improve-animations`, `find-animation-opportunities`, `animation-vocabulary` | `emilkowalski/skills` | Aplica | Se instalaron las cinco y se leyó `animate`. Criterio de motion aplicado a mano: ease-out exponencial (`cubic-bezier(0.23,1,0.32,1)`), nunca `ease-in`, hover sólo con `(hover: hover)`, `:active` con `scale(.97)`, sin `scale(0)` en CSS, reduced-motion. **No se corrió** `review-animations` ni `improve-animations` como pasada formal. |
+| **Impeccable** (`impeccable`, v4.3.1, motor v0.1.5) | `pbakaus/impeccable` | Aplica | Se leyeron `SKILL.md`, `reference/craft-floor.md` y `reference/init.md`, y se corrió `impeccable context` (pidió `PRODUCT.md`). El "craft floor" hizo sacar los eyebrows numerados de las secciones 2+, dejar de repetir la misma entrada en cada sección y limitar el display a 6rem. `impeccable detect` sobre `components/landing`, `app/(marketing)` y `styles/landing`: 1 hallazgo (`max-height` animado → se pasó a `grid-template-rows`) y después **0**. No se usaron los comandos `polish`, `animate`, `overdrive`, etc. |
+| **Taste** — `design-taste-frontend` | `Leonxlnx/taste-skill` | Parcial | Se instaló y se leyó el arranque (lectura del brief, "Design Read", dials). Sirvió de referencia: dials aproximados 9 / 9 / 3 (varianza / motion / densidad) para un pedido "estilo Awwwards", y su lista de defaults a evitar. Sus supuestos de stack (Tailwind, Framer Motion) se ignoraron. |
 
-`PRODUCT.md`, `.claude/` y `skills-lock.json` quedaron **sin commitear** en el worktree.
+**Reinstalar** (desde la raíz del repo o del worktree):
+
+```bash
+npx skills@latest add emilkowalski/skills -a claude-code --copy \
+  -s animate -s review-animations -s improve-animations \
+  -s find-animation-opportunities -s animation-vocabulary -y
+npx skills@latest add https://github.com/Leonxlnx/taste-skill -a claude-code --copy \
+  -s design-taste-frontend -y
+npx impeccable install --yes --providers=claude-code --project --no-hooks
+npx impeccable detect components/landing "app/(marketing)" styles/landing   # detector offline
+```
+
+Ojo: las skills de terceros corren con los permisos del agente; se revisó su contenido
+antes de usarlas (sin `curl`, `eval` ni `rm -rf`), pero conviene releerlas si se actualizan.
+Impeccable descarga un binario a `~/.impeccable/bin/` la primera vez.
+
+**No se usaron** (aunque el entorno las tiene): las skills del plugin de Vercel (`nextjs`,
+`deployments-cicd`, `verification`, …) que los hooks sugerían, `hyperframes` / `media-use`
+(los clips con HyperFrames quedaron como fase 2) ni las de Higgsfield. El deploy se hizo
+con la CLI (`vercel --prod`) sin invocarlas.
+
+`PRODUCT.md` (inferido del informe, sin la entrevista de Impeccable), `.claude/` y
+`skills-lock.json` estaban **sin commitear** en el worktree y se perdieron con él.
 
 ## Lo que se infirió (revisar)
 
