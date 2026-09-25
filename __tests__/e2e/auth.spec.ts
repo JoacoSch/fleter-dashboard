@@ -31,11 +31,20 @@ test("ruta protegida sin sesión redirige a /login", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Iniciá sesión" })).toBeVisible();
 });
 
-test("la landing es pública y lleva al login", async ({ page }) => {
+test("la landing es pública, tiene tres Empezar y lleva al login", async ({ page }) => {
   await page.goto("/");
 
   await expect(page).toHaveURL("/");
-  await expect(page.getByText("Landing page en desarrollo")).toBeVisible();
-  await page.getByRole("link", { name: "Iniciar sesión" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("conductores");
+
+  // Un solo CTA primario, en tres lugares, que abre /contacto en otra pestaña.
+  const empezar = page.getByRole("link", { name: "Empezar" });
+  await expect(empezar).toHaveCount(3);
+  for (const link of await empezar.all()) {
+    await expect(link).toHaveAttribute("href", "/contacto");
+    await expect(link).toHaveAttribute("target", "_blank");
+  }
+
+  await page.getByRole("link", { name: "Acceder" }).first().click();
   await expect(page).toHaveURL(/\/login$/);
 });

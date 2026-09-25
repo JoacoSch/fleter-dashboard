@@ -413,7 +413,7 @@ const initials = (name: string) =>
 | `.fact-month`, `.fact-row` | Comprobantes por mes. |
 | `components/conductor/VehiculoForm.tsx` · `.dropzone`, `.badge-proximo` | Alta de vehículo. `badge-proximo` marca funciones visibles que todavía no persisten. |
 | `.empty-state`, `.note`, `.note--warn`, `.toast` | Estados vacíos que explican el porqué, notas y confirmaciones. |
-| `.landing` | Placeholder de la landing. |
+| `.lp-*` (`styles/landing/`) | Capa propia de la landing pública (`app/(marketing)`): tema oscuro con scope `.lp`, independiente del conmutador. Rompe el sistema a propósito; sólo reutiliza la marca. |
 
 **Reglas nuevas:**
 - Un monto que no es lo que la persona cobra o paga de verdad **lleva rótulo**

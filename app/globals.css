@@ -2009,41 +2009,6 @@ html[data-theme="dark"] { color-scheme: dark; }
    Feedback UX 15-09 — ver docs/CAMBIOS-UX-15-09.md
    ═══════════════════════════════════════════════════ */
 
-/* ── Landing (placeholder) ───────────────────────── */
-.landing {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  background: var(--bg);
-  padding: 24px;
-  text-align: center;
-}
-.landing__brand {
-  font-family: var(--font-display);
-  font-size: clamp(56px, 11vw, 120px);
-  letter-spacing: -0.03em;
-  line-height: 1;
-  color: var(--ink);
-}
-.landing__brand span { color: var(--accent); }
-.landing__sub {
-  font-size: 15px;
-  color: var(--ink-4);
-  letter-spacing: 0.02em;
-}
-.landing__login {
-  margin-top: 24px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink-3);
-  text-decoration: none;
-  border-bottom: 1px solid var(--line-strong);
-}
-.landing__login:hover { color: var(--accent); border-color: var(--accent); }
-
 /* ── Auth partido (desktop) ──────────────────────── */
 .auth-split {
   min-height: 100vh;
