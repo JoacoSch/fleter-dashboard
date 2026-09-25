@@ -182,7 +182,7 @@ export default function GerenteDisponiblesPage() {
 
   return (
     <div>
-      <div className="section-header" style={{ marginBottom: 24 }}>
+      <div className="section-header">
         <h2>Viajes disponibles</h2>
         <p>
           {loading
@@ -192,54 +192,43 @@ export default function GerenteDisponiblesPage() {
             : `${viajes.length} viaje${viajes.length !== 1 ? "s" : ""} para reservar`}
         </p>
         {!MOCK && (
-          <p style={{ fontSize: 11.5, marginTop: 4, color: connected ? "var(--ok)" : "var(--ink-3)" }}>
-            {connected ? "● Conectado en tiempo real" : "○ Conectando..."}
+          <p className={`live-dot-text${connected ? " is-on" : ""}`}>
+            {connected ? "Conectado en tiempo real" : "Conectando..."}
           </p>
         )}
       </div>
 
       {apiError && (
-        <div style={{ padding: "12px 16px", borderRadius: "var(--radius-sm)", background: "var(--err-soft)", borderLeft: "3px solid var(--err)", marginBottom: 16 }}>
-          <p style={{ fontSize: 13, color: "var(--err)" }}>Error al cargar viajes: {apiError}</p>
-        </div>
+        <div className="error-banner">Error al cargar viajes: {apiError}</div>
       )}
 
       {!empresaActiva && !loading && (
-        <div style={{ padding: "12px 16px", borderRadius: "var(--radius-sm)", background: "var(--warn-soft)", borderLeft: "3px solid var(--warn)", marginBottom: 16 }}>
-          <p style={{ fontSize: 13, color: "var(--warn)" }}>
-            Todavía no tenés una empresa. Creá una en <strong>Mi empresa</strong> para poder reservar viajes.
-          </p>
+        <div className="error-banner error-banner--warn">
+          Todavía no tenés una empresa. Creá una en <strong>Mi empresa</strong> para poder reservar viajes.
         </div>
       )}
 
       {aviso && (
-        <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: "var(--radius-sm)", background: "var(--warn-soft)", borderLeft: "3px solid var(--warn)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--warn)" }}>⚡ {aviso}</p>
-          <button
-            onClick={() => setAviso(null)}
-            style={{ background: "none", border: "none", cursor: "pointer", color: "var(--warn)", fontSize: 18, lineHeight: 1, padding: 0 }}
-          >
-            ×
-          </button>
+        <div className="error-banner error-banner--warn error-banner--row">
+          <span>{aviso}</span>
+          <button type="button" className="btn btn--ghost" onClick={() => setAviso(null)}>Cerrar</button>
         </div>
       )}
 
       {!loading && viajes.length === 0 && (
-        <div className="card" style={{ textAlign: "center", padding: "32px 24px" }}>
-          <p style={{ fontSize: 14, color: "var(--ink-2)", marginBottom: 6 }}>
-            No hay viajes esperando en este momento.
-          </p>
-          <p style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
+        <div className="empty-state">
+          <p className="empty-state__title">No hay viajes esperando</p>
+          <p className="empty-state__text">
             Los viajes aparecen acá apenas se publican, sin necesidad de recargar.
             Sólo llegan los que tu flota puede cubrir.
           </p>
         </div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="stack">
         {loading
           ? Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="card" style={{ height: 120, background: "var(--surface-2)" }} />
+              <div key={i} className="card skeleton" style={{ height: 120 }} />
             ))
           : viajes.map((viaje) => {
               const origen = viaje.paradas.find((p) => p.orden === 1);
@@ -247,61 +236,44 @@ export default function GerenteDisponiblesPage() {
               const intermedias = viaje.paradas.length - 2;
 
               return (
-                <div key={viaje.id_viaje} className="card" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink-3)" }}>
-                        VJ-{viaje.id_viaje}
-                      </span>
+                <div key={viaje.id_viaje} className="card stack stack--lg">
+                  <div className="card-head">
+                    <div className="cluster">
+                      <span className="trip-row__id">VJ-{viaje.id_viaje}</span>
                       <span className={`zone-tag ${viaje.zona}`}>{viaje.zona}</span>
                       {viaje.condiciones_req.map((c) => (
-                        <span
-                          key={c.condicion}
-                          style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: "var(--info-soft)", color: "var(--info)", letterSpacing: "0.04em" }}
-                        >
+                        <span key={c.condicion} className="cond">
                           {CONDICION_LABEL[c.condicion] ?? c.condicion}
                         </span>
                       ))}
                     </div>
-                    <p style={{ fontFamily: "var(--font-display)", fontSize: 20, color: "var(--ink)", flexShrink: 0 }}>
-                      {formatARS(viaje.precio_estimado)}
-                    </p>
+                    <p className="stat__value">{formatARS(viaje.precio_estimado)}</p>
                   </div>
 
-                  <div style={{ position: "relative", paddingLeft: 28 }}>
-                    <div style={{ position: "absolute", left: 8, top: 10, bottom: 10, width: 1.5, background: "var(--line-strong)" }} />
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{ position: "absolute", left: 3, width: 11, height: 11, borderRadius: "50%", background: "var(--accent)", border: "2px solid var(--surface)", boxShadow: "0 0 0 1.5px var(--accent)" }} />
-                        <p style={{ fontSize: 13, color: "var(--ink)" }}>{origen?.direccion}</p>
+                  <div className="route-stops">
+                    <div className="route-stop">
+                      <div className="route-stop__calle">{origen?.direccion}</div>
+                    </div>
+                    {intermedias > 0 && (
+                      <div className="route-stops__extra">
+                        + {intermedias} parada{intermedias !== 1 ? "s" : ""} intermedia{intermedias !== 1 ? "s" : ""}
                       </div>
-                      {intermedias > 0 && (
-                        <p style={{ fontSize: 12, color: "var(--ink-3)", paddingLeft: 4 }}>
-                          + {intermedias} parada{intermedias !== 1 ? "s" : ""} intermedia{intermedias !== 1 ? "s" : ""}
-                        </p>
-                      )}
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{ position: "absolute", left: 3, width: 11, height: 11, borderRadius: 2, background: "var(--ink)", border: "2px solid var(--surface)", boxShadow: "0 0 0 1.5px var(--ink)" }} />
-                        <p style={{ fontSize: 13, color: "var(--ink)" }}>{destino?.direccion}</p>
-                      </div>
+                    )}
+                    <div className="route-stop route-stop--dest">
+                      <div className="route-stop__calle">{destino?.direccion}</div>
                     </div>
                   </div>
 
                   {viaje.descripcion && (
-                    <p style={{ fontSize: 12.5, color: "var(--ink-2)", fontStyle: "italic" }}>
-                      &ldquo;{viaje.descripcion}&rdquo;
-                    </p>
+                    <p className="note">{viaje.descripcion}</p>
                   )}
 
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid var(--line)", paddingTop: 12 }}>
-                    <p style={{ fontSize: 12, color: "var(--ink-3)" }}>
-                      {fmtDateTime(viaje.fecha_programada)}
-                    </p>
+                  <div className="card-foot">
+                    <p>{fmtDateTime(viaje.fecha_programada)}</p>
                     <button
                       className="btn btn--primary"
                       disabled={reservando === viaje.id_viaje || !empresaActiva}
                       onClick={() => reservar(viaje.id_viaje)}
-                      style={{ opacity: reservando === viaje.id_viaje ? 0.7 : 1 }}
                     >
                       {reservando === viaje.id_viaje ? "Reservando..." : "Reservar"}
                     </button>

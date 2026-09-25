@@ -1,0 +1,67 @@
+/* Extraído de docs/design-system-v2.html — sistema de diseño v2.
+   No editar a mano para 'arreglar' un caso puntual: si un valor no sirve,
+   se cambia en el documento y se vuelve a extraer. */
+
+/* Fleter — color. Base: app/globals.css (:root). Cambios respecto del repo:
+   - --ink-2 / --ink-3 más oscuros para cumplir AA en texto chico sobre --bg y --surface-2.
+   - Nuevos *-ink por cada semántico: el color "apto para texto chico" sobre su fondo soft.
+   - --on-accent: sobre naranja el texto chico va en tinta; el blanco (--on-accent-large)
+     queda sólo para texto grande (≥19 px bold o ≥24 px), donde 3.5:1 cumple AA.
+   El naranja #E85D2A no se toca. */
+:root {
+  /* Marca */
+  --brand-orange: #E85D2A;
+  --accent: #E85D2A;          /* rellenos, marcadores, énfasis */
+  --accent-hover: #F06A38;    /* hover de botón primario (más claro, mantiene 5.6:1 con tinta) */
+  --accent-press: #D2521F;    /* pressed */
+  --accent-ink: #A63B14;      /* naranja para texto chico sobre claro (6.4:1) y sobre --accent-soft (5.3:1) */
+  --accent-soft: #FBE4D6;     /* fondo suave */
+  --accent-softer: #FFF1E7;   /* fondo apenas teñido */
+  --on-accent: #1B1A17;       /* texto chico e íconos sobre --accent (4.9:1) */
+  --on-accent-large: #FFFFFF; /* sólo texto grande sobre --accent: ≥19 px bold o ≥24 px (3.5:1, AA large) */
+
+  /* Fondos */
+  --bg: #FAF7F1;              /* fondo de app (off-white cálido) */
+  --surface: #FFFFFF;         /* cards, paneles */
+  --surface-2: #F2EDE2;       /* sidebar, zonas hundidas */
+  --surface-3: #ECE9E1;       /* hover */
+  --surface-ink: #1B1A17;     /* card--ink, aside de auth */
+
+  /* Líneas */
+  --line: #E8E4DA;
+  --line-strong: #D9D3C5;
+
+  /* Tinta */
+  --ink: #1B1A17;             /* texto principal */
+  --ink-2: #3F3B34;           /* secundario */
+  --ink-3: #665F50;           /* metadata, labels (4.7:1 sobre --surface-2) */
+  --ink-4: #B8B2A2;           /* deshabilitado, decorativo. Nunca texto informativo */
+  --on-ink: #FFFFFF;          /* texto sobre --surface-ink */
+  --on-ink-2: rgba(255,255,255,.72);
+
+  /* Semánticos: base (íconos, puntos, texto grande) · ink (texto chico) · soft (fondo) */
+  --ok: #2F8F4E;    --ok-ink: #1F6B39;    --ok-soft: #DCEFD8;
+  --warn: #C98A12;  --warn-ink: #8A5E0B;  --warn-soft: #FBEFCE;
+  --err: #B83232;   --err-ink: #9C2626;   --err-soft: #F5D9D4;
+  --info: #2E6FB7;  --info-ink: #22578F;  --info-soft: #D8E4F2;
+
+  /* Estados del viaje (lib/estados.ts) agrupados por familia */
+  --estado-buscando-bg: var(--warn-soft);   --estado-buscando-fg: var(--warn-ink);    /* BUSCANDO_CONDUCTOR */
+  --estado-proximo-bg: var(--info-soft);    --estado-proximo-fg: var(--info-ink);     /* RESERVADO_POR_EMPRESA, CONDUCTOR_ASIGNADO */
+  --estado-en-curso-bg: var(--accent-soft); --estado-en-curso-fg: var(--accent-ink);  /* EN_CAMINO_A_ORIGEN, CARGANDO, EN_RUTA, DESCARGANDO */
+  --estado-entregado-bg: var(--ok-soft);    --estado-entregado-fg: var(--ok-ink);     /* FINALIZADO */
+  --estado-cancelado-bg: var(--err-soft);   --estado-cancelado-fg: var(--err-ink);    /* CANCELADO */
+
+  /* Zonas */
+  --zona-caba-bg: var(--info-soft);   --zona-caba-fg: var(--info-ink);
+  --zona-prov-bg: #EEEAE0;            --zona-prov-fg: var(--ink-2);
+  --zona-mixto-bg: var(--warn-soft);  --zona-mixto-fg: var(--warn-ink);
+
+  /* Recorrido: origen y destino */
+  --marcador-origen: var(--accent);   /* círculo */
+  --marcador-destino: var(--ink);     /* cuadrado */
+  --marcador-parada: var(--ink-3);
+
+  /* Foco */
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+}

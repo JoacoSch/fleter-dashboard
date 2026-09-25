@@ -161,8 +161,8 @@ export default function FlotaPage() {
 
   if (!empresaActiva) {
     return (
-      <div style={{ maxWidth: 680 }}>
-        <div className="section-header" style={{ marginBottom: 28 }}>
+      <div className="page-medium">
+        <div className="section-header">
           <h2>Flota</h2>
           <p>No tenés ninguna empresa todavía.</p>
         </div>
@@ -171,17 +171,9 @@ export default function FlotaPage() {
   }
 
   return (
-    <div style={{ maxWidth: 680 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          marginBottom: 28,
-          gap: 16,
-        }}
-      >
-        <div className="section-header">
+    <div className="page-medium">
+      <div className="section-header">
+        <div>
           <h2>Flota</h2>
           <p>
             {loadingList
@@ -203,12 +195,10 @@ export default function FlotaPage() {
       </div>
 
       {showForm && (
-        <div className="card" style={{ marginBottom: 28, padding: "24px 28px" }}>
-          <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 18, color: "var(--ink)" }}>
-            Nuevo vehículo
-          </h2>
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="card card--form bloque">
+          <h2 className="card-title">Nuevo vehículo</h2>
+          <form onSubmit={handleSubmit} className="stack stack--lg">
+            <div className="form-grid">
               <div className="field">
                 <label htmlFor="nv-patente">Patente</label>
                 <input
@@ -220,7 +210,7 @@ export default function FlotaPage() {
                   required
                   minLength={6}
                   maxLength={8}
-                  style={{ textTransform: "uppercase" }}
+                  className="patente"
                 />
               </div>
               <div className="field">
@@ -238,7 +228,7 @@ export default function FlotaPage() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div className="form-grid">
               <div className="field">
                 <label htmlFor="nv-marca">Marca</label>
                 <input
@@ -263,7 +253,7 @@ export default function FlotaPage() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div className="form-grid">
               <div className="field">
                 <label htmlFor="nv-color">Color</label>
                 <input
@@ -290,9 +280,9 @@ export default function FlotaPage() {
 
             <div className="field">
               <label>
-                Condiciones <span style={{ color: "var(--ink-3)", fontWeight: 400 }}>(opcional)</span>
+                Condiciones <span className="opt">(opcional)</span>
               </label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
+              <div className="cluster">
                 {CONDICIONES.map((c) => (
                   <button
                     key={c}
@@ -308,7 +298,7 @@ export default function FlotaPage() {
 
             {formError && <p className="auth-error">{formError}</p>}
 
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <div className="form-actions form-actions--end">
               <button type="button" className="btn btn--ghost" onClick={() => setShowForm(false)}>
                 Cancelar
               </button>
@@ -324,75 +314,38 @@ export default function FlotaPage() {
       {listError && <p className="auth-error">{listError}</p>}
 
       {loadingList && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <div className="stack stack--lg">
           {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="admin-skeleton"
-              style={{ height: 84, borderRadius: "var(--radius)" }}
-            />
+            <div key={i} className="card skeleton" style={{ height: 84 }} />
           ))}
         </div>
       )}
 
       {!loadingList && !listError && vehiculos.length === 0 && (
-        <div className="card" style={{ padding: "40px 28px", textAlign: "center" }}>
-          <p style={{ color: "var(--ink-3)", fontSize: 14 }}>Todavía no hay vehículos en la flota.</p>
-          <p style={{ color: "var(--ink-3)", fontSize: 13, marginTop: 6 }}>
-            Agregá uno para poder asignarlo a los viajes.
-          </p>
+        <div className="empty-state">
+          <p className="empty-state__title">Todavía no hay vehículos en la flota</p>
+          <p className="empty-state__text">Agregá uno para poder asignarlo a los viajes.</p>
         </div>
       )}
 
       {!loadingList && !listError && vehiculos.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <div className="stack stack--lg">
           {vehiculos.map((v) => (
-            <div
-              key={v.id_vehiculo}
-              className="card"
-              style={{
-                padding: "20px 24px",
-                display: "flex",
-                alignItems: "flex-start",
-                justifyContent: "space-between",
-                gap: 16,
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 6 }}>
-                  <span
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontWeight: 700,
-                      fontSize: 16,
-                      color: "var(--ink)",
-                      letterSpacing: 1,
-                    }}
-                  >
-                    {v.patente.toUpperCase()}
-                  </span>
-                  <span style={{ fontSize: 13, color: "var(--ink-3)" }}>
+            <div key={v.id_vehiculo} className="card card-head">
+              <div className="stack stack--xs">
+                <div className="cluster">
+                  <span className="veh-card__patente">{v.patente.toUpperCase()}</span>
+                  <span className="texto-meta">
                     {TIPO_LABEL[v.tipo_vehiculo] ?? v.tipo_vehiculo}
                   </span>
                 </div>
-                <p style={{ fontSize: 14, color: "var(--ink-2)", marginBottom: 4 }}>
+                <p className="veh-card__meta">
                   {v.marca} {v.modelo} — {v.anio} — {v.color}
                 </p>
                 {v.condiciones.length > 0 && (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
+                  <div className="cred-list">
                     {v.condiciones.map((c, idx) => (
-                      <span
-                        key={c.id_condicion ?? idx}
-                        style={{
-                          fontSize: 10.5,
-                          fontWeight: 700,
-                          padding: "2px 6px",
-                          borderRadius: 4,
-                          background: "var(--info-soft)",
-                          color: "var(--info)",
-                          letterSpacing: "0.04em",
-                        }}
-                      >
+                      <span key={c.id_condicion ?? idx} className="cond">
                         {CONDICION_LABEL[c.condicion] ?? c.condicion}
                       </span>
                     ))}
@@ -400,8 +353,7 @@ export default function FlotaPage() {
                 )}
               </div>
               <button
-                className="btn btn--ghost"
-                style={{ fontSize: 13, color: "var(--err)", flexShrink: 0 }}
+                className="btn btn--ghost btn--danger"
                 disabled={deletingId === v.id_vehiculo}
                 onClick={() => handleDelete(v.id_vehiculo)}
               >

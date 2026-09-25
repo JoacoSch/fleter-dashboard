@@ -1,0 +1,81 @@
+/* ── Hero: sticky de 320vh conducido por --p ─────── */
+.lp-hero { position: relative; height: 320vh; }
+.lp-hero__stick { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+.lp-canvas { position: absolute; inset: 0; }
+
+/* Póster: el mismo mundo sin WebGL (y el cuadro que se ve mientras carga la escena) */
+.lp-poster {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(60% 34% at 50% 44%, rgba(232, 93, 42, 0.5), transparent 70%),
+    linear-gradient(180deg, #0b0a08 0%, #0b0a08 40%, #1b120c 58%, #0b0a08 60%),
+    #0b0a08;
+}
+.lp-poster::after {
+  content: ""; position: absolute; left: 50%; bottom: 0; width: 140%; height: 58%; transform: translateX(-50%);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 49.6%, rgba(250,247,241,.14) 49.6% 50.4%, transparent 50.4% 100%),
+    linear-gradient(180deg, #0b0a08, #15120e);
+  clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%);
+}
+.lp-hero__vignette {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(11,10,8,.82) 0%, rgba(11,10,8,.35) 42%, transparent 70%),
+    linear-gradient(0deg, rgba(11,10,8,.7), transparent 30%);
+  opacity: calc(1 - var(--p) * 1.6);
+}
+
+.lp-hero__copy {
+  position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+  gap: clamp(14px, 2.4vh, 26px); padding-top: var(--lp-nav-h);
+  /* El bloque de texto se desvanece y sube mientras la cámara se eleva. */
+  opacity: clamp(0, calc(1 - (var(--p) - 0.06) * 4.2), 1);
+  transform: translateY(calc(var(--p) * -60px));
+  pointer-events: auto;
+}
+.lp-hero__h1 { max-width: none; font-size: clamp(34px, min(5.6vw, 9.2vh), 84px); line-height: 1; }
+.lp-line { display: block; overflow: hidden; padding-bottom: 0.06em; }
+.lp-line > span { display: block; animation: lp-rise 1000ms var(--ease-out) both; }
+.lp-line:nth-child(2) > span { animation-delay: 90ms; }
+.lp-line:nth-child(3) > span { animation-delay: 180ms; }
+.lp-line:nth-child(4) > span { animation-delay: 270ms; }
+.lp-line--accent { color: var(--lp-orange); }
+@keyframes lp-rise { from { transform: translateY(105%); } to { transform: none; } }
+
+.lp-hero__copy .lp-eyebrow { animation: lp-fade 800ms var(--ease-out) 60ms both; }
+.lp-hero__lead { animation: lp-fade 900ms var(--ease-out) 420ms both; max-width: 40ch; }
+.lp-hero__cta { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; animation: lp-fade 900ms var(--ease-out) 560ms both; }
+@keyframes lp-fade { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* Fase mapa: la card del viaje y el eslogan aparecen cuando la cámara ya está arriba */
+.lp-hero__map {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  gap: 22px; padding-bottom: clamp(40px, 9vh, 96px);
+  opacity: clamp(0, calc((var(--p) - 0.66) * 5), 1);
+  transform: translateY(calc((1 - clamp(0, (var(--p) - 0.66) * 5, 1)) * 28px));
+}
+.lp-slogan { font-family: var(--font-accent); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; font-size: clamp(12px, 1.3vw, 15px); color: var(--lp-ink); }
+.lp-trip {
+  display: inline-flex; align-items: center; gap: 14px; padding: 14px 20px 14px 16px; border-radius: 16px;
+  background: var(--lp-ink); color: var(--lp-cream); border: 1px solid rgba(255,255,255,.1);
+  box-shadow: 0 24px 60px -24px rgba(20,19,16,.7), 0 2px 0 rgba(255,255,255,.04) inset;
+}
+.lp-trip b { display: block; font-family: var(--font-mono); font-size: 15px; font-weight: 500; }
+.lp-trip small { display: block; font-size: 13px; color: var(--lp-fg-2); }
+.lp-trip__dot { width: 12px; height: 12px; border-radius: 50%; background: var(--lp-orange); box-shadow: 0 0 0 0 var(--lp-glow); animation: lp-ping 2s var(--ease-out) infinite; flex: none; }
+@keyframes lp-ping { 0% { box-shadow: 0 0 0 0 rgba(232,93,42,.55); } 100% { box-shadow: 0 0 0 16px rgba(232,93,42,0); } }
+
+.lp-hero__scroll {
+  position: absolute; z-index: 2; left: var(--lp-pad); bottom: 28px; display: flex; align-items: center; gap: 12px;
+  font-family: var(--font-accent); font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--lp-fg-3);
+  opacity: clamp(0, calc(1 - var(--p) * 12), 1);
+}
+.lp-hero__scroll i { width: 1px; height: 38px; background: linear-gradient(var(--lp-orange), transparent); animation: lp-drip 1.8s var(--ease-out) infinite; transform-origin: top; }
+@keyframes lp-drip { 0% { transform: scaleY(0); } 60% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+
+@media (max-width: 720px) {
+  .lp-hero { height: 280vh; }
+  .lp-hero__copy { justify-content: flex-end; padding-bottom: 12vh; }
+  .lp-hero__vignette { background: linear-gradient(0deg, rgba(11,10,8,.9) 8%, rgba(11,10,8,.3) 60%, transparent); }
+}

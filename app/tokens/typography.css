@@ -1,0 +1,49 @@
+/* Extraído de docs/design-system-v2.html — sistema de diseño v2.
+   No editar a mano para 'arreglar' un caso puntual: si un valor no sirve,
+   se cambia en el documento y se vuelve a extraer. */
+
+/* Fleter — tipografía. Cuatro familias, cada una con un rol fijo:
+   Archivo Black = display y números · Manrope = UI · Josefin Sans = eyebrows y eslogan ·
+   JetBrains Mono = IDs, patentes, horas. */
+:root {
+  /* next/font/google (app/layout.tsx) genera nombres de familia propios y los
+     expone en estas variables: el nombre literal del documento no resuelve. */
+  --font-display: var(--font-archivo-black), "Archivo Black", "Arial Black", sans-serif;
+  --font-ui: var(--font-manrope), "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-accent: var(--font-josefin-sans), "Josefin Sans", "Manrope", sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+  /* Display (Archivo Black, peso único 400) */
+  --text-display-xl: 44px;   /* precio del viaje */
+  --text-display-lg: 32px;   /* valor de KPI */
+  --text-display-md: 28px;   /* título de sección (h2) */
+  --text-display-sm: 17px;   /* título de estado vacío */
+  --text-display-xs: 14px;   /* título de card */
+
+  /* UI (Manrope) */
+  --text-lg: 16px;
+  --text-md: 14px;           /* body */
+  --text-sm: 13px;           /* nav, celdas */
+  --text-xs: 12px;           /* metadata, hints */
+  --text-2xs: 11px;          /* badges, tags uppercase (mínimo del sistema) */
+
+  /* Eyebrow (Josefin Sans, uppercase) */
+  --text-eyebrow: 12px;
+  --tracking-eyebrow: 0.10em;
+
+  /* Mono */
+  --text-mono: 12px;
+  --text-mono-lg: 18px;      /* N° de viaje destacado */
+  --tracking-patente: 0.08em;
+
+  --leading-tight: 1.05;
+  --leading-snug: 1.25;
+  --leading-normal: 1.5;
+  --tracking-display: -0.02em;
+  --tracking-label: 0.06em;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+}

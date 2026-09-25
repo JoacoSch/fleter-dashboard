@@ -6,8 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useEmpresa } from "@/hooks/useEmpresa";
 import { Navigation, ClipboardList, Users, Truck, Building2, LogOut } from "lucide-react";
+import TemaToggle from "@/components/TemaToggle";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
+import AppShell from "@/components/shells/AppShell";
 
 const navItems = [
   { href: "/gerente",             label: "Viajes disponibles", Icon: Navigation },
@@ -51,14 +53,14 @@ export default function GerenteShell({
   }
 
   return (
-    <div className="app">
+    <AppShell>
       <aside className="sidebar">
         <div className="brand-header">
           <div className="brand-mark">F</div>
           <span className="brand-name">Fleter<em>.</em></span>
         </div>
 
-        <nav className="sidebar__nav" style={{ flex: 1 }}>
+        <nav className="sidebar__nav sidebar__nav--grow">
           {navItems.map(({ href, label, Icon }) => {
             const isActive =
               href === "/gerente" ? pathname === href : pathname.startsWith(href);
@@ -76,9 +78,11 @@ export default function GerenteShell({
         </nav>
 
         <div className="sidebar__profile-section">
-          <div ref={menuRef} style={{ position: "relative" }}>
+          <div ref={menuRef} className="sidebar__user-anchor">
             {menuOpen && (
               <div className="sidebar__user-menu">
+                <TemaToggle />
+                <div className="sidebar__user-menu-sep" />
                 <button
                   type="button"
                   className="sidebar__user-menu-item sidebar__user-menu-item--danger"
@@ -97,7 +101,7 @@ export default function GerenteShell({
               <div className="sidebar__conductor-avatar">
                 {`${nombre[0]}${apellido[0]}`}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="sidebar__user-info">
                 <p className="sidebar__conductor-name">{nombre} {apellido}</p>
                 <p className="sidebar__conductor-role">Gerente</p>
               </div>
@@ -109,14 +113,13 @@ export default function GerenteShell({
       <div className="main">
         <header className="topbar">
           {empresaActiva && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 11.5, color: "var(--ink-3)" }}>Empresa</span>
+            <div className="topbar__empresa">
+              <span className="topbar__empresa-label">Empresa</span>
               {empresas.length > 1 ? (
                 <select
                   value={empresaActiva.id_empresa}
                   onChange={(e) => setEmpresaActiva(Number(e.target.value))}
-                  className="input"
-                  style={{ fontSize: 12.5, padding: "4px 8px", width: "auto" }}
+                  className="input input--sm"
                 >
                   {empresas.map((e) => (
                     <option key={e.id_empresa} value={e.id_empresa}>
@@ -125,9 +128,7 @@ export default function GerenteShell({
                   ))}
                 </select>
               ) : (
-                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>
-                  {empresaActiva.nombre}
-                </span>
+                <span className="topbar__empresa-nombre">{empresaActiva.nombre}</span>
               )}
             </div>
           )}
@@ -136,6 +137,6 @@ export default function GerenteShell({
           {children}
         </main>
       </div>
-    </div>
+    </AppShell>
   );
 }

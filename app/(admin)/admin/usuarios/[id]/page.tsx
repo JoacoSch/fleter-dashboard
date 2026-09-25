@@ -19,7 +19,7 @@ export default function AdminUsuarioDetallePage() {
   }, [id]);
 
   if (error) return <p className="admin-error">{error}</p>;
-  if (!u) return <div className="admin-page"><div className="card admin-skeleton" style={{ height: 160 }} /></div>;
+  if (!u) return <div className="admin-page"><div className="card skeleton" style={{ height: 160 }} /></div>;
 
   return (
     <div className="admin-page">
@@ -77,9 +77,9 @@ export default function AdminUsuarioDetallePage() {
 
       {/* Vehículos del conductor */}
       {u.rol === "CONDUCTOR" && u.conductor?.vehiculos && u.conductor.vehiculos.length > 0 && (
-        <div className="card" style={{ marginTop: 16 }}>
+        <div className="card">
           <p className="metric__label">Vehículos</p>
-          <div className="admin-table" style={{ marginTop: 8 }}>
+          <div className="admin-table">
             <div className="admin-table__row admin-table__row--head admin-table__row--veh">
               <span>Patente</span><span>Marca / Modelo</span><span>Tipo</span><span>Condiciones</span>
             </div>
@@ -100,9 +100,9 @@ export default function AdminUsuarioDetallePage() {
         const viajes = u.cliente?.viajes ?? u.conductor?.viajes;
         if (!viajes || viajes.length === 0) return null;
         return (
-          <div className="card" style={{ marginTop: 16 }}>
+          <div className="card">
             <p className="metric__label">Historial de viajes</p>
-            <div className="admin-table" style={{ marginTop: 8 }}>
+            <div className="admin-table">
               <div className="admin-table__row admin-table__row--head admin-table__row--viaje">
                 <span>ID</span><span>Estado</span><span>Precio real</span><span>Creado</span>
               </div>

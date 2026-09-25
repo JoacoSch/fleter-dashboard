@@ -413,7 +413,7 @@ const initials = (name: string) =>
 | `.fact-month`, `.fact-row` | Comprobantes por mes. |
 | `components/conductor/VehiculoForm.tsx` · `.dropzone`, `.badge-proximo` | Alta de vehículo. `badge-proximo` marca funciones visibles que todavía no persisten. |
 | `.empty-state`, `.note`, `.note--warn`, `.toast` | Estados vacíos que explican el porqué, notas y confirmaciones. |
-| `.landing` | Placeholder de la landing. |
+| `.lp-*` (`styles/landing/`) | Capa propia de la landing pública (`app/(marketing)`): tema oscuro con scope `.lp`, independiente del conmutador. Rompe el sistema a propósito; sólo reutiliza la marca. |
 
 **Reglas nuevas:**
 - Un monto que no es lo que la persona cobra o paga de verdad **lleva rótulo**
@@ -473,9 +473,81 @@ anteriores; algunas secciones de arriba todavía lo describen): `.card--hero`,
 conductor (márgenes `.mt-*`/`.mb-*`, `.btn--block`, `.va-empty*`, `.mapa-fill`,
 `.skeleton-card--alto`, entre otras; ver el final de `globals.css`). En esas
 pantallas sólo queda inline lo calculado del panel (barras, zonas, progreso).
-Gerente, `pedir-viaje`, `perfil` y admin siguen igual.
+Gerente, `pedir-viaje`, `perfil` y admin entraron después, con la adopción del v2
+(ver la sección siguiente).
 
 **Colores:** el ámbar `#F59E0B` de la estrella en viaje activo pasó a `--warn`, y
 el fondo del mapa de viaje activo usa `var(--line)` (mismo valor). Quedan escritos
 a mano en el CSS los tonos de hover/borde de los colores soft (`#F8D8C2`,
 `#C9E7C6`, `#BFDDBF`, `#8A5E0B`, `#EEEAE0`…), que no tienen token.
+
+---
+
+## Adopción del design system v2 (17-09)
+
+Fuente: **`docs/design-system-v2.html`**. Los tokens viven en `app/tokens/*.css` y
+se importan desde `app/globals.css`; el CSS de componentes del v2 está extraído en
+`app/components-v2.css` pero **todavía no se importa**: se adopta por partes.
+
+**Regla de espaciado y tipografía:** el espaciado usa la escala base 4
+(`--sp-1..12`); 1, 2 y 3 px siguen permitidos para bordes y micro-ajustes. Ningún
+texto baja de 11 px. Los tokens `--text-*` están disponibles para lo nuevo; los
+tamaños viejos que no están en la escala se dejaron como estaban.
+
+**Clases agregadas al pasar gerente, admin, pedir-viaje y perfil a clases:**
+
+| Clase | Uso |
+|---|---|
+| `.input` (`--sm`, `--mono`, `select.input`, `:disabled`) | Campo fuera de `.field`. El gerente usaba `.input` desde siempre y **no existía**. La versión del v2 (alto fijo de 36 px) llega con los componentes. |
+| `.stack--lg` (16) · `.stack--xs` (4) | Se suman a `.stack` (12) y `.stack--tight` (8). El espacio entre bloques sale del padre, no de un margen por hijo. |
+| `.card-row` · `.card-foot` · `.bloque` · `.datos-grid` | Fila de card, pie con borde, separación entre secciones, ficha de datos. |
+| `.error-banner--warn` | Mismo bloque de aviso en clave naranja. `.error-banner strong` mantiene el dato principal en tinta y 14 px. |
+| `.reserva-timer` (`--urgente`) | Cuenta regresiva de la reserva del gerente. |
+| `.texto-meta` · `.titulo-mono` · `.dato-valor` (`--mono`) | Texto secundario, título que es un identificador, valor de ficha. |
+| `.status--ok` / `--err` | Estado que no es de viaje (empresa activa/inactiva). |
+| `.card--destacada` · `.codigo-afiliacion` | Card del dato que la pantalla vino a mostrar. |
+| `.recorrido*` | Recorrido **editable** de pedir viaje. La línea vertical es un `::before`, no un `<div>`. |
+| `.autocomplete*` | Sugerencias de dirección. El hover lo hacía JavaScript. |
+| `.topbar__empresa*` | Selector de empresa del gerente. |
+
+**Cambios de comportamiento:** `.cluster` ahora centra verticalmente; `.admin-page`
+apila con `gap` y por eso desaparecieron sus `marginTop: 16`. Se borró
+`.admin-skeleton` con su animación: los placeholders usan `.skeleton`.
+
+**Estilos inline:** de 298 a **23**, y los 23 son alturas de placeholder,
+porcentajes calculados de barras y el color de cada serie del gráfico.
+
+### Responsive y ancho de la sidebar
+
+**Cortes.** Cuatro, todos en `globals.css` al final del archivo; **ninguna
+pantalla agrega media queries propias**:
+
+| Corte | Qué pasa |
+|---|---|
+| ≤ 1079 | Relleno de tablet. El detalle del viaje pasa a una columna. En la grilla de 12, `span-3` y `span-4` van a 6, y `span-5/7/8` a 12. La tabla del Record se desplaza dentro de su caja. El aside de auth se angosta. |
+| ≤ 999 | `stat-grid` a dos columnas y la trip card reacomoda su lateral. |
+| ≤ 899 | **Riel de íconos**: la sidebar pasa a `--sidebar-rail-w` (64) y se esconden textos, badges, recientes y datos de usuario. La manija desaparece. |
+| ≤ 719 | Todo a una columna, relleno mínimo y el aside de auth se oculta. Sólo se garantiza que nada desborde: **no hay navegación mobile todavía**. |
+
+**Por qué 900 y no el 1080 del documento.** La tabla del Record son nueve
+columnas que suman 772 px con los gaps; con el relleno del contenido necesita
+828, más la sidebar de 248 da 1076 px de ventana. Ese es el número del doc. Se
+eligió 900 igual para que una laptop de 1024 conserve la sidebar con textos;
+entre 900 y 1079 la tabla se desplaza dentro de su caja, que es la decisión de
+producto (el Record sigue siendo tabla, no cards).
+
+**Ancho ajustable.** `components/shells/AppShell.tsx` envuelve a los cuatro
+paneles y es el único dueño de `--sidebar-w`. Todo el layout se deriva de esa
+variable, así que el contenido acompaña solo. La manija del borde
+(`.sidebar-handle`) arrastra entre **200 y 400 px**, doble click vuelve a 248,
+las flechas mueven de a 16 y `Home` restablece; el valor se guarda en
+`localStorage` con el mismo patrón que `hooks/useEmpresa.tsx`. Debajo de 900 el
+ancho manual se ignora: manda el riel.
+
+Dos cosas que no son obvias y conviene no "simplificar": el ancho **no** es
+estado de React (arrastrar re-renderizaría el panel entero en cada movimiento) y
+el indicador de "estoy arrastrando" vive en un ref, porque si sale del estado se
+pierden los `pointermove` que llegan antes del re-render.
+
+**Admin quedó fuera del responsive**: es herramienta interna y se mira en
+desktop.

@@ -1,0 +1,7 @@
+/* Landing de Fleter — capa propia (scope `.lp`).
+   Reutiliza sólo la marca de los tokens (naranja, tinta, crema, familias).
+   Todo lo demás vive acá; nada de esto toca el dashboard. */
+@import "./base.css";
+@import "./hero.css";
+@import "./sections.css";
+@import "./scenes.css";

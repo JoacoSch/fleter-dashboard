@@ -54,18 +54,18 @@ export default function AdminEstadisticasPage() {
         </div>
         <div className="card span-3">
           <p className="metric__label">Facturado (finalizados)</p>
-          <p className="metric__value" style={{ fontSize: 26 }}>{formatARS(plata.total_precio_real_finalizados)}</p>
+          <p className="metric__value stat__value">{formatARS(plata.total_precio_real_finalizados)}</p>
           <p className="metric__hint">Neto conductores {formatARS(plata.total_neto_conductores)}</p>
         </div>
         <div className="card card--ink span-3">
           <p className="metric__label">Fee de la app</p>
-          <p className="metric__value" style={{ fontSize: 26 }}>{formatARS(plata.total_fee_app)}</p>
+          <p className="metric__value stat__value">{formatARS(plata.total_fee_app)}</p>
           <p className="metric__hint">Comisión sobre finalizados</p>
         </div>
       </div>
 
       {/* Charts */}
-      <div className="grid-12" style={{ marginTop: 16 }}>
+      <div className="grid-12">
         <div className="card span-6">
           <p className="metric__label">Usuarios registrados (30 días)</p>
           <BarChart
@@ -86,29 +86,25 @@ export default function AdminEstadisticasPage() {
       </div>
 
       {/* Distribuciones */}
-      <div className="grid-12" style={{ marginTop: 16 }}>
+      <div className="grid-12">
         <div className="card span-6">
           <p className="metric__label">Viajes por estado</p>
-          <div style={{ marginTop: 12 }}>
-            <DistributionBars
-              data={Object.entries(viajes.por_estado).map(([k, v]) => ({ label: ESTADO_LABELS[k] ?? k, value: v }))}
-              colorVar="var(--accent)"
-            />
-          </div>
+          <DistributionBars
+            data={Object.entries(viajes.por_estado).map(([k, v]) => ({ label: ESTADO_LABELS[k] ?? k, value: v }))}
+            colorVar="var(--accent)"
+          />
         </div>
         <div className="card span-6">
           <p className="metric__label">Usuarios por rol</p>
-          <div style={{ marginTop: 12 }}>
-            <DistributionBars
-              data={Object.entries(usuarios.por_rol).map(([k, v]) => ({ label: k, value: v }))}
-              colorVar="var(--info)"
-            />
-          </div>
+          <DistributionBars
+            data={Object.entries(usuarios.por_rol).map(([k, v]) => ({ label: k, value: v }))}
+            colorVar="var(--info)"
+          />
         </div>
       </div>
 
       {/* Tops */}
-      <div className="grid-12" style={{ marginTop: 16 }}>
+      <div className="grid-12">
         <div className="card span-6">
           <p className="metric__label">Top conductores por ganancia</p>
           <table className="admin-top-table">
@@ -157,12 +153,12 @@ function StatsSkeleton() {
       </div>
       <div className="grid-12">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="card span-3 admin-skeleton" style={{ height: 92 }} />
+          <div key={i} className="card span-3 skeleton" style={{ height: 92 }} />
         ))}
       </div>
-      <div className="grid-12" style={{ marginTop: 16 }}>
-        <div className="card span-6 admin-skeleton" style={{ height: 200 }} />
-        <div className="card span-6 admin-skeleton" style={{ height: 200 }} />
+      <div className="grid-12">
+        <div className="card span-6 skeleton" style={{ height: 200 }} />
+        <div className="card span-6 skeleton" style={{ height: 200 }} />
       </div>
     </div>
   );

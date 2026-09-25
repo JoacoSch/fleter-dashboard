@@ -109,7 +109,7 @@ export default function ConductoresPage() {
   if (!empresaLoading && !empresaActiva) {
     return (
       <div>
-        <div className="section-header" style={{ marginBottom: 24 }}>
+        <div className="section-header">
           <h2>Conductores</h2>
           <p>No tenés ninguna empresa todavía.</p>
         </div>
@@ -122,7 +122,7 @@ export default function ConductoresPage() {
 
   return (
     <div>
-      <div className="section-header" style={{ marginBottom: 24 }}>
+      <div className="section-header">
         <h2>Conductores</h2>
         <p>
           {loading || empresaLoading
@@ -138,84 +138,38 @@ export default function ConductoresPage() {
       </div>
 
       {listError && (
-        <div
-          style={{
-            padding: "12px 16px",
-            borderRadius: "var(--radius-sm)",
-            background: "var(--err-soft)",
-            borderLeft: "3px solid var(--err)",
-            marginBottom: 16,
-          }}
-        >
-          <p style={{ fontSize: 13, color: "var(--err)" }}>{listError}</p>
-        </div>
+        <div className="error-banner">{listError}</div>
       )}
 
       {aprobarError && (
-        <div
-          style={{
-            padding: "12px 16px",
-            borderRadius: "var(--radius-sm)",
-            background: "var(--err-soft)",
-            borderLeft: "3px solid var(--err)",
-            marginBottom: 16,
-          }}
-        >
-          <p style={{ fontSize: 13, color: "var(--err)" }}>{aprobarError}</p>
-        </div>
+        <div className="error-banner">{aprobarError}</div>
       )}
 
       {desafiliarError && (
-        <div
-          style={{
-            padding: "12px 16px",
-            borderRadius: "var(--radius-sm)",
-            background: "var(--err-soft)",
-            borderLeft: "3px solid var(--err)",
-            marginBottom: 16,
-          }}
-        >
-          <p style={{ fontSize: 13, color: "var(--err)" }}>{desafiliarError}</p>
-        </div>
+        <div className="error-banner">{desafiliarError}</div>
       )}
 
       {(loading || empresaLoading) && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="stack">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="card" style={{ height: 72, background: "var(--surface-2)" }} />
+            <div key={i} className="card skeleton" style={{ height: 72 }} />
           ))}
         </div>
       )}
 
       {!loading && !empresaLoading && !listError && conductores.length === 0 && (
-        <div className="card" style={{ padding: "40px 28px", textAlign: "center" }}>
-          <p style={{ color: "var(--ink-3)", fontSize: 14 }}>No hay conductores afiliados todavía.</p>
+        <div className="empty-state">
+          <p className="empty-state__text">No hay conductores afiliados todavía.</p>
         </div>
       )}
 
       {!loading && !empresaLoading && pendientes.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--warn)", marginBottom: 10 }}>
-            Solicitudes pendientes
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="bloque">
+          <p className="metric__label">Solicitudes pendientes</p>
+          <div className="stack">
             {pendientes.map((c) => (
-              <div
-                key={c.id_conductor}
-                style={{
-                  padding: "14px 18px",
-                  borderRadius: "var(--radius-sm)",
-                  background: "var(--warn-soft)",
-                  borderLeft: "3px solid var(--warn)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 12,
-                }}
-              >
-                <p style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>
-                  {c.usuario.nombre} {c.usuario.apellido}
-                </p>
+              <div key={c.id_conductor} className="error-banner error-banner--warn error-banner--row">
+                <p><strong>{c.usuario.nombre} {c.usuario.apellido}</strong></p>
                 <button
                   className="btn btn--primary"
                   disabled={aprobandoId === c.id_conductor}
@@ -230,32 +184,21 @@ export default function ConductoresPage() {
       )}
 
       {!loading && !empresaLoading && activos.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="stack">
           {activos.map((c) => (
-            <div
-              key={c.id_conductor}
-              className="card"
-              style={{
-                padding: "16px 20px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 16,
-              }}
-            >
-              <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>
+            <div key={c.id_conductor} className="card card-row">
+              <div className="stack stack--xs">
+                <p className="veh-card__title">
                   {c.usuario.nombre} {c.usuario.apellido}
                 </p>
-                <p style={{ fontSize: 12.5, color: "var(--ink-3)", marginTop: 2 }}>
+                <p className="veh-card__meta">
                   {c.calificacion_promedio === null
                     ? "—"
                     : `★ ${c.calificacion_promedio.toFixed(1)}`}
                 </p>
               </div>
               <button
-                className="btn btn--ghost"
-                style={{ fontSize: 13, color: "var(--err)", flexShrink: 0 }}
+                className="btn btn--ghost btn--danger"
                 disabled={desafiliarId === c.id_conductor}
                 onClick={() => handleDesafiliar(c.id_conductor)}
               >

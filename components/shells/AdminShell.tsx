@@ -5,8 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { BarChart2, Users, ClipboardList, LogOut } from "lucide-react";
+import TemaToggle from "@/components/TemaToggle";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
+import AppShell from "@/components/shells/AppShell";
 
 const navItems = [
   { href: "/admin",          label: "Estadísticas", Icon: BarChart2 },
@@ -52,7 +54,7 @@ export default function AdminShell({
   }
 
   return (
-    <div className="app">
+    <AppShell>
       <aside className="sidebar">
         <div className="brand-header">
           <div className="brand-mark">F</div>
@@ -77,6 +79,8 @@ export default function AdminShell({
           <div ref={menuRef} className="sidebar__user-anchor">
             {menuOpen && (
               <div className="sidebar__user-menu">
+                <TemaToggle />
+                <div className="sidebar__user-menu-sep" />
                 <button
                   type="button"
                   className="sidebar__user-menu-item sidebar__user-menu-item--danger"
@@ -114,6 +118,6 @@ export default function AdminShell({
           {children}
         </main>
       </div>
-    </div>
+    </AppShell>
   );
 }

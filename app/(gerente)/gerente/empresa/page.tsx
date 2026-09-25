@@ -117,7 +117,7 @@ export default function EmpresaPage() {
 
   return (
     <div>
-      <div className="section-header section-header--top" style={{ marginBottom: 24 }}>
+      <div className="section-header section-header--top">
         <div>
           <h2>Mi empresa</h2>
           <p>Datos de tu empresa y código de afiliación para conductores.</p>
@@ -128,21 +128,21 @@ export default function EmpresaPage() {
       {errorDetalle && <div className="error-banner">{errorDetalle}</div>}
 
       {loading && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div className="card" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="stack stack--lg">
+          <div className="card stack">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} style={{ height: 36, background: "var(--surface-2)", borderRadius: 4 }} />
+              <div key={i} className="skeleton" style={{ height: 36 }} />
             ))}
           </div>
-          <div className="card" style={{ height: 96, background: "var(--surface-2)", borderRadius: "var(--radius)" }} />
+          <div className="card skeleton" style={{ height: 96 }} />
         </div>
       )}
 
       {!loading && !empresaActiva && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div className="stack stack--lg">
           <div className="card">
             <p className="metric__label card-section-label">Sin empresa</p>
-            <p style={{ fontSize: 13.5, color: "var(--ink-2)" }}>
+            <p className="empty-state__text">
               Todavía no tenés ninguna empresa registrada. Creá una para empezar a recibir viajes
               y afiliar conductores a tu flota.
             </p>
@@ -160,46 +160,30 @@ export default function EmpresaPage() {
       )}
 
       {!loading && empresaActiva && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div className="stack stack--lg">
           {/* Datos de la empresa */}
           <div className="card">
             <p className="metric__label card-section-label">Datos de la empresa</p>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-                gap: 20,
-              }}
-            >
+            <div className="datos-grid">
               <div>
                 <p className="metric__label">Nombre</p>
-                <p style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)", marginTop: 4 }}>
-                  {empresaActiva.nombre}
-                </p>
+                <p className="dato-valor">{empresaActiva.nombre}</p>
               </div>
               <div>
                 <p className="metric__label">CUIT</p>
-                <p style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)", marginTop: 4, fontFamily: "var(--font-mono)" }}>
-                  {empresaActiva.cuit}
-                </p>
+                <p className="dato-valor dato-valor--mono">{empresaActiva.cuit}</p>
               </div>
               <div>
                 <p className="metric__label">Estado</p>
-                <p style={{ marginTop: 4 }}>
-                  <span
-                    className="status"
-                    style={{
-                      background: empresaActiva.activa ? "var(--ok-soft)" : "var(--err-soft)",
-                      color: empresaActiva.activa ? "var(--ok)" : "var(--err)",
-                    }}
-                  >
+                <p className="dato-valor">
+                  <span className={`status ${empresaActiva.activa ? "status--ok" : "status--err"}`}>
                     {empresaActiva.activa ? "Activa" : "Inactiva"}
                   </span>
                 </p>
               </div>
               <div>
                 <p className="metric__label">Calificación promedio</p>
-                <p className="metric__value" style={{ fontSize: 22, marginTop: 4 }}>
+                <p className="stat__value">
                   {detalle?.calificacion_promedio != null
                     ? `${detalle.calificacion_promedio.toFixed(1)} ★`
                     : "Sin calificaciones aún"}
@@ -207,7 +191,7 @@ export default function EmpresaPage() {
               </div>
               <div>
                 <p className="metric__label">Conductores activos</p>
-                <p className="metric__value" style={{ fontSize: 22, marginTop: 4 }}>
+                <p className="stat__value">
                   {detalle?.cantidad_conductores_activos ?? "—"}
                 </p>
               </div>
@@ -215,13 +199,13 @@ export default function EmpresaPage() {
                 <>
                   <div>
                     <p className="metric__label">Vehículos</p>
-                    <p className="metric__value" style={{ fontSize: 22, marginTop: 4 }}>
+                    <p className="stat__value">
                       {empresaActiva._count.vehiculos}
                     </p>
                   </div>
                   <div>
                     <p className="metric__label">Viajes</p>
-                    <p className="metric__value" style={{ fontSize: 22, marginTop: 4 }}>
+                    <p className="stat__value">
                       {empresaActiva._count.viajes}
                     </p>
                   </div>
@@ -231,34 +215,16 @@ export default function EmpresaPage() {
           </div>
 
           {/* Código de afiliación */}
-          <div className="card" style={{ background: "linear-gradient(180deg, var(--surface) 65%, var(--accent-softer) 100%)" }}>
+          <div className="card card--destacada">
             <p className="metric__label card-section-label">Código de afiliación</p>
-            <p style={{ fontSize: 13, color: "var(--ink-2)", marginBottom: 16 }}>
+            <p className="empty-state__text">
               Es el código que un conductor usa para afiliarse a tu empresa.
             </p>
 
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 16,
-                flexWrap: "wrap",
-              }}
-            >
-              <p
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 36,
-                  fontWeight: 700,
-                  letterSpacing: "0.06em",
-                  color: "var(--ink)",
-                  margin: 0,
-                }}
-              >
-                {empresaActiva.codigo_afiliacion}
-              </p>
+            <div className="cluster stack--lg">
+              <p className="codigo-afiliacion">{empresaActiva.codigo_afiliacion}</p>
 
-              <div style={{ display: "flex", gap: 8 }}>
+              <div className="cluster">
                 <button
                   type="button"
                   className="btn"
@@ -282,24 +248,14 @@ export default function EmpresaPage() {
             </div>
 
             {confirmandoRegenerar && (
-              <div
-                style={{
-                  marginTop: 16,
-                  padding: "12px 14px",
-                  borderRadius: "var(--radius-sm)",
-                  background: "var(--warn-soft)",
-                  border: "1px solid var(--warn)",
-                }}
-              >
-                <p style={{ fontSize: 13, color: "var(--ink)", marginBottom: 10 }}>
+              <div className="note note--warn stack">
+                <p>
                   Al regenerar, el código actual (<strong>{empresaActiva.codigo_afiliacion}</strong>) deja de
                   funcionar de inmediato. Los conductores que todavía no se afiliaron van a necesitar el
                   código nuevo.
                 </p>
-                {errorRegenerar && (
-                  <p style={{ fontSize: 12.5, color: "var(--err)", marginBottom: 10 }}>{errorRegenerar}</p>
-                )}
-                <div style={{ display: "flex", gap: 8 }}>
+                {errorRegenerar && <p className="error-text">{errorRegenerar}</p>}
+                <div className="cluster">
                   <button
                     type="button"
                     className="btn btn--primary"
@@ -322,12 +278,11 @@ export default function EmpresaPage() {
           </div>
 
           {/* Crear otra empresa (colapsable) */}
-          <div className="card">
+          <div className="card stack stack--lg">
             <button
               type="button"
-              className="btn btn--ghost"
+              className="btn btn--ghost cluster"
               onClick={() => setFormAbierto((v) => !v)}
-              style={{ marginBottom: formAbierto ? 16 : 0 }}
             >
               {formAbierto ? "Cerrar" : "Crear otra empresa"}
             </button>
@@ -371,47 +326,27 @@ function FormularioCrearEmpresa({
 }) {
   const contenido = (
     <form onSubmit={onSubmit} className="auth-form">
-      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        <label htmlFor="empresa-nombre" style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--ink-3)" }}>
-          Nombre
-        </label>
+      <div className="field">
+        <label className="metric__label" htmlFor="empresa-nombre">Nombre</label>
         <input
           id="empresa-nombre"
+          className="input"
           type="text"
           value={nombre}
           onChange={(e) => onNombreChange(e.target.value)}
           placeholder="Ej: Fletes García SRL"
-          style={{
-            padding: "7px 10px",
-            borderRadius: "var(--radius-sm)",
-            border: "1px solid var(--line-strong)",
-            background: "var(--surface)",
-            color: "var(--ink)",
-            fontSize: 13,
-            fontFamily: "var(--font-ui)",
-          }}
         />
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        <label htmlFor="empresa-cuit" style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--ink-3)" }}>
-          CUIT (11 dígitos)
-        </label>
+      <div className="field">
+        <label className="metric__label" htmlFor="empresa-cuit">CUIT (11 dígitos)</label>
         <input
           id="empresa-cuit"
+          className="input input--mono"
           type="text"
           inputMode="numeric"
           value={cuit}
           onChange={(e) => onCuitChange(e.target.value)}
           placeholder="20123456789"
-          style={{
-            padding: "7px 10px",
-            borderRadius: "var(--radius-sm)",
-            border: "1px solid var(--line-strong)",
-            background: "var(--surface)",
-            color: "var(--ink)",
-            fontSize: 13,
-            fontFamily: "var(--font-mono)",
-          }}
         />
       </div>
       {error && <p className="auth-error">{error}</p>}

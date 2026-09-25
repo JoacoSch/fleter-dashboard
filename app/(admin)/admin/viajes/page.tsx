@@ -7,6 +7,7 @@ import { fmtDate } from "@/lib/utils";
 import { ESTADOS_VIAJE, ZONAS, type AdminViajesResponse } from "@/lib/types-admin";
 import type { EstadoViaje, Zona } from "@/lib/types-admin";
 import { Pagination } from "@/components/admin/Pagination";
+import { RangoPicker, hoyISO } from "@/components/SelectorFecha";
 
 const LIMIT = 50;
 
@@ -61,14 +62,22 @@ export default function AdminViajesPage() {
             {ZONAS.map((z) => <option key={z} value={z}>{z}</option>)}
           </select>
         </label>
-        <label className="admin-filter">
-          <span>Desde</span>
-          <input type="date" value={desde} onChange={(e) => reset(setDesde, e.target.value)} />
-        </label>
-        <label className="admin-filter">
-          <span>Hasta</span>
-          <input type="date" value={hasta} onChange={(e) => reset(setHasta, e.target.value)} />
-        </label>
+        <div className="admin-filter">
+          <span id="admin-viajes-periodo">Período</span>
+          {/* Un solo control para los dos extremos: sueltos se podía pedir
+              "desde" posterior a "hasta" y la tabla volvía vacía sin decir por qué. */}
+          <RangoPicker
+            etiquetaId="admin-viajes-periodo"
+            desde={desde}
+            hasta={hasta}
+            max={hoyISO()}
+            placeholder="Todos"
+            onChange={({ desde: d, hasta: h }) => {
+              reset(setDesde, d);
+              setHasta(h);
+            }}
+          />
+        </div>
       </div>
 
       {error && <p className="admin-error">{error}</p>}
@@ -85,7 +94,7 @@ export default function AdminViajesPage() {
         </div>
         {!data && !error ? (
           [0, 1, 2, 3, 4].map((i) => (
-            <div key={i} className="admin-table__row admin-skeleton" style={{ height: 44 }} />
+            <div key={i} className="admin-table__row skeleton" style={{ height: 44 }} />
           ))
         ) : data && data.viajes.length > 0 ? (
           data.viajes.map((v) => (

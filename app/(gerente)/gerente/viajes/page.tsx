@@ -25,16 +25,14 @@ function MinutosRestantes({ fechaReserva }: { fechaReserva: string }) {
 
   if (restante <= 0) {
     return (
-      <span style={{ fontSize: 12, fontWeight: 600, color: "var(--err)" }}>
-        Reserva vencida
-      </span>
+      <span className="reserva-timer reserva-timer--urgente">Reserva vencida</span>
     );
   }
 
   const min = Math.floor(restante / 60_000);
   const seg = Math.floor((restante % 60_000) / 1000);
   return (
-    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, color: min < 3 ? "var(--err)" : "var(--warn)" }}>
+    <span className={`reserva-timer${min < 3 ? " reserva-timer--urgente" : ""}`}>
       {min}:{String(seg).padStart(2, "0")} para asignar
     </span>
   );
@@ -47,33 +45,28 @@ function FilaViaje({ viaje }: { viaje: ViajeEmpresa }) {
   return (
     <Link
       href={`/gerente/viajes/${viaje.id_viaje}`}
-      className="card"
-      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, textDecoration: "none" }}
+      className="card card-row"
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink-3)" }}>
-            VJ-{viaje.id_viaje}
-          </span>
+      <div className="stack stack--xs">
+        <div className="cluster">
+          <span className="trip-row__id">VJ-{viaje.id_viaje}</span>
           <span className={`status ${viaje.estado}`}>{ESTADO_LABEL[viaje.estado]}</span>
           <span className={`zone-tag ${viaje.zona}`}>{viaje.zona}</span>
           {viaje.estado === "RESERVADO_POR_EMPRESA" && viaje.fecha_reserva && (
             <MinutosRestantes fechaReserva={viaje.fecha_reserva} />
           )}
         </div>
-        <p style={{ fontSize: 13, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <p className="trip-row__route-origin">
           {origen?.direccion} → {destino?.direccion}
         </p>
-        <p style={{ fontSize: 12, color: "var(--ink-3)" }}>
+        <p className="texto-meta">
           {fmtDateTime(viaje.fecha_programada)}
           {viaje.conductor
             ? ` · ${viaje.conductor.usuario.nombre} ${viaje.conductor.usuario.apellido}`
             : " · sin conductor"}
         </p>
       </div>
-      <p style={{ fontFamily: "var(--font-display)", fontSize: 17, color: "var(--ink)", flexShrink: 0 }}>
-        {formatARS(viaje.precio_real ?? viaje.precio_estimado)}
-      </p>
+      <p className="stat__value">{formatARS(viaje.precio_real ?? viaje.precio_estimado)}</p>
     </Link>
   );
 }
@@ -89,12 +82,12 @@ function Bloque({
 }) {
   if (viajes.length === 0) return null;
   return (
-    <section style={{ marginBottom: 28 }}>
-      <div className="section-header" style={{ marginBottom: 12 }}>
-        <h2 style={{ fontSize: 16 }}>{titulo} <span style={{ color: "var(--ink-3)" }}>({viajes.length})</span></h2>
+    <section className="bloque">
+      <div className="section-header">
+        <h2 className="card-title">{titulo} <span className="texto-meta">({viajes.length})</span></h2>
         {descripcion && <p>{descripcion}</p>}
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div className="stack">
         {viajes.map((v) => <FilaViaje key={v.id_viaje} viaje={v} />)}
       </div>
     </section>
@@ -176,8 +169,8 @@ export default function GerenteViajesPage() {
   if (!empresaLoading && !idEmpresa) {
     // Sin empresa no hay nada que cargar; este return va antes del skeleton.
     return (
-      <div className="card" style={{ textAlign: "center", padding: "32px 24px" }}>
-        <p style={{ fontSize: 14, color: "var(--ink-2)" }}>
+      <div className="empty-state">
+        <p className="empty-state__text">
           Todavía no tenés una empresa. Creá una en <strong>Mi empresa</strong>.
         </p>
       </div>
@@ -186,23 +179,18 @@ export default function GerenteViajesPage() {
 
   return (
     <div>
-      <div className="section-header" style={{ marginBottom: 24 }}>
+      <div className="section-header">
         <h2>Mis viajes</h2>
         <p>{loading ? "Cargando..." : `${viajes.length} viaje${viajes.length !== 1 ? "s" : ""} de la empresa`}</p>
       </div>
 
       {error && (
-        <div style={{ padding: "12px 16px", borderRadius: "var(--radius-sm)", background: "var(--err-soft)", borderLeft: "3px solid var(--err)", marginBottom: 16 }}>
-          <p style={{ fontSize: 13, color: "var(--err)" }}>Error al cargar viajes: {error}</p>
-        </div>
+        <div className="error-banner">Error al cargar viajes: {error}</div>
       )}
 
       {reasignaciones.map((r) => (
-        <div
-          key={r.id_viaje}
-          style={{ marginBottom: 12, padding: "12px 16px", borderRadius: "var(--radius-sm)", background: "var(--err-soft)", borderLeft: "3px solid var(--err)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}
-        >
-          <p style={{ fontSize: 13, color: "var(--err)" }}>
+        <div key={r.id_viaje} className="error-banner error-banner--row">
+          <p>
             <strong>VJ-{r.id_viaje} necesita reasignación</strong> —{" "}
             {r.motivo === "conductor_cancelo"
               ? "el conductor canceló."
@@ -215,17 +203,15 @@ export default function GerenteViajesPage() {
       ))}
 
       {loading ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="stack">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="card" style={{ height: 78, background: "var(--surface-2)" }} />
+            <div key={i} className="card skeleton" style={{ height: 78 }} />
           ))}
         </div>
       ) : viajes.length === 0 ? (
-        <div className="card" style={{ textAlign: "center", padding: "32px 24px" }}>
-          <p style={{ fontSize: 14, color: "var(--ink-2)", marginBottom: 6 }}>
-            Tu empresa todavía no tomó ningún viaje.
-          </p>
-          <p style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
+        <div className="empty-state">
+          <p className="empty-state__title">Todavía no tomaste ningún viaje</p>
+          <p className="empty-state__text">
             Reservá uno desde <strong>Viajes disponibles</strong>.
           </p>
         </div>

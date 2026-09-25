@@ -8,8 +8,10 @@ import { api } from "@/lib/api";
 import { formatARS, fmtDate } from "@/lib/utils";
 import { ESTADO_LABEL_ACTIVO, esEnCurso } from "@/lib/estados";
 import { BarChart2, ClipboardList, Truck, FileText, User, LogOut } from "lucide-react";
+import TemaToggle from "@/components/TemaToggle";
 import type { ReactNode } from "react";
 import type { SessionUser } from "@/lib/auth-server";
+import AppShell from "@/components/shells/AppShell";
 
 interface RecentViaje {
   id_viaje: number;
@@ -85,7 +87,7 @@ export default function ClienteShell({
   }
 
   return (
-    <div className="app">
+    <AppShell>
       <aside className="sidebar">
         {/* Brand */}
         <div className="brand-header">
@@ -176,6 +178,8 @@ export default function ClienteShell({
                 Mi perfil
               </Link>
               <div className="sidebar__user-menu-sep" />
+              <TemaToggle />
+              <div className="sidebar__user-menu-sep" />
               <button
                 type="button"
                 className="sidebar__user-menu-item sidebar__user-menu-item--danger"
@@ -245,6 +249,6 @@ export default function ClienteShell({
           {children}
         </main>
       </div>
-    </div>
+    </AppShell>
   );
 }

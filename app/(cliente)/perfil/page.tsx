@@ -16,28 +16,6 @@ interface PerfilData {
   rol: string;
 }
 
-const LABEL_STYLE: React.CSSProperties = {
-  display: "block",
-  fontSize: 11.5,
-  fontWeight: 700,
-  letterSpacing: "0.06em",
-  textTransform: "uppercase",
-  color: "var(--ink-3)",
-  marginBottom: 5,
-};
-
-const INPUT_STYLE: React.CSSProperties = {
-  width: "100%",
-  padding: "7px 10px",
-  borderRadius: "var(--radius-sm)",
-  border: "1px solid var(--line-strong)",
-  background: "var(--surface)",
-  color: "var(--ink)",
-  fontSize: 13,
-  fontFamily: "var(--font-ui)",
-  boxSizing: "border-box",
-};
-
 function Row({ label, value }: { label: string; value: string | undefined }) {
   return (
     <div className="perfil-row">
@@ -63,15 +41,15 @@ function Field({
   disabled?: boolean;
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      <label htmlFor={name} style={LABEL_STYLE}>{label}</label>
+    <div className="field">
+      <label className="metric__label" htmlFor={name}>{label}</label>
       <input
         id={name}
+        className="input"
         type={type}
         value={value}
         onChange={(e) => onChange(name, e.target.value)}
         disabled={disabled}
-        style={{ ...INPUT_STYLE, opacity: disabled ? 0.6 : 1, cursor: disabled ? "not-allowed" : "text" }}
       />
     </div>
   );
@@ -134,7 +112,7 @@ export default function PerfilPage() {
 
   return (
     <div>
-      <div className="section-header section-header--top" style={{ marginBottom: 24 }}>
+      <div className="section-header section-header--top">
         <div>
           <h2>Perfil</h2>
           <p>Tus datos de cuenta.</p>
@@ -147,13 +125,13 @@ export default function PerfilPage() {
       {loading && (
         <div className="card perfil-stack">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} style={{ height: 36, background: "var(--surface-2)", borderRadius: 4 }} />
+            <div key={i} className="skeleton" style={{ height: 36 }} />
           ))}
         </div>
       )}
 
       {!loading && error && (
-        <div className="error-banner" style={{ maxWidth: 560 }}>{error}</div>
+        <div className="error-banner page-narrow">{error}</div>
       )}
 
       {!loading && !error && perfil && (

@@ -188,12 +188,12 @@ export default function GerenteViajeDetallePage() {
   if (loading || empresaLoading) {
     return (
       <div>
-        <button className="btn btn--ghost" style={{ marginBottom: 14 }} onClick={() => router.back()} type="button">
+        <button className="btn btn--ghost back-link" onClick={() => router.back()} type="button">
           ← Volver
         </button>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="stack">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="card" style={{ height: 100, background: "var(--surface-2)" }} />
+            <div key={i} className="card skeleton" style={{ height: 100 }} />
           ))}
         </div>
       </div>
@@ -203,12 +203,10 @@ export default function GerenteViajeDetallePage() {
   if (error || !viaje) {
     return (
       <div>
-        <button className="btn btn--ghost" style={{ marginBottom: 14 }} onClick={() => router.back()} type="button">
+        <button className="btn btn--ghost back-link" onClick={() => router.back()} type="button">
           ← Volver
         </button>
-        <div className="card" style={{ borderLeft: "3px solid var(--err)" }}>
-          <p style={{ fontSize: 13, color: "var(--err)" }}>{error ?? "Viaje no encontrado."}</p>
-        </div>
+        <div className="error-banner">{error ?? "Viaje no encontrado."}</div>
       </div>
     );
   }
@@ -231,13 +229,13 @@ export default function GerenteViajeDetallePage() {
 
   return (
     <div>
-      <button className="btn btn--ghost" style={{ marginBottom: 14 }} onClick={() => router.back()} type="button">
+      <button className="btn btn--ghost back-link" onClick={() => router.back()} type="button">
         ← Volver
       </button>
 
-      <div className="section-header" style={{ marginBottom: 20 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          <h2 style={{ fontFamily: "var(--font-mono)" }}>VJ-{viaje.id_viaje}</h2>
+      <div className="section-header">
+        <div className="cluster">
+          <h2 className="titulo-mono">VJ-{viaje.id_viaje}</h2>
           <span className={`status ${viaje.estado}`}>{ESTADO_LABEL[viaje.estado]}</span>
           <span className={`zone-tag ${viaje.zona}`}>{viaje.zona}</span>
         </div>
@@ -245,41 +243,34 @@ export default function GerenteViajeDetallePage() {
       </div>
 
       {accionError && (
-        <div style={{ padding: "12px 16px", borderRadius: "var(--radius-sm)", background: "var(--err-soft)", borderLeft: "3px solid var(--err)", marginBottom: 16 }}>
-          <p style={{ fontSize: 13, color: "var(--err)" }}>{accionError}</p>
-        </div>
+        <div className="error-banner">{accionError}</div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div className="stack stack--lg">
         {/* Datos del viaje */}
         <div className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 16 }}>
+          <div className="card-head">
             <div>
               <p className="metric__label">Precio {viaje.precio_real ? "final" : "estimado"}</p>
-              <p style={{ fontFamily: "var(--font-display)", fontSize: 24, color: "var(--ink)", marginTop: 2 }}>
-                {formatARS(viaje.precio_real ?? viaje.precio_estimado)}
-              </p>
+              <p className="stat__value">{formatARS(viaje.precio_real ?? viaje.precio_estimado)}</p>
             </div>
             {viaje.cliente && (
-              <div style={{ textAlign: "right" }}>
-                <p className="metric__label">Cliente</p>
-                <p style={{ fontSize: 13, color: "var(--ink)", marginTop: 4 }}>
+              <div className="kv">
+                <span>Cliente</span>
+                <strong className="kv__texto">
                   {viaje.cliente.usuario.nombre} {viaje.cliente.usuario.apellido}
-                </p>
+                </strong>
                 {viaje.cliente.usuario.telefono && (
-                  <p style={{ fontSize: 12, color: "var(--ink-3)" }}>{viaje.cliente.usuario.telefono}</p>
+                  <span>{viaje.cliente.usuario.telefono}</span>
                 )}
               </div>
             )}
           </div>
 
           {viaje.condiciones_req.length > 0 && (
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+            <div className="cred-list">
               {viaje.condiciones_req.map((c) => (
-                <span
-                  key={c.condicion}
-                  style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: "var(--info-soft)", color: "var(--info)", letterSpacing: "0.04em" }}
-                >
+                <span key={c.condicion} className="cond">
                   {CONDICION_LABEL[c.condicion] ?? c.condicion}
                 </span>
               ))}
@@ -287,28 +278,23 @@ export default function GerenteViajeDetallePage() {
           )}
 
           {viaje.descripcion && (
-            <p style={{ fontSize: 12.5, color: "var(--ink-2)", fontStyle: "italic", marginBottom: 16 }}>
-              &ldquo;{viaje.descripcion}&rdquo;
-            </p>
+            <p className="note">{viaje.descripcion}</p>
           )}
 
           {/* Paradas */}
-          <div style={{ position: "relative", paddingLeft: 28, borderTop: "1px solid var(--line)", paddingTop: 16 }}>
-            <div style={{ position: "absolute", left: 8, top: 24, bottom: 10, width: 1.5, background: "var(--line-strong)" }} />
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div className="vd__price-block">
+            <div className="route-stops">
               {viaje.paradas.map((p, i) => {
                 const ultima = i === viaje.paradas.length - 1;
                 return (
-                  <div key={p.id_parada ?? p.orden} style={{ display: "flex", alignItems: "center", gap: 8, position: "relative" }}>
-                    <div style={{ position: "absolute", left: -25, width: 11, height: 11, borderRadius: ultima ? 2 : "50%", background: p.estado === "ENTREGADO" ? "var(--ok)" : ultima ? "var(--ink)" : "var(--accent)", border: "2px solid var(--surface)", boxShadow: `0 0 0 1.5px ${p.estado === "ENTREGADO" ? "var(--ok)" : ultima ? "var(--ink)" : "var(--accent)"}` }} />
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 13, color: "var(--ink)" }}>{p.direccion}</p>
-                      {p.fecha_entrega && (
-                        <p style={{ fontSize: 11.5, color: "var(--ok)" }}>
-                          Entregado {fmtDateTime(p.fecha_entrega)}
-                        </p>
-                      )}
-                    </div>
+                  <div
+                    key={p.id_parada ?? p.orden}
+                    className={`route-stop${ultima ? " route-stop--dest" : ""}`}
+                  >
+                    <div className="route-stop__calle">{p.direccion}</div>
+                    {p.fecha_entrega && (
+                      <div className="route-stop__loc">Entregado {fmtDateTime(p.fecha_entrega)}</div>
+                    )}
                   </div>
                 );
               })}
@@ -316,22 +302,18 @@ export default function GerenteViajeDetallePage() {
             {/* El mapa va acá cuando se construya; por ahora sólo se informa que
                 el backend tiene la ruta calculada para este viaje. */}
             {rutaPlaneada && rutaPlaneada.length > 0 && (
-              <p style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 12 }}>
-                Ruta planificada disponible ({rutaPlaneada.length} puntos)
-              </p>
+              <p className="stat__hint">Ruta planificada disponible ({rutaPlaneada.length} puntos)</p>
             )}
           </div>
         </div>
 
         {/* Costo en vivo — sólo mientras el viaje está en curso */}
         {costo && (
-          <div className="card">
-            <p className="metric__label" style={{ marginBottom: 8 }}>Costo acumulado</p>
-            <p style={{ fontFamily: "var(--font-display)", fontSize: 22, color: "var(--ink)" }}>
-              {formatARS(costo.precio_acumulado)}
-            </p>
+          <div className="card stack stack--tight">
+            <p className="metric__label">Costo acumulado</p>
+            <p className="stat__value">{formatARS(costo.precio_acumulado)}</p>
             {costo.desglose && (
-              <p style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 4 }}>
+              <p className="stat__hint">
                 {costo.desglose.distancia_km} km · {costo.desglose.tiempo_horas} h
               </p>
             )}
@@ -340,8 +322,8 @@ export default function GerenteViajeDetallePage() {
 
         {/* Remito — sólo en viajes finalizados */}
         {esFinalizado(viaje.estado) && (
-          <div className="card">
-            <p className="metric__label" style={{ marginBottom: 8 }}>Remito</p>
+          <div className="card stack stack--tight">
+            <p className="metric__label">Remito</p>
             <button
               className="btn btn--ghost"
               onClick={abrirRemito}
@@ -350,28 +332,24 @@ export default function GerenteViajeDetallePage() {
             >
               {remitoLoading ? "Abriendo..." : "Ver remito (PDF)"}
             </button>
-            {remitoError && (
-              <p style={{ fontSize: 12, color: "var(--err)", marginTop: 8 }}>{remitoError}</p>
-            )}
+            {remitoError && <p className="error-text">{remitoError}</p>}
           </div>
         )}
 
         {/* Asignación actual */}
         {viaje.conductor && (
-          <div className="card">
-            <p className="metric__label" style={{ marginBottom: 8 }}>Asignado a</p>
-            <p style={{ fontSize: 14, color: "var(--ink)" }}>
-              {viaje.conductor.usuario.nombre} {viaje.conductor.usuario.apellido}
+          <div className="card stack stack--tight">
+            <p className="metric__label">Asignado a</p>
+            <p className="driver-info">
+              <strong>{viaje.conductor.usuario.nombre} {viaje.conductor.usuario.apellido}</strong>
               {viaje.conductor.calificacion_promedio != null && (
-                <span style={{ color: "var(--ink-3)", fontSize: 12.5 }}>
-                  {" "}★ {viaje.conductor.calificacion_promedio.toFixed(1)}
-                </span>
+                <span className="rating">★ {viaje.conductor.calificacion_promedio.toFixed(1)}</span>
               )}
             </p>
             {viaje.vehiculo && (
-              <p style={{ fontSize: 12.5, color: "var(--ink-3)", marginTop: 4 }}>
+              <p className="veh-card__meta">
                 {viaje.vehiculo.marca} {viaje.vehiculo.modelo} —{" "}
-                <span style={{ fontFamily: "var(--font-mono)" }}>{viaje.vehiculo.patente}</span>
+                <span className="patente">{viaje.vehiculo.patente}</span>
               </p>
             )}
           </div>
@@ -380,8 +358,8 @@ export default function GerenteViajeDetallePage() {
         {/* Formulario de asignación / reasignación */}
         {mostrarFormulario && (
           <div className="card">
-            <div className="section-header" style={{ marginBottom: 14 }}>
-              <h2 style={{ fontSize: 15 }}>
+            <div className="section-header">
+              <h2 className="card-title">
                 {puedeReasignar ? "Reasignar viaje" : "Asignar conductor y vehículo"}
               </h2>
               {viaje.condiciones_req.length > 0 && (
@@ -393,25 +371,24 @@ export default function GerenteViajeDetallePage() {
             </div>
 
             {conductoresActivos.length === 0 && (
-              <p style={{ fontSize: 13, color: "var(--warn)", marginBottom: 12 }}>
+              <p className="note note--warn">
                 No tenés conductores activos. Aprobá solicitudes en <strong>Conductores</strong>.
               </p>
             )}
             {vehiculosElegibles.length === 0 && (
-              <p style={{ fontSize: 13, color: "var(--warn)", marginBottom: 12 }}>
+              <p className="note note--warn">
                 Ningún vehículo de tu flota cumple las condiciones de este viaje.
               </p>
             )}
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <div>
+            <div className="stack">
+              <div className="field">
                 <label className="metric__label" htmlFor="conductor">Conductor</label>
                 <select
                   id="conductor"
                   className="input"
                   value={conductorSel}
                   onChange={(e) => setIdConductor(e.target.value === "" ? "" : Number(e.target.value))}
-                  style={{ marginTop: 4 }}
                 >
                   <option value="">Elegir conductor…</option>
                   {conductoresActivos.map((c) => (
@@ -423,14 +400,13 @@ export default function GerenteViajeDetallePage() {
                 </select>
               </div>
 
-              <div>
+              <div className="field">
                 <label className="metric__label" htmlFor="vehiculo">Vehículo</label>
                 <select
                   id="vehiculo"
                   className="input"
                   value={vehiculoSel}
                   onChange={(e) => setIdVehiculo(e.target.value === "" ? "" : Number(e.target.value))}
-                  style={{ marginTop: 4 }}
                 >
                   <option value="">Elegir vehículo…</option>
                   {vehiculosElegibles.map((v) => (
@@ -441,7 +417,7 @@ export default function GerenteViajeDetallePage() {
                 </select>
               </div>
 
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 4 }}>
+              <div className="cluster">
                 <button
                   type="button"
                   className="btn btn--primary"
@@ -473,8 +449,7 @@ export default function GerenteViajeDetallePage() {
                     <>
                       <button
                         type="button"
-                        className="btn btn--ghost"
-                        style={{ color: "var(--err)" }}
+                        className="btn btn--ghost btn--danger"
                         disabled={accion !== null}
                         onClick={soltarReserva}
                       >

@@ -1,0 +1,42 @@
+/* Extraído de docs/design-system-v2.html — sistema de diseño v2.
+   No editar a mano para 'arreglar' un caso puntual: si un valor no sirve,
+   se cambia en el documento y se vuelve a extraer. */
+
+/* Tema oscuro (hereda de la app mobile del conductor). Se activa con
+   data-theme="dark" en <html> o en cualquier contenedor. Los tokens
+   semánticos cambian; el naranja de marca y --on-accent no. */
+[data-theme="dark"] {
+  --accent-hover: #F06A38;
+  --accent-press: #D2521F;
+  --accent-ink: #F0865A;      /* naranja para texto chico sobre oscuro (6.8:1) */
+  --accent-soft: #3B2116;
+  --accent-softer: #2A1B13;
+  --on-accent: #1B1A17;
+  --on-accent-large: #FFFFFF;
+
+  --bg: #141310;
+  --surface: #1C1A16;
+  --surface-2: #23201B;
+  --surface-3: #2B2822;
+  --surface-ink: #F4F0E7;
+
+  --line: #2E2A24;
+  --line-strong: #3B362E;
+
+  --ink: #F4F0E7;
+  --ink-2: #CBC5B8;
+  --ink-3: #9E978A;
+  --ink-4: #6B655A;
+  --on-ink: #141310;
+  --on-ink-2: rgba(20,19,16,.72);
+
+  --ok: #4DB36E;    --ok-ink: #7BD397;    --ok-soft: #16301F;
+  --warn: #D9A23A;  --warn-ink: #E9BC5C;  --warn-soft: #33260A;
+  --err: #D95454;   --err-ink: #F09090;   --err-soft: #3A1717;
+  --info: #5C93D6;  --info-ink: #8DB8EC;  --info-soft: #14243A;
+
+  --zona-prov-bg: #2B2822;
+
+  --marcador-destino: var(--ink);
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+}
