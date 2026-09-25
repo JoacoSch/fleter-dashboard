@@ -31,5 +31,9 @@ export default function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  // Los archivos estáticos (íconos, imagen social, /logo/*) no llevan sesión:
+  // sin esto el navegador y los scrapers de redes reciben un 307 al login.
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };
