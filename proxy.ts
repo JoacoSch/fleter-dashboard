@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 // Rutas públicas del grupo (auth): accesibles sin sesión.
 const PUBLIC_PATHS = new Set([
   "/", // landing
+  "/contacto", // destino del CTA "Empezar" de la landing
   "/login",
   "/registro",
   "/registro/conductor",
