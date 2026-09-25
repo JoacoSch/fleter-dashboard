@@ -3003,3 +3003,17 @@ a.card-row, a.card { text-decoration: none; color: var(--ink); }
   .auth-split__main { padding: 32px 20px; }
   .empty-state { padding: 28px 20px; }
 }
+
+/* ── Marca: isotipo (components/Isotipo.tsx) ─────────────────────────────
+   Reglas del sistema: el naranja no cambia; la caja oscura pasa a clara
+   sobre fondo oscuro (tema oscuro, aside de auth en tema claro, landing). */
+.isotipo { display: block; flex: none; width: 32px; height: 32px; }
+.isotipo__c { fill: #e85d2a; }
+.isotipo__k { fill: #1b1a17; }
+html[data-theme="dark"] .isotipo__k,
+.lp .isotipo__k { fill: #f4f0e7; }
+/* El aside de auth es oscuro en tema claro y crema en tema oscuro: la caja sigue su fondo. */
+.auth-split__aside .isotipo__k { fill: #f4f0e7; }
+html[data-theme="dark"] .auth-split__aside .isotipo__k { fill: #1b1a17; }
+.brand-header .isotipo { width: 30px; height: 30px; }
+.auth-brand .isotipo { width: 34px; height: 34px; }

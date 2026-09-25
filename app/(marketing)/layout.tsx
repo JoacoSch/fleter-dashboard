@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "Fleter — Tu logística, de punta a punta",
   description:
     "Fleter pide, sigue, confirma y factura cada viaje de tu empresa. Vos elegís con quién trabajás. El resto se hace solo.",
+  openGraph: { title: "Fleter — Tu logística, de punta a punta", siteName: "Fleter", locale: "es_AR", type: "website" },
 };
 
 /**
