@@ -1,0 +1,12 @@
+# La CLI sube lo que hay en disco: excluir lo pesado que ya está en .gitignore
+node_modules
+.next
+.next-e2e
+.next-verify-*
+brag-output
+*.mp4
+fleter-mobile-master
+test-results
+playwright-report
+docs/academico
+*.pdf
