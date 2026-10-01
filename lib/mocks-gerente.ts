@@ -523,7 +523,6 @@ export function gerenteMock(
       id_viaje: viaje.id_viaje,
       estado: viaje.estado,
       fecha_inicio: viaje.fecha_inicio,
-      puntualidad_inicio: "A_TIEMPO",
       iniciado_por: "GERENTE",
     };
   }

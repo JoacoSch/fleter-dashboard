@@ -28,8 +28,15 @@ export interface ViajeDetalle {
   fecha_programada: string;
   /** Momento real en que se pulsó "Iniciar viaje". `null` hasta que arranca. */
   fecha_inicio: string | null;
-  /** Calculada al iniciar contra `fecha_programada`. `null` hasta que arranca. */
+  /** Llegada al origen (primer ping GPS dentro del radio). `null` hasta que llega. */
+  fecha_llegada_origen?: string | null;
+  /**
+   * Se mide en la **llegada al origen**, no al iniciar, y se calcula en el read.
+   * `null` hasta que llega, y en viajes anteriores al cambio del contrato.
+   */
   puntualidad_inicio: Puntualidad | null;
+  /** Calculado en el read; fuente de verdad. `viaje:vencido` es sólo el aviso en vivo. */
+  vencido?: boolean;
   creado_en: string;
   paradas: Parada[];
   condiciones_req: { condicion: string }[];
@@ -96,11 +103,20 @@ export interface AlertaItem {
   timestamp: number;
 }
 
-/** Payload del evento `viaje:iniciado` (room personal del cliente). */
+/**
+ * Payload del evento `viaje:iniciado` (room personal del cliente). Ya NO trae
+ * `puntualidad_inicio`: se mide en la llegada al origen.
+ */
 export interface ViajeIniciadoPayload {
   id_viaje: number;
   fecha_inicio: string;
-  puntualidad_inicio: Puntualidad;
+}
+
+/** Payload de `viaje:vencido`: el viaje pasó su hora sin avanzar. No cambia de estado. */
+export interface ViajeVencidoPayload {
+  id_viaje: number;
+  estado: string;
+  fecha_programada: string;
 }
 
 export interface ViajeFinalizadoPayload {
@@ -314,10 +330,16 @@ export function useViajeActivo(id_viaje: number) {
                   ...prev,
                   estado: "EN_CAMINO_A_ORIGEN",
                   fecha_inicio: data.fecha_inicio,
-                  puntualidad_inicio: data.puntualidad_inicio,
+                  vencido: false,
                 }
               : prev
           );
+        });
+
+        // Best-effort: si la pestaña estaba cerrada el evento se pierde; el flag
+        // `vencido` del GET es la fuente de verdad.
+        socket.on("viaje:vencido", (data: ViajeVencidoPayload) => {
+          setViaje((prev) => (prev && prev.id_viaje === data.id_viaje ? { ...prev, vencido: true } : prev));
         });
 
         socket.on(

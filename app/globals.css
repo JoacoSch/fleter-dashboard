@@ -2424,6 +2424,9 @@ button.periodo__label { cursor: pointer; }
 .dropzone__text strong { font-size: 13.5px; display: block; }
 .dropzone__text span { font-size: 12px; color: var(--ink-3); }
 .badge-proximo { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--info); background: var(--info-soft); padding: 2px 8px; border-radius: 999px; margin-left: 8px; vertical-align: middle; }
+.badge-vencido { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--err-ink); background: var(--err-soft); padding: 2px 8px; border-radius: 999px; margin-left: 8px; vertical-align: middle; }
+.vd__tags .badge-vencido, .trip-row__estado .badge-vencido { margin-left: 0; }
+.trip-row__estado { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
 
 /* ── Vehículo (lista) ────────────────────────────── */
 .veh-card { display: grid; grid-template-columns: 72px 1fr auto; gap: 16px; align-items: center; padding: 16px 20px; }

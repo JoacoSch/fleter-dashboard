@@ -38,11 +38,23 @@ interface ViajeDetalle {
   estado: string;
   fecha_programada: string;
   fecha_inicio?: string | null;
+  /** Llegada al origen (primer ping GPS dentro del radio). `null` hasta que llega. */
+  fecha_llegada_origen?: string | null;
+  /** Se mide en la llegada al origen. `null` hasta que llega y en viajes anteriores al cambio. */
   puntualidad_inicio?: "A_TIEMPO" | "TARDE" | "MUY_TARDE" | null;
+  /** Calculado en el read. `true` = pasó su hora sin avanzar (el backend no lo cancela). */
+  vencido?: boolean;
   creado_en: string;
   /** Minutos enteros. `null` en viajes viejos o si Google Maps falló al crearlo. */
   duracion_estimada?: number | null;
+  /** Minutos. Desde la salida del origen (`EN_RUTA`) hasta la última entrega. `null` en viajes anteriores al cambio. */
   duracion_real?: number | null;
+  /** Minutos. Mitad del tiempo de peón. `null` si alguna transición no ocurrió. */
+  duracion_carga?: number | null;
+  /** Minutos. La otra mitad del tiempo de peón. */
+  duracion_descarga?: number | null;
+  /** Minutos. De que el conductor arranca hacia el origen a que llega. */
+  duracion_aproximacion_origen?: number | null;
   /** No está en el contrato: pedido al backend (PEDIDO-BACKEND → J). */
   km_reales?: number | null;
   /** No está en el contrato: pedido al backend (PEDIDO-BACKEND → J). */
@@ -162,6 +174,7 @@ export default function ViajeDetallePage() {
             <div className="vd__tags">
               <span className={`status ${viaje.estado}`}>{ESTADO_LABEL[viaje.estado as keyof typeof ESTADO_LABEL] ?? viaje.estado}</span>
               {esProximo(viaje.estado) && <span className="badge-proximo">Próximo</span>}
+              {viaje.vencido && <span className="badge-vencido">Vencido</span>}
               <span className={`zone-tag ${viaje.zona}`}>{viaje.zona}</span>
               <span className="trip-row__id">VJ-{viaje.id_viaje}</span>
             </div>
@@ -238,7 +251,9 @@ export default function ViajeDetallePage() {
           <div className="stat">
             <p className="stat__label">Programado</p>
             <p className="stat__value">{fmtHora24(viaje.fecha_programada)}</p>
-            <p className="stat__hint">{fmtDate(viaje.fecha_programada)}</p>
+            <p className="stat__hint">
+              {viaje.vencido ? "Pasó su hora y no arrancó" : fmtDate(viaje.fecha_programada)}
+            </p>
           </div>
           <div className="stat">
             <p className="stat__label">Inicio real</p>
@@ -250,6 +265,7 @@ export default function ViajeDetallePage() {
             <p className={`stat__value${!viaje.puntualidad_inicio ? " stat__value--muted" : viaje.puntualidad_inicio === "A_TIEMPO" ? " stat__value--ok" : " stat__value--err"}`}>
               {viaje.puntualidad_inicio ? PUNTUALIDAD_LABEL[viaje.puntualidad_inicio] : "—"}
             </p>
+            {!viaje.puntualidad_inicio && <p className="stat__hint">Se mide al llegar al origen</p>}
           </div>
           <div className="stat">
             <p className="stat__label">Paradas entregadas</p>
@@ -302,6 +318,19 @@ export default function ViajeDetallePage() {
                   <strong className={viaje.descripcion ? "kv__texto" : undefined}>{viaje.descripcion || "—"}</strong>
                 </div>
               </div>
+            </div>
+
+            <div className="card">
+              <p className="card-title">Tiempos por etapa</p>
+              <p className="card-sub">Minutos entre cambios de estado del viaje</p>
+              <div className="kv-grid">
+                <div className="kv"><span>Aproximación al origen</span><strong>{formatDuracion(viaje.duracion_aproximacion_origen)}</strong></div>
+                <div className="kv"><span>Carga</span><strong>{formatDuracion(viaje.duracion_carga)}</strong></div>
+                <div className="kv"><span>Descarga</span><strong>{formatDuracion(viaje.duracion_descarga)}</strong></div>
+              </div>
+              {esFinalizado(viaje.estado) && viaje.duracion_carga == null && viaje.duracion_descarga == null && (
+                <p className="note">Este viaje es anterior al registro de etapas: no tiene el detalle.</p>
+              )}
             </div>
 
             <div className="card">

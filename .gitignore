@@ -52,3 +52,7 @@ backend-requests.txt
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# mp4 / brag
+brag-output
+*.mp4

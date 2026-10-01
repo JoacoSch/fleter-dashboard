@@ -239,7 +239,6 @@ export interface IniciarViajeResponse {
   id_viaje: number;
   estado: EstadoViaje;
   fecha_inicio: string;
-  puntualidad_inicio: "A_TIEMPO" | "TARDE" | "MUY_TARDE";
   iniciado_por: "CONDUCTOR" | "GERENTE";
 }
 

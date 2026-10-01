@@ -57,6 +57,9 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       creado_en: "2026-05-09T20:00:00.000Z",
       duracion_real: 95,
       duracion_estimada: 80,
+      duracion_carga: 12,
+      duracion_descarga: 7,
+      duracion_aproximacion_origen: 21,
       alertas_count: 0,
       paradas: [
         { orden: 1, direccion: "Av. Corrientes 1234, CABA" },
@@ -160,6 +163,7 @@ const MOCK_FIXTURES: Record<string, unknown> = {
       precio_real: null,
       estado: "BUSCANDO_CONDUCTOR",
       fecha_programada: "2026-05-15T15:00:00.000Z",
+      vencido: true,
       creado_en: "2026-05-14T12:00:00.000Z",
       duracion_real: null,
       duracion_estimada: 90,

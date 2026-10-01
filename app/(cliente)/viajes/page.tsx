@@ -45,6 +45,7 @@ interface MisViajesItem {
   fecha_programada: string;
   creado_en: string;
   duracion_real?: number | null;
+  vencido?: boolean;
   alertas_count?: number;
   paradas: Parada[];
   conductor: { usuario: { nombre: string; apellido: string } } | null;
@@ -270,7 +271,10 @@ export default function ViajesPage() {
               </div>
               <div className="trip-row__id">VJ-{v.id_viaje}</div>
               <span className={`zone-tag ${v.zona}`}>{v.zona}</span>
-              <span className={`status ${estadoCss}`}>{estadoLabel}</span>
+              <span className="trip-row__estado">
+                <span className={`status ${estadoCss}`}>{estadoLabel}</span>
+                {v.vencido && <span className="badge-vencido">Vencido</span>}
+              </span>
               <span className={`trip-row__dur${v.duracion_real ? "" : " trip-row__dur--null"}`}>
                 {formatDuracion(v.duracion_real)}
               </span>
